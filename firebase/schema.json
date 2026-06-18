@@ -1,1 +1,67 @@
+{
+  "students": {
+    "studentId_example": {
+      "name": "Ahmad",
+      "class": "XI-4",
+      "status": "safe",
+      "violation": 0,
+      "progress": "0/40",
+      "lastEvent": "tab_switch",
+      "updatedAt": 1710000000000,
+      "locked": false
+    }
+  },
 
+  "status": {
+    "summary": {
+      "activeUsers": 1487,
+      "safe": 1200,
+      "warning": 250,
+      "critical": 37,
+      "autoSubmit": 0,
+      "updatedAt": 1710000000000
+    }
+  },
+
+  "otp": {
+    "global": {
+      "value": 123456,
+      "type": "GLOBAL",
+      "createdAt": 1710000000000,
+      "expiresAt": 1710000300000
+    },
+
+    "master": {
+      "value": 999999,
+      "type": "MASTER",
+      "createdAt": 1710000000000,
+      "expiresAt": null
+    },
+
+    "issued": {
+      "studentId_example": {
+        "value": 111222,
+        "status": "active",
+        "createdAt": 1710000000000,
+        "expiresAt": 1710000200000
+      }
+    }
+  },
+
+  "logs": {
+    "eventId_example": {
+      "type": "VIOLATION",
+      "studentId": "studentId_example",
+      "action": "fullscreen_exit",
+      "severity": "warning",
+      "timestamp": 1710000000000
+    }
+  },
+
+  "control": {
+    "lockdown": false,
+    "emergencyMode": false,
+    "maintenanceMode": false,
+    "updatedAt": 1710000000000
+  }
+}
