@@ -3,72 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SMANSASOO CBT LOCK 2.0 - LAYER 5 PANITIA</title>
+<title>SMANSASOO CBT CONTROL TOWER - FINAL</title>
 
 <style>
-:root {
+:root{
   --accent:#007aff;
   --warn:#ff9500;
   --danger:#ff3b30;
   --success:#34c759;
 }
 
-/* ===== BASE ===== */
-* {
+*{
   margin:0;
   padding:0;
   box-sizing:border-box;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
 }
 
-body {
+body{
   height:100vh;
   overflow:hidden;
   background:url('./assets/img/stg.jpg') no-repeat center center fixed;
   background-size:cover;
-  color:#fff;
+  color:white;
 }
 
-/* ===== GLASS iOS 17 STYLE ===== */
-.glass {
-  background:rgba(255,255,255,0.14);
-  backdrop-filter:blur(24px) saturate(180%);
-  -webkit-backdrop-filter:blur(24px) saturate(180%);
-  border:1px solid rgba(255,255,255,0.22);
-  box-shadow:0 10px 40px rgba(0,0,0,0.25);
+/* GLASS FINAL */
+.glass{
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(26px) saturate(180%);
+  -webkit-backdrop-filter:blur(26px);
+  border:1px solid rgba(255,255,255,0.18);
   border-radius:18px;
 }
 
-/* ===== LAYOUT ===== */
-.container {
+/* LAYOUT */
+.container{
   display:flex;
   height:100vh;
   min-width:1280px;
 }
 
-/* ===== SIDEBAR ===== */
-.sidebar {
-  width:280px;
+.sidebar{
+  width:260px;
   padding:18px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
 }
 
-.menu {
-  padding:12px;
-  border-radius:12px;
-  cursor:pointer;
-  transition:.2s;
-  color:#fff;
-}
-
-.menu:hover {
-  background:rgba(255,255,255,0.15);
-}
-
-/* ===== MAIN ===== */
-.main {
+.main{
   flex:1;
   padding:18px;
   display:flex;
@@ -76,73 +57,66 @@ body {
   gap:12px;
 }
 
-/* ===== TOPBAR ===== */
-.topbar {
+/* TOP */
+.topbar{
   display:flex;
   justify-content:space-between;
-  padding:14px 18px;
+  padding:14px;
 }
 
-/* ===== CARDS ===== */
-.cards {
+/* CARDS */
+.cards{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:10px;
 }
 
-.card {
+.card{
   padding:14px;
   text-align:center;
-  cursor:pointer;
 }
 
-/* ===== TABLE ===== */
-.table {
+/* TABLE */
+.table{
   flex:1;
   overflow:auto;
 }
 
-table {
+table{
   width:100%;
   border-collapse:collapse;
 }
 
-thead th {
-  position:sticky;
-  top:0;
-  background:rgba(0,0,0,0.3);
-  backdrop-filter:blur(10px);
-}
-
-th,td {
+th,td{
   padding:10px;
   font-size:13px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
+  border-bottom:1px solid rgba(255,255,255,0.1);
 }
 
-tr:hover {
+tr:hover{
   background:rgba(255,255,255,0.08);
 }
 
-.status-safe { color:var(--success); }
-.status-warn { color:var(--warn); }
-.status-danger { color:var(--danger); }
+/* STATUS */
+.safe{color:var(--success);}
+.warn{color:var(--warn);}
+.danger{color:var(--danger);}
 
-/* ===== DRAWER ===== */
-.drawer {
+/* DRAWER */
+.drawer{
   position:fixed;
-  top:0;
   right:-380px;
+  top:0;
   width:360px;
   height:100vh;
   padding:20px;
   transition:.25s;
 }
 
-.drawer.active { right:0; }
+.drawer.active{right:0;}
 
-/* ===== OTP ===== */
-.otp-modal {
+/* OTP */
+.otp{
   position:fixed;
   inset:0;
   display:none;
@@ -151,20 +125,20 @@ tr:hover {
   background:rgba(0,0,0,0.4);
 }
 
-.otp-modal.active { display:flex; }
+.otp.active{display:flex;}
 
-#otpValue {
-  font-size:46px;
-  font-weight:bold;
+#otpValue{
+  font-size:48px;
   color:var(--accent);
+  font-weight:bold;
 }
 
-/* ===== ALERT ===== */
-.alert {
+/* ALERT */
+.alert{
   position:fixed;
   bottom:20px;
   right:20px;
-  width:280px;
+  width:260px;
   max-height:220px;
   overflow:auto;
   font-size:12px;
@@ -179,29 +153,23 @@ tr:hover {
 <!-- SIDEBAR -->
 <div class="sidebar glass">
   <b>SMANSASOO</b>
-  <small>CBT LOCK LAYER 5</small>
-
-  <div class="menu">Dashboard</div>
-  <div class="menu">Aman</div>
-  <div class="menu">Warning</div>
-  <div class="menu">Critical</div>
-  <div class="menu">Realtime</div>
+  <small>CBT FINAL TOWER</small>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
 <div class="topbar glass">
-  <div><b>SMANSASOO CONTROL CENTER</b></div>
+  <div><b>CONTROL TOWER FINAL</b></div>
   <div id="clock"></div>
 </div>
 
 <!-- CARDS -->
 <div class="cards">
-  <div class="card glass">ACTIVE<br><b id="c-active">0</b></div>
-  <div class="card glass">WARNING<br><b id="c-warn">0</b></div>
-  <div class="card glass">CRITICAL<br><b id="c-danger">0</b></div>
-  <div class="card glass" onclick="generateGlobalOTP()">GLOBAL OTP</div>
+  <div class="card glass">ACTIVE <b id="active">0</b></div>
+  <div class="card glass">WARN <b id="warn">0</b></div>
+  <div class="card glass">DANGER <b id="danger">0</b></div>
+  <div class="card glass" onclick="globalOTP()">OTP</div>
 </div>
 
 <!-- TABLE -->
@@ -216,7 +184,7 @@ tr:hover {
 <th>Status</th>
 </tr>
 </thead>
-<tbody id="tableBody"></tbody>
+<tbody id="table"></tbody>
 </table>
 </div>
 
@@ -225,20 +193,16 @@ tr:hover {
 
 <!-- DRAWER -->
 <div id="drawer" class="drawer glass">
-  <h3 id="d-name"></h3>
-  <p id="d-class"></p>
-  <p id="d-progress"></p>
-  <p id="d-violation"></p>
-  <p id="d-status"></p>
-
-  <button onclick="openOTP()">OTP</button>
+  <h3 id="name"></h3>
+  <p id="info"></p>
+  <button onclick="otp()">OTP</button>
   <button onclick="closeDrawer()">Close</button>
 </div>
 
 <!-- OTP -->
-<div id="otpModal" class="otp-modal glass">
+<div id="otp" class="otp glass">
   <div>
-    <h2>GLOBAL OTP</h2>
+    <h2>OTP</h2>
     <div id="otpValue">000000</div>
     <button onclick="closeOTP()">Close</button>
   </div>
@@ -246,103 +210,131 @@ tr:hover {
 
 <!-- ALERT -->
 <div class="alert glass">
-  <b>ALERT</b>
-  <div id="alertList"></div>
+  <b>LOG</b>
+  <div id="log"></div>
 </div>
 
-<!-- CLOCK -->
-<script>
-setInterval(()=> {
-  document.getElementById("clock").innerText =
-  new Date().toLocaleTimeString();
-},1000);
-</script>
-
-<!-- ===== LAYER 5 ENGINE ===== -->
 <script>
 
-let selectedStudent = null;
+/* =========================
+   LAYER 7 INTELLIGENCE CORE
+========================= */
 
-/* ===== MOCK (FIREBASE READY REPLACEMENT) ===== */
-let students = {
-  A1:{name:"Ahmad",class:"XI-4",progress:25,violation:2,status:"warn"},
-  A2:{name:"Budi",class:"XI-2",progress:18,violation:6,status:"danger"},
-  A3:{name:"Rina",class:"XI-1",progress:38,violation:0,status:"safe"}
+let selected=null;
+
+/* MOCK DB */
+let students={
+  1:{name:"Ahmad",class:"XI-4",progress:30,violation:1,status:"safe"},
+  2:{name:"Budi",class:"XI-2",progress:22,violation:5,status:"warn"},
+  3:{name:"Rina",class:"XI-1",progress:40,violation:7,status:"danger"}
 };
 
-/* ===== RENDER ===== */
+/* RENDER */
 function render(){
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML="";
-
+  let t=document.getElementById("table");
+  t.innerHTML="";
   Object.keys(students).forEach(id=>{
-    let s = students[id];
+    let s=students[id];
 
-    tbody.innerHTML += `
-      <tr onclick="openDrawer('${id}')">
-        <td>${s.name}</td>
-        <td>${s.class}</td>
-        <td>${s.progress}/40</td>
-        <td>${s.violation}</td>
-        <td class="status-${s.status}">${s.status.toUpperCase()}</td>
-      </tr>
-    `;
+    t.innerHTML+=`
+    <tr onclick="openD(${id})">
+      <td>${s.name}</td>
+      <td>${s.class}</td>
+      <td>${s.progress}/40</td>
+      <td>${s.violation}</td>
+      <td class="${s.status}">${s.status.toUpperCase()}</td>
+    </tr>`;
   });
 }
 render();
 
-/* ===== DRAWER ===== */
-function openDrawer(id){
-  selectedStudent = students[id];
-
-  document.getElementById("d-name").innerText = selectedStudent.name;
-  document.getElementById("d-class").innerText = selectedStudent.class;
-  document.getElementById("d-progress").innerText = selectedStudent.progress;
-  document.getElementById("d-violation").innerText = selectedStudent.violation;
-  document.getElementById("d-status").innerText = selectedStudent.status;
+/* DRAWER */
+function openD(id){
+  selected=students[id];
+  document.getElementById("name").innerText=selected.name;
+  document.getElementById("info").innerText=
+    selected.class+" | "+selected.progress+" | "+selected.violation;
 
   document.getElementById("drawer").classList.add("active");
-  addAlert("OPEN " + selectedStudent.name);
+  log("OPEN "+selected.name);
+
+  riskEngine(selected);
 }
 
 function closeDrawer(){
   document.getElementById("drawer").classList.remove("active");
 }
 
-/* ===== OTP ===== */
-function openOTP(){
-  if(!selectedStudent) return;
+/* =========================
+   LAYER 7: INTELLIGENCE ENGINE
+========================= */
 
-  let otp = Math.floor(100000 + Math.random()*900000);
+function riskEngine(s){
 
-  document.getElementById("otpValue").innerText = otp;
-  document.getElementById("otpModal").classList.add("active");
+  if(s.violation>=6){
+    s.status="danger";
+  } else if(s.violation>=3){
+    s.status="warn";
+  } else {
+    s.status="safe";
+  }
 
-  addAlert("OTP → " + selectedStudent.name);
+  render();
+}
+
+/* FAKE DETECTION ENGINE (HOOK READY) */
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){
+    log("TAB SWITCH DETECTED");
+    if(selected){
+      selected.violation++;
+      riskEngine(selected);
+    }
+  }
+});
+
+/* FULLSCREEN EXIT SIMULATION */
+document.addEventListener("fullscreenchange",()=>{
+  log("FULLSCREEN CHANGE DETECTED");
+});
+
+/* =========================
+   OTP SYSTEM
+========================= */
+
+function otp(){
+  let code=Math.floor(100000+Math.random()*900000);
+  document.getElementById("otpValue").innerText=code;
+  document.getElementById("otp").classList.add("active");
+  log("OTP "+selected?.name);
 }
 
 function closeOTP(){
-  document.getElementById("otpModal").classList.remove("active");
+  document.getElementById("otp").classList.remove("active");
 }
 
-/* ===== GLOBAL OTP (FIREBASE HOOK READY) ===== */
-function generateGlobalOTP(){
-  let otp = Math.floor(100000 + Math.random()*900000);
-
-  console.log("FIREBASE PUSH OTP:", otp);
-
-  document.getElementById("otpValue").innerText = otp;
-  document.getElementById("otpModal").classList.add("active");
-
-  addAlert("GLOBAL OTP GENERATED");
+function globalOTP(){
+  let code=Math.floor(100000+Math.random()*900000);
+  document.getElementById("otpValue").innerText=code;
+  document.getElementById("otp").classList.add("active");
+  log("GLOBAL OTP");
 }
 
-/* ===== ALERT ===== */
-function addAlert(t){
-  let el = document.createElement("div");
-  el.innerText = "• " + t;
-  document.getElementById("alertList").prepend(el);
+/* =========================
+   LOG SYSTEM
+========================= */
+
+function log(t){
+  let d=document.getElementById("log");
+  let el=document.createElement("div");
+  el.innerText="• "+t;
+  d.prepend(el);
 }
+
+setInterval(()=>{
+  document.getElementById("clock").innerText=
+  new Date().toLocaleTimeString();
+},1000);
 
 </script>
 
