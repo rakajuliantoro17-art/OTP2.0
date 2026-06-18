@@ -1,1 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Topbar - SMANSASOO CBT</title>
+
+<style>
+:root{
+  --glass-bg: rgba(255,255,255,0.55);
+  --glass-border: rgba(0,0,0,0.08);
+  --text:#1c1c1e;
+  --accent:#007aff;
+  --warn:#ff9500;
+  --danger:#ff3b30;
+  --success:#34c759;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+}
+
+body{
+  background:#0b0f1a;
+  color:var(--text);
+}
+
+/* GLASS */
+.glass{
+  background:var(--glass-bg);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--glass-border);
+  border-radius:16px;
+}
+
+/* TOPBAR */
+.topbar{
+  width:100%;
+  padding:14px 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+
+/* LEFT SECTION */
+.left{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.title{
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:0.3px;
+}
+
+.subtitle{
+  font-size:11px;
+  opacity:0.6;
+}
+
+/* RIGHT SECTION */
+.right{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+/* CLOCK */
+.clock{
+  font-size:13px;
+  font-weight:600;
+  padding:6px 10px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.4);
+}
+
+/* STATUS DOT */
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--success);
+  box-shadow:0 0 10px var(--success);
+}
+
+/* ACTION BUTTON */
+button{
+  padding:8px 12px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:12px;
+  background:var(--accent);
+  color:white;
+  transition:.2s;
+}
+
+button:hover{
+  transform:scale(1.05);
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar glass">
+
+  <!-- LEFT -->
+  <div class="left">
+    <div class="title">SMANSASOO CBT CONTROL TOWER</div>
+    <div class="subtitle">Panitia Monitoring System • Layer 7 Ready</div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+
+    <div class="dot" title="System Active"></div>
+
+    <div class="clock" id="clock">00:00:00</div>
+
+    <button onclick="refreshSystem()">Refresh</button>
+
+    <button onclick="triggerGlobalOTP()">OTP</button>
+
+  </div>
+
+</div>
+
+<script>
+
+/* =========================
+   TOPBAR ENGINE (LAYER 7 READY)
+========================= */
+
+/* CLOCK LIVE */
+setInterval(()=>{
+  document.getElementById("clock").innerText =
+    new Date().toLocaleTimeString();
+},1000);
+
+/* REFRESH SYSTEM */
+function refreshSystem(){
+
+  alert("System Refresh Triggered");
+
+  // FIREBASE READY
+  // firebase.database().ref("system/refresh").set(Date.now());
+}
+
+/* GLOBAL OTP TRIGGER */
+function triggerGlobalOTP(){
+
+  let otp = Math.floor(100000 + Math.random()*900000);
+
+  alert("GLOBAL OTP → " + otp);
+
+  // FIREBASE READY
+  // firebase.database().ref("otp/global").set({
+  //   otp: otp,
+  //   time: Date.now()
+  // });
+}
+
+/* =========================
+   FUTURE INTEGRATION HOOK
+========================= */
+
+/*
+firebase.database().ref("system/status").on("value",(snap)=>{
+  // update status dot
+});
+*/
+
+</script>
+
+</body>
+</html>
