@@ -1,1 +1,357 @@
+/* =====================================================
+   SMANSASOO CBT LOCK 2.0
+   GLOBAL GLASS ENGINE
+   iOS Inspired Light Glass UI
+===================================================== */
+
+:root{
+
+  --glass-bg: rgba(255,255,255,0.55);
+
+  --glass-bg-light: rgba(255,255,255,0.72);
+
+  --glass-bg-dark: rgba(255,255,255,0.32);
+
+  --glass-border: rgba(255,255,255,0.45);
+
+  --glass-shadow:
+    0 8px 32px rgba(31,38,135,0.12);
+
+  --blur: 22px;
+
+  --radius: 18px;
+
+  --text: #1c1c1e;
+
+  --accent: #007aff;
+
+  --success: #34c759;
+
+  --warning: #ff9500;
+
+  --danger: #ff3b30;
+
+}
+
+/* =====================================================
+   BASE GLASS
+===================================================== */
+
+.glass{
+
+  background: var(--glass-bg);
+
+  backdrop-filter: blur(var(--blur))
+                    saturate(180%);
+
+  -webkit-backdrop-filter:
+    blur(var(--blur))
+    saturate(180%);
+
+  border: 1px solid var(--glass-border);
+
+  box-shadow: var(--glass-shadow);
+
+  border-radius: var(--radius);
+
+}
+
+/* =====================================================
+   LIGHT GLASS
+===================================================== */
+
+.glass-light{
+
+  background: var(--glass-bg-light);
+
+  backdrop-filter: blur(28px);
+
+  -webkit-backdrop-filter: blur(28px);
+
+  border: 1px solid rgba(255,255,255,0.65);
+
+  border-radius: var(--radius);
+
+}
+
+/* =====================================================
+   DARK GLASS
+===================================================== */
+
+.glass-dark{
+
+  background: var(--glass-bg-dark);
+
+  backdrop-filter: blur(24px);
+
+  -webkit-backdrop-filter: blur(24px);
+
+  border:1px solid rgba(255,255,255,0.25);
+
+  color:white;
+
+  border-radius: var(--radius);
+
+}
+
+/* =====================================================
+   CARD GLASS
+===================================================== */
+
+.glass-card{
+
+  background: rgba(255,255,255,0.48);
+
+  backdrop-filter: blur(20px);
+
+  -webkit-backdrop-filter: blur(20px);
+
+  border:1px solid rgba(255,255,255,0.35);
+
+  border-radius:20px;
+
+  transition: all .25s ease;
+
+}
+
+.glass-card:hover{
+
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 12px 40px rgba(0,122,255,0.15);
+
+}
+
+/* =====================================================
+   PANEL GLASS
+===================================================== */
+
+.glass-panel{
+
+  background: rgba(255,255,255,0.58);
+
+  backdrop-filter: blur(30px);
+
+  -webkit-backdrop-filter: blur(30px);
+
+  border-radius:22px;
+
+  border:1px solid rgba(255,255,255,0.5);
+
+}
+
+/* =====================================================
+   SIDEBAR GLASS
+===================================================== */
+
+.glass-sidebar{
+
+  background: rgba(255,255,255,0.42);
+
+  backdrop-filter: blur(30px);
+
+  -webkit-backdrop-filter: blur(30px);
+
+  border-right:1px solid rgba(255,255,255,0.45);
+
+}
+
+/* =====================================================
+   TOPBAR GLASS
+===================================================== */
+
+.glass-topbar{
+
+  background: rgba(255,255,255,0.45);
+
+  backdrop-filter: blur(28px);
+
+  -webkit-backdrop-filter: blur(28px);
+
+}
+
+/* =====================================================
+   TABLE GLASS
+===================================================== */
+
+.glass-table{
+
+  background: rgba(255,255,255,0.45);
+
+  backdrop-filter: blur(18px);
+
+  -webkit-backdrop-filter: blur(18px);
+
+}
+
+.glass-table thead{
+
+  background: rgba(255,255,255,0.65);
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 10;
+
+}
+
+/* =====================================================
+   DRAWER GLASS
+===================================================== */
+
+.glass-drawer{
+
+  background: rgba(255,255,255,0.72);
+
+  backdrop-filter: blur(30px);
+
+  -webkit-backdrop-filter: blur(30px);
+
+}
+
+/* =====================================================
+   MODAL GLASS
+===================================================== */
+
+.glass-modal{
+
+  background: rgba(255,255,255,0.78);
+
+  backdrop-filter: blur(35px);
+
+  -webkit-backdrop-filter: blur(35px);
+
+}
+
+/* =====================================================
+   ALERT GLASS
+===================================================== */
+
+.glass-alert{
+
+  background: rgba(255,255,255,0.62);
+
+  backdrop-filter: blur(18px);
+
+  -webkit-backdrop-filter: blur(18px);
+
+}
+
+/* =====================================================
+   GLOW EFFECT
+===================================================== */
+
+.glow-blue{
+
+  box-shadow:
+    0 0 20px rgba(0,122,255,0.18);
+
+}
+
+.glow-green{
+
+  box-shadow:
+    0 0 20px rgba(52,199,89,0.18);
+
+}
+
+.glow-red{
+
+  box-shadow:
+    0 0 20px rgba(255,59,48,0.18);
+
+}
+
+/* =====================================================
+   STATUS COLORS
+===================================================== */
+
+.status-safe{
+  color: var(--success);
+  font-weight:600;
+}
+
+.status-warning{
+  color: var(--warning);
+  font-weight:600;
+}
+
+.status-danger{
+  color: var(--danger);
+  font-weight:600;
+}
+
+/* =====================================================
+   IOS STYLE SCROLLBAR
+===================================================== */
+
+::-webkit-scrollbar{
+  width:8px;
+  height:8px;
+}
+
+::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+::-webkit-scrollbar-thumb{
+
+  background:
+    rgba(255,255,255,0.45);
+
+  border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+  background:
+    rgba(255,255,255,0.65);
+
+}
+
+/* =====================================================
+   ANIMATION
+===================================================== */
+
+.fade-in{
+
+  animation: fadeIn .35s ease;
+
+}
+
+@keyframes fadeIn{
+
+  from{
+    opacity:0;
+    transform:translateY(8px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+
+/* =====================================================
+   BACKDROP
+===================================================== */
+
+.glass-backdrop{
+
+  position:fixed;
+
+  inset:0;
+
+  background:
+    rgba(255,255,255,0.08);
+
+  backdrop-filter: blur(6px);
+
+  -webkit-backdrop-filter: blur(6px);
+
+}
 
