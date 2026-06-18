@@ -1,1 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Monitoring Table - SMANSASOO CBT</title>
+
+<style>
+:root{
+  --glass-bg: rgba(255,255,255,0.55);
+  --glass-border: rgba(0,0,0,0.08);
+  --text:#1c1c1e;
+  --accent:#007aff;
+  --warn:#ff9500;
+  --danger:#ff3b30;
+  --success:#34c759;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+}
+
+body{
+  background:#0b0f1a;
+  color:var(--text);
+}
+
+/* GLASS */
+.glass{
+  background:var(--glass-bg);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--glass-border);
+  border-radius:16px;
+}
+
+/* WRAPPER */
+.wrapper{
+  padding:18px;
+}
+
+/* TABLE CONTAINER */
+.tableBox{
+  max-height:520px;
+  overflow:auto;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+/* HEADER */
+thead th{
+  position:sticky;
+  top:0;
+  background:rgba(255,255,255,0.75);
+  backdrop-filter:blur(10px);
+  z-index:10;
+  padding:12px;
+  text-align:left;
+}
+
+/* ROW */
+tr{
+  cursor:pointer;
+  transition:.15s;
+}
+
+tr:hover{
+  background:rgba(0,122,255,0.06);
+  transform:scale(1.001);
+}
+
+/* CELL */
+td{
+  padding:10px;
+  border-bottom:1px solid rgba(0,0,0,0.06);
+}
+
+/* STATUS */
+.status-safe{color:var(--success); font-weight:600;}
+.status-warn{color:var(--warn); font-weight:600;}
+.status-danger{color:var(--danger); font-weight:600;}
+
+/* TAG */
+.tag{
+  padding:2px 8px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:600;
+}
+
+/* CONTROL BAR */
+.controlBar{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+  align-items:center;
+}
+
+input{
+  padding:8px;
+  border-radius:10px;
+  border:1px solid rgba(0,0,0,0.1);
+  outline:none;
+  width:220px;
+}
+
+/* BUTTON */
+button{
+  padding:8px 12px;
+  border:none;
+  border-radius:10px;
+  background:var(--accent);
+  color:white;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper glass">
+
+<!-- CONTROL -->
+<div class="controlBar">
+  <input id="search" placeholder="Cari siswa..." onkeyup="filterTable()">
+  <button onclick="refreshData()">Refresh</button>
+</div>
+
+<!-- TABLE -->
+<div class="tableBox">
+<table>
+<thead>
+<tr>
+  <th>Nama</th>
+  <th>Kelas</th>
+  <th>Progress</th>
+  <th>Violation</th>
+  <th>Status</th>
+</tr>
+</thead>
+
+<tbody id="tbody"></tbody>
+
+</table>
+</div>
+
+</div>
+
+<script>
+
+/* =========================
+   TABLE ENGINE (LAYER 7 READY)
+========================= */
+
+let students = [
+  {name:"Ahmad", kelas:"XI-4", progress:"23/40", violation:4, status:"warn"},
+  {name:"Budi", kelas:"XI-2", progress:"18/40", violation:9, status:"danger"},
+  {name:"Rina", kelas:"XI-1", progress:"35/40", violation:1, status:"safe"},
+  {name:"Siti", kelas:"XI-3", progress:"30/40", violation:2, status:"safe"},
+  {name:"Doni", kelas:"XI-5", progress:"12/40", violation:6, status:"warn"}
+];
+
+/* RENDER */
+function renderTable(data){
+
+  let tbody=document.getElementById("tbody");
+  tbody.innerHTML="";
+
+  data.forEach(s=>{
+
+    tbody.innerHTML+=`
+      <tr onclick="openStudent('${s.name}')">
+        <td>${s.name}</td>
+        <td>${s.kelas}</td>
+        <td>${s.progress}</td>
+        <td>${s.violation}</td>
+        <td class="status-${s.status}">
+          ${s.status.toUpperCase()}
+        </td>
+      </tr>
+    `;
+  });
+}
+
+renderTable(students);
+
+/* SEARCH FILTER */
+function filterTable(){
+
+  let val=document.getElementById("search").value.toLowerCase();
+
+  let filtered=students.filter(s=>
+    s.name.toLowerCase().includes(val) ||
+    s.kelas.toLowerCase().includes(val)
+  );
+
+  renderTable(filtered);
+}
+
+/* REFRESH */
+function refreshData(){
+
+  // SIMULASI LIVE UPDATE
+  students.forEach(s=>{
+    s.violation += Math.floor(Math.random()*2);
+  });
+
+  renderTable(students);
+
+  // FIREBASE READY HOOK
+  // firebase.database().ref("students").once("value",...)
+}
+
+/* OPEN DETAIL HOOK */
+function openStudent(name){
+
+  alert("Open drawer → " + name);
+
+  // CONNECT TO DRAWER MODULE
+  // window.openDrawer(studentObject);
+}
+
+/* =========================
+   FIREBASE READY LAYER
+========================= */
+
+/*
+firebase.database().ref("students").on("value", (snap)=>{
+  students = snap.val();
+  renderTable(students);
+});
+*/
+
+</script>
+
+</body>
+</html>
