@@ -1,387 +1,229 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SMANSASOO CBT CONTROL TOWER</title>
 
-<style>
-:root{
-  --glass-bg: rgba(255,255,255,0.55);
-  --glass-border: rgba(0,0,0,0.08);
-  --text:#1c1c1e;
-  --accent:#007aff;
-  --warn:#ff9500;
-  --danger:#ff3b30;
-  --success:#34c759;
-}
+<title>SMANSASOO CBT LOCK 2.0 - PANITIA</title>
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-}
+<link rel="icon" href="../public/assets/img/logo.png">
 
-body{
-  height:100vh;
-  overflow:hidden;
-  color:var(--text);
-  background:url('./assets/img/stg.jpg') no-repeat center center fixed;
-  background-size:cover;
-}
+<link rel="stylesheet" href="css/dashboard.css">
 
-/* GLASS EFFECT (FIXED IOS STYLE) */
-.glass{
-  background:var(--glass-bg);
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px);
-  border:1px solid var(--glass-border);
-  border-radius:16px;
-  box-shadow:0 10px 35px rgba(0,0,0,0.10);
-}
-
-/* LAYOUT */
-.container{
-  display:flex;
-  height:100vh;
-  min-width:1280px;
-}
-
-/* SIDEBAR */
-.sidebar{
-  width:260px;
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-/* LOGO */
-.logo{
-  width:100%;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:10px;
-}
-
-.logo img{
-  width:36px;
-  height:36px;
-}
-
-/* MENU */
-.menu{
-  padding:12px;
-  border-radius:12px;
-  cursor:pointer;
-  transition:.2s;
-}
-
-.menu:hover{
-  background:rgba(255,255,255,0.7);
-}
-
-.menu.active{
-  background:rgba(0,122,255,0.15);
-  border-left:3px solid var(--accent);
-}
-
-/* MAIN */
-.main{
-  flex:1;
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-/* TOPBAR */
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:14px 18px;
-}
-
-/* CARDS */
-.cards{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-}
-
-.card{
-  padding:14px;
-  text-align:center;
-  cursor:pointer;
-}
-
-/* TABLE */
-.table{
-  flex:1;
-  overflow:auto;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-thead th{
-  position:sticky;
-  top:0;
-  background:rgba(255,255,255,0.7);
-  backdrop-filter: blur(10px);
-  z-index:10;
-}
-
-th,td{
-  padding:10px;
-  font-size:13px;
-  border-bottom:1px solid rgba(0,0,0,0.06);
-}
-
-tr:hover{
-  background:rgba(0,122,255,0.06);
-  cursor:pointer;
-}
-
-/* STATUS */
-.safe{color:var(--success);}
-.warn{color:var(--warn);}
-.danger{color:var(--danger);}
-
-/* DRAWER */
-.drawer{
-  position:fixed;
-  right:-380px;
-  top:0;
-  width:360px;
-  height:100vh;
-  padding:20px;
-  transition:.25s;
-  z-index:999;
-}
-
-.drawer.active{right:0;}
-
-.drawer-actions button{
-  width:100%;
-  margin-top:10px;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  background:var(--accent);
-  color:white;
-}
-
-/* OTP */
-.otp{
-  position:fixed;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(0,0,0,0.35);
-  z-index:1000;
-}
-
-.otp.active{display:flex;}
-
-#otpValue{
-  font-size:48px;
-  color:var(--accent);
-  font-weight:bold;
-}
-
-/* ALERT */
-.alert{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  width:260px;
-  max-height:220px;
-  overflow:auto;
-  font-size:12px;
-}
-
-</style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
 
+<div class="background-overlay"></div>
+
 <div class="container">
 
-<!-- SIDEBAR -->
-<div class="sidebar glass">
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+    <aside class="sidebar glass">
 
-  <div class="logo">
-    <img src="./assets/img/logo.png">
-    <div>
-      <b>SMANSASOO</b><br>
-      <small>CBT CONTROL</small>
-    </div>
-  </div>
+        <div class="sidebar-brand">
+            <img
+                src="../public/assets/img/logo.png"
+                class="logo"
+                alt="SMANSASOO">
+        </div>
 
-  <div class="menu active" onclick="setFilter('all')">Dashboard</div>
-  <div class="menu" onclick="setFilter('safe')">Aman</div>
-  <div class="menu" onclick="setFilter('warn')">Warning</div>
-  <div class="menu" onclick="setFilter('danger')">Critical</div>
+        <div id="sidebar-container">
+
+            <!-- COPY isi components/sidebar.html -->
+
+            <div class="menu active" onclick="filterTable('all')">
+                📊 Dashboard
+            </div>
+
+            <div class="menu" onclick="filterTable('safe')">
+                🟢 Aman
+            </div>
+
+            <div class="menu" onclick="filterTable('warn')">
+                🟡 Warning
+            </div>
+
+            <div class="menu" onclick="filterTable('danger')">
+                🔴 Critical
+            </div>
+
+            <div class="menu" onclick="generateGlobalOTP()">
+                🔐 Global OTP
+            </div>
+
+        </div>
+
+    </aside>
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+    <main class="main">
+
+        <!-- TOPBAR -->
+        <section class="topbar glass">
+
+            <div>
+                <h2>SMANSASOO CBT CONTROL TOWER</h2>
+                <small>
+                    CBT LOCK 2.0 • Panitia Dashboard
+                </small>
+            </div>
+
+            <div class="clock" id="clock">
+                00:00:00
+            </div>
+
+        </section>
+
+        <!-- STATS -->
+        <section class="cards">
+
+            <div class="card glass">
+                ACTIVE
+                <h2 id="statActive">0</h2>
+            </div>
+
+            <div class="card glass">
+                WARNING
+                <h2 id="statWarning">0</h2>
+            </div>
+
+            <div class="card glass">
+                CRITICAL
+                <h2 id="statCritical">0</h2>
+            </div>
+
+            <div class="card glass">
+                OTP
+                <h2 id="statOtp">0</h2>
+            </div>
+
+            <div class="card glass">
+                MASTER
+                <h2 id="statMaster">0</h2>
+            </div>
+
+        </section>
+
+        <!-- TABLE -->
+        <section class="table glass">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Kelas</th>
+                        <th>Progress</th>
+                        <th>Pelanggaran</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tableBody">
+
+                    <!-- realtime.js inject -->
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+    </main>
+
 </div>
 
-<!-- MAIN -->
-<div class="main">
-
-<div class="topbar glass">
-  <div><b>CONTROL TOWER FINAL</b></div>
-  <div id="clock"></div>
-</div>
-
-<!-- CARDS -->
-<div class="cards">
-  <div class="card glass">ACTIVE <b id="cActive">1487</b></div>
-  <div class="card glass">WARN <b id="cWarn">32</b></div>
-  <div class="card glass">DANGER <b id="cDanger">9</b></div>
-  <div class="card glass" onclick="globalOTP()">OTP</div>
-</div>
-
-<!-- TABLE -->
-<div class="glass table">
-<table>
-<thead>
-<tr>
-<th>Nama</th>
-<th>Kelas</th>
-<th>Progress</th>
-<th>Violation</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody id="tableBody"></tbody>
-</table>
-</div>
-
-</div>
-</div>
-
-<!-- DRAWER -->
+<!-- =========================
+     DRAWER
+========================== -->
 <div id="drawer" class="drawer glass">
-  <h3 id="dName"></h3>
-  <p id="dInfo"></p>
-  <button onclick="generateOTP()">Generate OTP</button>
-  <button onclick="closeDrawer()">Close</button>
+
+    <h3 id="d-name">Nama Siswa</h3>
+
+    <hr>
+
+    <p>
+        <b>Kelas :</b>
+        <span id="d-class"></span>
+    </p>
+
+    <p>
+        <b>Progress :</b>
+        <span id="d-progress"></span>
+    </p>
+
+    <p>
+        <b>Pelanggaran :</b>
+        <span id="d-violation"></span>
+    </p>
+
+    <p>
+        <b>Status :</b>
+        <span id="d-status"></span>
+    </p>
+
+    <br>
+
+    <button onclick="generateSelectedStudentOTP()">
+        Generate OTP
+    </button>
+
+    <button onclick="closeDrawer()">
+        Tutup
+    </button>
+
 </div>
 
-<!-- OTP -->
-<div id="otpBox" class="otp glass">
-  <div>
-    <h2>OTP</h2>
-    <div id="otpValue">000000</div>
-    <button onclick="closeOTP()">Close</button>
-  </div>
+<!-- =========================
+     OTP MODAL
+========================== -->
+<div id="otpModal" class="otp-modal">
+
+    <div class="glass otp-box">
+
+        <h2>OTP GENERATED</h2>
+
+        <div id="otpValue">
+            000000
+        </div>
+
+        <button onclick="closeOTPModal()">
+            Tutup
+        </button>
+
+    </div>
+
 </div>
 
-<!-- ALERT -->
+<!-- =========================
+     ALERT PANEL
+========================== -->
 <div class="alert glass">
-  <b>LOG</b>
-  <div id="log"></div>
+
+    <h4>🚨 LIVE ALERT</h4>
+
+    <div id="alertList">
+
+    </div>
+
 </div>
 
-<script>
-
-/* =========================
-   LAYER 7 CORE ENGINE
-========================= */
-
-let selected=null;
-
-/* MOCK DATA (FIREBASE READY REPLACEMENT POINT) */
-let students={
-  1:{name:"Ahmad",class:"XI-4",progress:28,violation:2,status:"safe"},
-  2:{name:"Budi",class:"XI-2",progress:20,violation:5,status:"warn"},
-  3:{name:"Rina",class:"XI-1",progress:40,violation:7,status:"danger"}
-};
-
-/* RENDER */
-function render(){
-  let t=document.getElementById("tableBody");
-  t.innerHTML="";
-
-  Object.keys(students).forEach(id=>{
-    let s=students[id];
-
-    t.innerHTML+=`
-      <tr onclick="openStudent(${id})">
-        <td>${s.name}</td>
-        <td>${s.class}</td>
-        <td>${s.progress}/40</td>
-        <td>${s.violation}</td>
-        <td class="${s.status}">${s.status.toUpperCase()}</td>
-      </tr>
-    `;
-  });
-}
-render();
-
-/* CLOCK */
-setInterval(()=>{
-  document.getElementById("clock").innerText=
-  new Date().toLocaleTimeString();
-},1000);
-
-/* FILTER */
-function setFilter(type){
-  document.querySelectorAll("#tableBody tr").forEach(r=>{
-    let s=r.children[4].innerText.toLowerCase();
-    r.style.display=(type==="all"||s===type)?"":"none";
-  });
-}
-
-/* DRAWER */
-function openStudent(id){
-  selected=students[id];
-
-  document.getElementById("dName").innerText=selected.name;
-  document.getElementById("dInfo").innerText=
-    selected.class+" | "+selected.progress+" | "+selected.violation;
-
-  document.getElementById("drawer").classList.add("active");
-
-  log("OPEN "+selected.name);
-}
-
-function closeDrawer(){
-  document.getElementById("drawer").classList.remove("active");
-}
-
-/* OTP */
-function generateOTP(){
-  let otp=Math.floor(100000+Math.random()*900000);
-  document.getElementById("otpValue").innerText=otp;
-  document.getElementById("otpBox").classList.add("active");
-  log("OTP GENERATED");
-}
-
-function globalOTP(){
-  generateOTP();
-  log("GLOBAL OTP TRIGGER");
-}
-
-function closeOTP(){
-  document.getElementById("otpBox").classList.remove("active");
-}
-
-/* LOG SYSTEM */
-function log(t){
-  let d=document.getElementById("log");
-  let el=document.createElement("div");
-  el.innerText="• "+t;
-  d.prepend(el);
-}
-
-</script>
+<!-- =========================
+     CORE ENGINE
+========================== -->
+<script src="js/firebase.js"></script>
+<script src="js/realtime.js"></script>
+<script src="js/otp.js"></script>
+<script src="js/ui.js"></script>
 
 </body>
 </html>
