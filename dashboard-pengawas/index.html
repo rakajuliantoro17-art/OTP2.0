@@ -1,1 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
 
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SMANSASOO CBT LOCK 2.0 - PENGAWAS</title>
+
+<link rel="icon" href="../public/favicon.ico">
+
+<!-- GLASS CORE -->
+<link rel="stylesheet" href="../public/assets/css/glass.css">
+
+<!-- SIMPLE UI -->
+<link rel="stylesheet" href="css/simple.css">
+
+</head>
+
+<body>
+
+<!-- BACKGROUND LAYER -->
+<div class="container">
+
+    <!-- =========================
+         OTP MAIN PANEL
+    ========================== -->
+    <div class="otp-panel glass fade-in">
+
+        <div class="title">
+            SMANSASOO CBT LOCK
+        </div>
+
+        <small>
+            DASHBOARD PENGAWAS • OTP CENTER
+        </small>
+
+        <hr style="margin:10px 0; opacity:0.2">
+
+        <!-- OTP DISPLAY -->
+        <div id="otpCode" class="otp-code">
+            ------
+        </div>
+
+        <!-- STATUS -->
+        <div class="status-bar">
+            Status: <b>LIVE OTP ACTIVE</b>
+        </div>
+
+        <br>
+
+        <!-- ACTION BUTTON -->
+        <button class="btn-primary" onclick="copyOTP()">
+            COPY OTP
+        </button>
+
+        <button class="btn-primary" onclick="forceGenerateOTP()">
+            REFRESH OTP
+        </button>
+
+        <button class="btn-danger" onclick="resetOTP()">
+            RESET
+        </button>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     LOG PANEL
+========================== -->
+<div class="alert glass fade-in">
+
+    <b>LOG AKTIVITAS</b>
+
+    <div id="logList" style="margin-top:10px"></div>
+
+</div>
+
+<!-- =========================
+     JS ENGINE
+========================== -->
+
+<script src="../public/assets/js/app.js"></script>
+<script src="js/unlock.js"></script>
+
+</body>
+
+</html>
