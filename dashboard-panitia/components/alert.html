@@ -1,1 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Alert System - SMANSASOO CBT</title>
+
+<style>
+:root{
+  --glass-bg: rgba(255,255,255,0.55);
+  --glass-border: rgba(0,0,0,0.08);
+  --text:#1c1c1e;
+  --accent:#007aff;
+  --warn:#ff9500;
+  --danger:#ff3b30;
+  --success:#34c759;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+}
+
+body{
+  background:#0b0f1a;
+  color:var(--text);
+}
+
+/* GLASS PANEL */
+.glass{
+  background:var(--glass-bg);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  border:1px solid var(--glass-border);
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* CONTAINER */
+.wrapper{
+  padding:20px;
+  max-width:420px;
+}
+
+/* HEADER */
+.header{
+  padding:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+/* ALERT LIST */
+.alert-box{
+  height:420px;
+  overflow:auto;
+  padding:10px;
+}
+
+/* ALERT ITEM */
+.item{
+  padding:10px;
+  margin-bottom:8px;
+  border-radius:12px;
+  font-size:12px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  animation:fadeIn .2s ease;
+}
+
+/* TYPE COLORS */
+.safe{border-left:4px solid var(--success);}
+.warn{border-left:4px solid var(--warn);}
+.danger{border-left:4px solid var(--danger);}
+
+/* TIME */
+.time{
+  font-size:10px;
+  opacity:.6;
+}
+
+/* BUTTON */
+.btn{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:var(--accent);
+  color:white;
+  cursor:pointer;
+}
+
+/* ANIMATION */
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(5px);}
+  to{opacity:1; transform:translateY(0);}
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper glass">
+
+  <div class="header">
+    <b>🚨 ALERT SYSTEM</b>
+    <span id="count">0</span>
+  </div>
+
+  <div id="alertBox" class="alert-box"></div>
+
+  <button class="btn" onclick="pushAlert()">Test Alert</button>
+
+</div>
+
+<script>
+
+/* =========================
+   ALERT ENGINE (READY FIREBASE LAYER 4)
+========================= */
+
+let alerts=[];
+
+/* PUSH ALERT */
+function pushAlert(type="warn", msg="System event detected"){
+  
+  const data={
+    type,
+    msg,
+    time:new Date().toLocaleTimeString()
+  };
+
+  alerts.unshift(data);
+  render();
+
+  // READY FIREBASE HOOK
+  // firebase.database().ref("alerts").push(data);
+}
+
+/* RENDER */
+function render(){
+  const box=document.getElementById("alertBox");
+  box.innerHTML="";
+
+  alerts.forEach(a=>{
+    box.innerHTML+=`
+      <div class="item ${a.type}">
+        <b>${a.msg}</b>
+        <span class="time">${a.time}</span>
+      </div>
+    `;
+  });
+
+  document.getElementById("count").innerText=alerts.length;
+}
+
+/* INIT SAMPLE */
+pushAlert("safe","System initialized");
+pushAlert("warn","Tab switching detected");
+pushAlert("danger","Violation threshold reached");
+
+</script>
+
+</body>
+</html>
