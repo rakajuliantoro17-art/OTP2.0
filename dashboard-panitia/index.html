@@ -3,55 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SMANSASOO CBT LOCK 2.0 - PANITIA</title>
+<title>SMANSASOO CBT LOCK 2.0 - LAYER 5 PANITIA</title>
 
 <style>
 :root {
-  --glass-bg: rgba(255,255,255,0.55);
-  --glass-border: rgba(0,0,0,0.08);
-  --text: #1c1c1e;
-  --accent: #007aff;
-  --warn: #ff9500;
-  --danger: #ff3b30;
-  --success: #34c759;
+  --accent:#007aff;
+  --warn:#ff9500;
+  --danger:#ff3b30;
+  --success:#34c759;
 }
 
+/* ===== BASE ===== */
 * {
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
 }
 
 body {
-  height: 100vh;
-  overflow: hidden;
-  background: url('../public/assets/img/stg.jpg') no-repeat center center fixed;
-  background-size: cover;
-  color: var(--text);
+  height:100vh;
+  overflow:hidden;
+  background:url('./assets/img/stg.jpg') no-repeat center center fixed;
+  background-size:cover;
+  color:#fff;
 }
 
-/* GLASS */
+/* ===== GLASS iOS 17 STYLE ===== */
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border:1px solid var(--glass-border);
-  border-radius:16px;
-  box-shadow:0 8px 30px rgba(0,0,0,0.08);
+  background:rgba(255,255,255,0.14);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.22);
+  box-shadow:0 10px 40px rgba(0,0,0,0.25);
+  border-radius:18px;
 }
 
-/* LAYOUT */
+/* ===== LAYOUT ===== */
 .container {
   display:flex;
   height:100vh;
   min-width:1280px;
 }
 
-/* SIDEBAR */
+/* ===== SIDEBAR ===== */
 .sidebar {
   width:280px;
-  min-width:280px;
   padding:18px;
   display:flex;
   flex-direction:column;
@@ -62,40 +59,34 @@ body {
   padding:12px;
   border-radius:12px;
   cursor:pointer;
-  transition:0.2s;
+  transition:.2s;
+  color:#fff;
 }
 
 .menu:hover {
-  background:rgba(255,255,255,0.8);
+  background:rgba(255,255,255,0.15);
 }
 
-.menu.active {
-  background:rgba(0,122,255,0.15);
-  border-left:3px solid var(--accent);
-}
-
-/* MAIN */
+/* ===== MAIN ===== */
 .main {
   flex:1;
   padding:18px;
   display:flex;
   flex-direction:column;
   gap:12px;
-  overflow:hidden;
 }
 
-/* TOPBAR */
+/* ===== TOPBAR ===== */
 .topbar {
   display:flex;
   justify-content:space-between;
-  align-items:center;
   padding:14px 18px;
 }
 
-/* CARDS */
+/* ===== CARDS ===== */
 .cards {
   display:grid;
-  grid-template-columns:repeat(6,1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:10px;
 }
 
@@ -103,18 +94,12 @@ body {
   padding:14px;
   text-align:center;
   cursor:pointer;
-  transition:0.2s;
 }
 
-.card:hover {
-  transform:scale(1.03);
-}
-
-/* TABLE */
+/* ===== TABLE ===== */
 .table {
   flex:1;
   overflow:auto;
-  border-radius:16px;
 }
 
 table {
@@ -125,87 +110,56 @@ table {
 thead th {
   position:sticky;
   top:0;
-  background:rgba(255,255,255,0.75);
-  backdrop-filter: blur(10px);
-  z-index:10;
+  background:rgba(0,0,0,0.3);
+  backdrop-filter:blur(10px);
 }
 
-th, td {
+th,td {
   padding:10px;
   font-size:13px;
-  border-bottom:1px solid rgba(0,0,0,0.06);
-}
-
-tr {
-  cursor:pointer;
-  transition:0.15s;
+  border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
 tr:hover {
-  background:rgba(0,122,255,0.08);
-  transform:scale(1.002);
+  background:rgba(255,255,255,0.08);
 }
 
 .status-safe { color:var(--success); }
 .status-warn { color:var(--warn); }
 .status-danger { color:var(--danger); }
 
-/* DRAWER */
+/* ===== DRAWER ===== */
 .drawer {
   position:fixed;
   top:0;
-  right:-360px;
-  width:340px;
+  right:-380px;
+  width:360px;
   height:100vh;
   padding:20px;
-  transition:0.25s ease;
-  z-index:999;
+  transition:.25s;
 }
 
-.drawer.active {
-  right:0;
-}
+.drawer.active { right:0; }
 
-.drawer-actions button {
-  width:100%;
-  margin-top:10px;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  background:var(--accent);
-  color:white;
-}
-
-/* OTP MODAL */
+/* ===== OTP ===== */
 .otp-modal {
   position:fixed;
   inset:0;
   display:none;
   align-items:center;
   justify-content:center;
-  background:rgba(0,0,0,0.3);
-  z-index:1000;
+  background:rgba(0,0,0,0.4);
 }
 
-.otp-modal.active {
-  display:flex;
-}
-
-.otp-box {
-  padding:40px;
-  text-align:center;
-  border-radius:20px;
-}
+.otp-modal.active { display:flex; }
 
 #otpValue {
-  font-size:42px;
+  font-size:46px;
   font-weight:bold;
   color:var(--accent);
-  margin:20px 0;
 }
 
-/* ALERT */
+/* ===== ALERT ===== */
 .alert {
   position:fixed;
   bottom:20px;
@@ -213,16 +167,7 @@ tr:hover {
   width:280px;
   max-height:220px;
   overflow:auto;
-}
-
-.alert div {
   font-size:12px;
-  margin:4px 0;
-}
-
-/* CLOCK */
-.clock {
-  font-weight:600;
 }
 </style>
 </head>
@@ -234,31 +179,29 @@ tr:hover {
 <!-- SIDEBAR -->
 <div class="sidebar glass">
   <b>SMANSASOO</b>
-  <small>CBT LOCK 2.0</small>
+  <small>CBT LOCK LAYER 5</small>
 
-  <div class="menu active" onclick="setFilter('all')">📊 Dashboard</div>
-  <div class="menu" onclick="setFilter('safe')">Aman</div>
-  <div class="menu" onclick="setFilter('warn')">Warning</div>
-  <div class="menu" onclick="setFilter('danger')">Critical</div>
-  <div class="menu" onclick="setFilter('otp')">OTP</div>
-  <div class="menu" onclick="resetFilter()">Reset</div>
+  <div class="menu">Dashboard</div>
+  <div class="menu">Aman</div>
+  <div class="menu">Warning</div>
+  <div class="menu">Critical</div>
+  <div class="menu">Realtime</div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-<!-- TOPBAR -->
 <div class="topbar glass">
-  <div><b>SMANSASOO CBT LOCK 2.0 - PANITIA</b></div>
-  <div class="clock" id="clock"></div>
+  <div><b>SMANSASOO CONTROL CENTER</b></div>
+  <div id="clock"></div>
 </div>
 
 <!-- CARDS -->
 <div class="cards">
-  <div class="card glass" onclick="setFilter('all')">ACTIVE<br><b>1487</b></div>
-  <div class="card glass" onclick="setFilter('warn')">WARNING<br><b>32</b></div>
-  <div class="card glass" onclick="setFilter('danger')">CRITICAL<br><b>9</b></div>
-  <div class="card glass" onclick="resetFilter()">RESET</div>
+  <div class="card glass">ACTIVE<br><b id="c-active">0</b></div>
+  <div class="card glass">WARNING<br><b id="c-warn">0</b></div>
+  <div class="card glass">CRITICAL<br><b id="c-danger">0</b></div>
+  <div class="card glass" onclick="generateGlobalOTP()">GLOBAL OTP</div>
 </div>
 
 <!-- TABLE -->
@@ -273,34 +216,7 @@ tr:hover {
 <th>Status</th>
 </tr>
 </thead>
-
-<tbody id="tableBody">
-
-<tr data-status="warn" onclick="openDrawer(this)">
-<td>Ahmad</td>
-<td>XI-4</td>
-<td>23/40</td>
-<td>14</td>
-<td class="status-warn">WARNING</td>
-</tr>
-
-<tr data-status="danger" onclick="openDrawer(this)">
-<td>Budi</td>
-<td>XI-2</td>
-<td>18/40</td>
-<td>26</td>
-<td class="status-danger">CRITICAL</td>
-</tr>
-
-<tr data-status="safe" onclick="openDrawer(this)">
-<td>Rina</td>
-<td>XI-1</td>
-<td>35/40</td>
-<td>2</td>
-<td class="status-safe">SAFE</td>
-</tr>
-
-</tbody>
+<tbody id="tableBody"></tbody>
 </table>
 </div>
 
@@ -309,22 +225,20 @@ tr:hover {
 
 <!-- DRAWER -->
 <div id="drawer" class="drawer glass">
-  <h3 id="d-name">Nama</h3>
-  <p>Kelas: <span id="d-class"></span></p>
-  <p>Progress: <span id="d-progress"></span></p>
-  <p>Violation: <span id="d-violation"></span></p>
-  <p>Status: <span id="d-status"></span></p>
+  <h3 id="d-name"></h3>
+  <p id="d-class"></p>
+  <p id="d-progress"></p>
+  <p id="d-violation"></p>
+  <p id="d-status"></p>
 
-  <div class="drawer-actions">
-    <button onclick="openOTP()">Generate OTP</button>
-    <button onclick="closeDrawer()">Close</button>
-  </div>
+  <button onclick="openOTP()">OTP</button>
+  <button onclick="closeDrawer()">Close</button>
 </div>
 
 <!-- OTP -->
 <div id="otpModal" class="otp-modal glass">
-  <div class="otp-box">
-    <h2>OTP</h2>
+  <div>
+    <h2>GLOBAL OTP</h2>
     <div id="otpValue">000000</div>
     <button onclick="closeOTP()">Close</button>
   </div>
@@ -336,91 +250,98 @@ tr:hover {
   <div id="alertList"></div>
 </div>
 
+<!-- CLOCK -->
+<script>
+setInterval(()=> {
+  document.getElementById("clock").innerText =
+  new Date().toLocaleTimeString();
+},1000);
+</script>
+
+<!-- ===== LAYER 5 ENGINE ===== -->
 <script>
 
-/* ===== STATE ENGINE (READY FIREBASE LAYER 4) ===== */
 let selectedStudent = null;
 
-const SMANSASOO = {
-  version: "3.1-clean",
-  mode: "desktop",
-  future: "firebase-ready"
+/* ===== MOCK (FIREBASE READY REPLACEMENT) ===== */
+let students = {
+  A1:{name:"Ahmad",class:"XI-4",progress:25,violation:2,status:"warn"},
+  A2:{name:"Budi",class:"XI-2",progress:18,violation:6,status:"danger"},
+  A3:{name:"Rina",class:"XI-1",progress:38,violation:0,status:"safe"}
 };
 
-/* ===== CLOCK ===== */
-setInterval(() => {
-  document.getElementById("clock").innerText =
-    new Date().toLocaleTimeString();
-}, 1000);
+/* ===== RENDER ===== */
+function render(){
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML="";
 
-/* ===== FILTER ===== */
-function setFilter(type) {
-  document.querySelectorAll("#tableBody tr").forEach(row => {
-    const status = row.dataset.status;
-    row.style.display =
-      (type === "all" || status === type) ? "" : "none";
+  Object.keys(students).forEach(id=>{
+    let s = students[id];
+
+    tbody.innerHTML += `
+      <tr onclick="openDrawer('${id}')">
+        <td>${s.name}</td>
+        <td>${s.class}</td>
+        <td>${s.progress}/40</td>
+        <td>${s.violation}</td>
+        <td class="status-${s.status}">${s.status.toUpperCase()}</td>
+      </tr>
+    `;
   });
 }
-
-/* ===== RESET ===== */
-function resetFilter() {
-  setFilter("all");
-}
+render();
 
 /* ===== DRAWER ===== */
-function openDrawer(row) {
-
-  selectedStudent = {
-    name: row.cells[0].innerText,
-    class: row.cells[1].innerText,
-    progress: row.cells[2].innerText,
-    violation: row.cells[3].innerText,
-    status: row.dataset.status
-  };
+function openDrawer(id){
+  selectedStudent = students[id];
 
   document.getElementById("d-name").innerText = selectedStudent.name;
   document.getElementById("d-class").innerText = selectedStudent.class;
   document.getElementById("d-progress").innerText = selectedStudent.progress;
   document.getElementById("d-violation").innerText = selectedStudent.violation;
-  document.getElementById("d-status").innerText = selectedStudent.status.toUpperCase();
+  document.getElementById("d-status").innerText = selectedStudent.status;
 
   document.getElementById("drawer").classList.add("active");
-
-  addAlert("OPEN: " + selectedStudent.name);
+  addAlert("OPEN " + selectedStudent.name);
 }
 
-function closeDrawer() {
+function closeDrawer(){
   document.getElementById("drawer").classList.remove("active");
 }
 
 /* ===== OTP ===== */
-function openOTP() {
-  if (!selectedStudent) return;
+function openOTP(){
+  if(!selectedStudent) return;
 
-  const otp = Math.floor(100000 + Math.random() * 900000);
+  let otp = Math.floor(100000 + Math.random()*900000);
 
   document.getElementById("otpValue").innerText = otp;
   document.getElementById("otpModal").classList.add("active");
 
-  addAlert("OTP GENERATED → " + selectedStudent.name);
+  addAlert("OTP → " + selectedStudent.name);
 }
 
-function closeOTP() {
+function closeOTP(){
   document.getElementById("otpModal").classList.remove("active");
 }
 
+/* ===== GLOBAL OTP (FIREBASE HOOK READY) ===== */
+function generateGlobalOTP(){
+  let otp = Math.floor(100000 + Math.random()*900000);
+
+  console.log("FIREBASE PUSH OTP:", otp);
+
+  document.getElementById("otpValue").innerText = otp;
+  document.getElementById("otpModal").classList.add("active");
+
+  addAlert("GLOBAL OTP GENERATED");
+}
+
 /* ===== ALERT ===== */
-function addAlert(text) {
-  const list = document.getElementById("alertList");
-
-  const item = document.createElement("div");
-  item.innerText = "• " + text;
-
-  list.prepend(item);
-
-  if (list.children.length > 8) {
-    list.removeChild(list.lastChild);
-  }
+function addAlert(t){
+  let el = document.createElement("div");
+  el.innerText = "• " + t;
+  document.getElementById("alertList").prepend(el);
 }
 
 </script>
