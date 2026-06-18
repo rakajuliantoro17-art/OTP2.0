@@ -1,1 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Drawer Control - SMANSASOO CBT</title>
+
+<style>
+:root{
+  --glass-bg: rgba(255,255,255,0.55);
+  --glass-border: rgba(0,0,0,0.08);
+  --accent:#007aff;
+  --warn:#ff9500;
+  --danger:#ff3b30;
+  --success:#34c759;
+  --text:#1c1c1e;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+}
+
+body{
+  background:#0b0f1a;
+}
+
+/* GLASS */
+.glass{
+  background:var(--glass-bg);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--glass-border);
+  border-radius:18px;
+}
+
+/* DRAWER */
+.drawer{
+  position:fixed;
+  top:0;
+  right:-380px;
+  width:360px;
+  height:100vh;
+  padding:20px;
+  transition:.25s ease;
+  z-index:999;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.drawer.active{
+  right:0;
+}
+
+/* HEADER */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+/* STATUS BADGE */
+.badge{
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:600;
+}
+
+.safe{background:rgba(52,199,89,.15); color:var(--success);}
+.warn{background:rgba(255,149,0,.15); color:var(--warn);}
+.danger{background:rgba(255,59,48,.15); color:var(--danger);}
+
+/* INFO */
+.info{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:13px;
+}
+
+/* ACTION BUTTONS */
+.actions{
+  margin-top:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+button{
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.primary{
+  background:var(--accent);
+  color:white;
+}
+
+.warnBtn{
+  background:var(--warn);
+  color:white;
+}
+
+.dangerBtn{
+  background:var(--danger);
+  color:white;
+}
+
+.closeBtn{
+  background:rgba(0,0,0,0.08);
+}
+</style>
+</head>
+
+<body>
+
+<!-- DRAWER -->
+<div id="drawer" class="drawer glass">
+
+  <div class="header">
+    <div>
+      <b id="name">Nama Siswa</b><br>
+      <small id="class">Kelas</small>
+    </div>
+
+    <div id="status" class="badge safe">SAFE</div>
+  </div>
+
+  <div class="info">
+    <div>Progress: <b id="progress">0/40</b></div>
+    <div>Violation: <b id="violation">0</b></div>
+    <div>ID Session: <b id="sid">-</b></div>
+  </div>
+
+  <div class="actions">
+
+    <button class="primary" onclick="generateOTP()">
+      🔐 Generate OTP
+    </button>
+
+    <button class="warnBtn" onclick="warnStudent()">
+      ⚠ Warning
+    </button>
+
+    <button class="dangerBtn" onclick="lockStudent()">
+      🔴 Lock Access
+    </button>
+
+    <button class="closeBtn" onclick="closeDrawer()">
+      Close
+    </button>
+
+  </div>
+
+</div>
+
+<script>
+
+/* =========================
+   DRAWER ENGINE (READY FIREBASE HOOK)
+========================= */
+
+let currentStudent=null;
+
+/* OPEN DRAWER */
+function openDrawer(data){
+
+  currentStudent=data;
+
+  document.getElementById("name").innerText=data.name;
+  document.getElementById("class").innerText=data.class;
+  document.getElementById("progress").innerText=data.progress;
+  document.getElementById("violation").innerText=data.violation;
+  document.getElementById("sid").innerText=data.id || "-";
+
+  const status=document.getElementById("status");
+  status.className="badge "+data.status;
+  status.innerText=data.status.toUpperCase();
+
+  document.getElementById("drawer").classList.add("active");
+
+  // FIREBASE HOOK READY
+  // firebase.database().ref("logs").push({event:"open_drawer",data});
+}
+
+/* CLOSE */
+function closeDrawer(){
+  document.getElementById("drawer").classList.remove("active");
+}
+
+/* =========================
+   ACTION ENGINE (LAYER 7 LOGIC HOOK)
+========================= */
+
+/* OTP */
+function generateOTP(){
+
+  if(!currentStudent) return;
+
+  const otp=Math.floor(100000+Math.random()*900000);
+
+  alert("OTP: "+otp);
+
+  // FIREBASE READY
+  // firebase.database().ref("otp/"+currentStudent.id).set({otp});
+}
+
+/* WARNING */
+function warnStudent(){
+
+  if(!currentStudent) return;
+
+  // increase violation locally (simulation)
+  currentStudent.violation++;
+
+  alert("WARNING SENT → "+currentStudent.name);
+
+  // FIREBASE READY
+  // firebase.database().ref("students/"+currentStudent.id).update({
+  //   violation: currentStudent.violation,
+  //   status: "warn"
+  // });
+}
+
+/* LOCK */
+function lockStudent(){
+
+  if(!currentStudent) return;
+
+  alert("ACCESS LOCKED → "+currentStudent.name);
+
+  // FIREBASE READY
+  // firebase.database().ref("students/"+currentStudent.id).update({
+  //   status:"danger"
+  // });
+}
+
+</script>
+
+</body>
+</html>
