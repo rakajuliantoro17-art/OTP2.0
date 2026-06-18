@@ -1,1 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Sidebar - SMANSASOO CBT</title>
+
+<style>
+:root{
+  --glass-bg: rgba(255,255,255,0.55);
+  --glass-border: rgba(0,0,0,0.08);
+  --accent:#007aff;
+  --warn:#ff9500;
+  --danger:#ff3b30;
+  --success:#34c759;
+  --text:#1c1c1e;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+}
+
+body{
+  background:#0b0f1a;
+}
+
+/* GLASS */
+.glass{
+  background:var(--glass-bg);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--glass-border);
+  border-radius:16px;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:260px;
+  height:100vh;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  position:fixed;
+  left:0;
+  top:0;
+}
+
+/* BRAND */
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.brand img{
+  width:38px;
+  height:38px;
+  border-radius:8px;
+}
+
+/* TITLE */
+.brand b{
+  font-size:14px;
+  letter-spacing:0.5px;
+}
+
+.brand small{
+  font-size:11px;
+  opacity:0.7;
+}
+
+/* MENU */
+.menu{
+  padding:12px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:13px;
+  transition:.2s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.menu:hover{
+  background:rgba(255,255,255,0.7);
+}
+
+.menu.active{
+  background:rgba(0,122,255,0.15);
+  border-left:3px solid var(--accent);
+}
+
+/* DIVIDER */
+.divider{
+  height:1px;
+  background:rgba(0,0,0,0.08);
+  margin:8px 0;
+}
+
+/* STATUS BOX */
+.statusBox{
+  padding:10px;
+  font-size:12px;
+}
+
+.statusItem{
+  display:flex;
+  justify-content:space-between;
+  margin:4px 0;
+}
+
+.badge{
+  padding:2px 8px;
+  border-radius:20px;
+  font-size:10px;
+}
+
+.safe{background:rgba(52,199,89,.15); color:var(--success);}
+.warn{background:rgba(255,149,0,.15); color:var(--warn);}
+.danger{background:rgba(255,59,48,.15); color:var(--danger);}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar glass">
+
+  <!-- BRAND -->
+  <div class="brand">
+    <img src="./assets/img/logo.png" alt="logo">
+    <div>
+      <b>SMANSASOO</b><br>
+      <small>CBT CONTROL HUB</small>
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <div class="menu active" onclick="navigate('dashboard')">📊 Dashboard</div>
+  <div class="menu" onclick="navigate('monitor')">🧠 Monitor Siswa</div>
+  <div class="menu" onclick="navigate('otp')">🔐 OTP Center</div>
+  <div class="menu" onclick="navigate('alert')">🚨 Alert System</div>
+  <div class="menu" onclick="navigate('log')">📜 Audit Log</div>
+
+  <div class="divider"></div>
+
+  <!-- STATUS PANEL -->
+  <div class="statusBox glass">
+
+    <div class="statusItem">
+      <span>ACTIVE</span>
+      <span class="badge safe" id="sActive">1487</span>
+    </div>
+
+    <div class="statusItem">
+      <span>WARNING</span>
+      <span class="badge warn" id="sWarn">32</span>
+    </div>
+
+    <div class="statusItem">
+      <span>CRITICAL</span>
+      <span class="badge danger" id="sDanger">9</span>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+/* =========================
+   SIDEBAR ENGINE (NAV + READY FIREBASE HOOK)
+========================= */
+
+function navigate(page){
+  console.log("NAVIGATE:",page);
+
+  // READY FIREBASE / ROUTER HOOK
+  // window.location.href = page + ".html";
+
+  alert("Navigate → " + page);
+}
+
+/* =========================
+   LIVE STATUS UPDATE (READY FIREBASE LAYER 4)
+========================= */
+
+// contoh simulasi realtime update
+function updateStatus(active, warn, danger){
+  document.getElementById("sActive").innerText = active;
+  document.getElementById("sWarn").innerText = warn;
+  document.getElementById("sDanger").innerText = danger;
+}
+
+/* MOCK LIVE UPDATE */
+setInterval(()=>{
+  let a = 1480 + Math.floor(Math.random()*20);
+  let w = 20 + Math.floor(Math.random()*15);
+  let d = 5 + Math.floor(Math.random()*10);
+
+  updateStatus(a,w,d);
+},4000);
+
+</script>
+
+</body>
+</html>
