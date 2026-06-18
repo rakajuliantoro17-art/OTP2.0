@@ -1,1 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMANSASOO CBT LOCK 2.0 - PANITIA</title>
 
+<style>
+:root {
+  --glass-bg: rgba(255,255,255,0.55);
+  --glass-border: rgba(0,0,0,0.08);
+  --text: #1c1c1e;
+  --accent: #007aff;
+  --warn: #ff9500;
+  --danger: #ff3b30;
+  --success: #34c759;
+}
+
+* {
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+}
+
+body {
+  height:100vh;
+  overflow:hidden;
+  background:url('../public/assets/img/stg.jpg') no-repeat center center fixed;
+  background-size:cover;
+  color:var(--text);
+}
+
+/* GLASS */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border:1px solid var(--glass-border);
+  border-radius:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.08);
+}
+
+/* LAYOUT */
+.container {
+  display:flex;
+  height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width:260px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.menu {
+  padding:12px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.menu:hover {
+  background:rgba(255,255,255,0.8);
+}
+
+.menu.active {
+  background:rgba(0,122,255,0.15);
+  border-left:3px solid var(--accent);
+}
+
+/* MAIN */
+.main {
+  flex:1;
+  padding:20px;
+  overflow:auto;
+}
+
+/* TOPBAR */
+.topbar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 18px;
+  margin-bottom:15px;
+}
+
+/* CARDS */
+.cards {
+  display:grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.card {
+  padding:14px;
+  text-align:center;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.card:hover {
+  transform:scale(1.03);
+}
+
+/* TABLE */
+.table {
+  width:100%;
+  overflow:hidden;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th, td {
+  padding:10px;
+  font-size:13px;
+  border-bottom:1px solid rgba(0,0,0,0.06);
+}
+
+tr:hover {
+  background:rgba(0,122,255,0.06);
+}
+
+.status-safe { color:var(--success); }
+.status-warn { color:var(--warn); }
+.status-danger { color:var(--danger); }
+
+/* CLOCK */
+.clock {
+  font-weight:600;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<div class="sidebar glass">
+  <b>SMANSASOO</b>
+  <small>CBT LOCK 2.0</small>
+
+  <div class="menu active" onclick="setFilter('all')">📊 Dashboard</div>
+  <div class="menu" onclick="setFilter('safe')">👨‍🎓 Aman</div>
+  <div class="menu" onclick="setFilter('warn')">🟡 Warning</div>
+  <div class="menu" onclick="setFilter('danger')">🔴 Critical</div>
+  <div class="menu" onclick="setFilter('otp')">🔐 OTP</div>
+  <div class="menu" onclick="resetFilter()">♻ Reset</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- TOPBAR -->
+<div class="topbar glass">
+  <div><b>SMANSASOO CBT LOCK 2.0 - PANITIA</b></div>
+  <div class="clock" id="clock"></div>
+</div>
+
+<!-- CARDS -->
+<div class="cards">
+
+  <div class="card glass" onclick="setFilter('all')">ACTIVE<br><b>1487</b></div>
+  <div class="card glass" onclick="setFilter('warn')">WARNING<br><b>32</b></div>
+  <div class="card glass" onclick="setFilter('danger')">CRITICAL<br><b>9</b></div>
+  <div class="card glass" onclick="setFilter('otp')">OTP<br><b>73</b></div>
+  <div class="card glass" onclick="setFilter('master')">MASTER<br><b>5</b></div>
+  <div class="card glass" onclick="resetFilter()">RESET</div>
+
+</div>
+
+<!-- TABLE -->
+<div class="glass table">
+<table>
+<thead>
+<tr>
+<th>Nama</th>
+<th>Kelas</th>
+<th>Progress</th>
+<th>Violation</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="tableBody">
+
+<tr data-status="warn">
+<td>Ahmad</td>
+<td>XI-4</td>
+<td>23/40</td>
+<td>14</td>
+<td class="status-warn">WARNING</td>
+</tr>
+
+<tr data-status="danger">
+<td>Budi</td>
+<td>XI-2</td>
+<td>18/40</td>
+<td>26</td>
+<td class="status-danger">CRITICAL</td>
+</tr>
+
+<tr data-status="safe">
+<td>Rina</td>
+<td>XI-1</td>
+<td>35/40</td>
+<td>2</td>
+<td class="status-safe">SAFE</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+</div>
+</div>
+
+<script>
+
+// CLOCK LIVE
+setInterval(() => {
+  const now = new Date();
+  document.getElementById("clock").innerText =
+    now.toLocaleTimeString();
+}, 1000);
+
+// FILTER SYSTEM
+function setFilter(type) {
+  const rows = document.querySelectorAll("#tableBody tr");
+
+  rows.forEach(row => {
+    const status = row.getAttribute("data-status");
+
+    if(type === "all") {
+      row.style.display = "";
+    }
+    else if(type === "otp") {
+      row.style.display = (status === "warn" || status === "danger") ? "" : "none";
+    }
+    else if(type === "master") {
+      row.style.display = (status === "danger") ? "" : "none";
+    }
+    else {
+      row.style.display = (status === type) ? "" : "none";
+    }
+  });
+
+  setActiveMenu(type);
+}
+
+// RESET
+function resetFilter() {
+  setFilter("all");
+}
+
+// ACTIVE MENU UI
+function setActiveMenu(type) {
+  document.querySelectorAll(".menu").forEach(m => m.classList.remove("active"));
+}
+
+</script>
+
+</body>
+</html>
