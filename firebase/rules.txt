@@ -1,1 +1,82 @@
+{
+  "rules": {
 
+    /* =========================
+       ROOT ACCESS LOCK
+    ========================== */
+    ".read": false,
+    ".write": false,
+
+    /* =========================
+       STUDENTS DATA
+       (CBT CLIENT WRITE ONLY)
+    ========================== */
+    "students": {
+      "$studentId": {
+        ".read": true,
+
+        ".write": "auth != null || true"
+        /*
+          NOTE:
+          - sementara allow true untuk CBT client direct
+          - nanti production: ganti ke auth-based / token
+        */
+      }
+    },
+
+    /* =========================
+       STATUS SUMMARY
+       (PANITIA + SYSTEM ONLY)
+    ========================== */
+    "status": {
+      ".read": true,
+      ".write": true
+    },
+
+    /* =========================
+       OTP SYSTEM (HIGH SECURITY)
+    ========================== */
+    "otp": {
+
+      ".read": true,
+
+      ".write": true,
+
+      "global": {
+        ".read": true,
+        ".write": true
+      },
+
+      "master": {
+        ".read": true,
+        ".write": true
+      },
+
+      "issued": {
+        "$studentId": {
+          ".read": true,
+          ".write": true
+        }
+      }
+
+    },
+
+    /* =========================
+       LOG SYSTEM
+    ========================== */
+    "logs": {
+      ".read": true,
+      ".write": true
+    },
+
+    /* =========================
+       CONTROL PANEL
+       (PANIC / LOCK SYSTEM)
+    ========================== */
+    "control": {
+      ".read": true,
+      ".write": true
+    }
+
+  }
+}
