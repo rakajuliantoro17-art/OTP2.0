@@ -1,1 +1,148 @@
+# =====================================================
+
+# SMANSASOO CBT LOCK 2.0
+
+# Git Ignore
+
+# =====================================================
+
+# OS
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Firebase Secret Config
+
+firebase-adminsdk*.json
+serviceAccountKey.json
+
+# Vercel
+
+.vercel
+
+# Node Modules
+
+node_modules/
+
+# Cache
+
+.cache/
+.parcel-cache/
+dist/
+build/
+coverage/
+
+# VS Code
+
+.vscode/
+
+# JetBrains
+
+.idea/
+
+# Temporary Files
+
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Runtime Data
+
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# MacOS
+
+.AppleDouble
+.LSOverride
+
+# Windows
+
+ehthumbs.db
+ehthumbs_vista.db
+
+# Generated Reports
+
+reports/
+exports/
+backup/
+
+# Local Testing
+
+test-data/
+mock-data/
+
+# Firebase Emulator
+
+firebase-debug.log
+ui-debug.log
+
+# Secrets
+
+secret/
+secrets/
+private/
+credentials/
+
+# Upload Folder (optional)
+
+uploads/
+
+# ZIP Backup
+
+*.zip
+*.rar
+*.7z
+
+# Local Database
+
+*.sqlite
+*.db
+
+# Temporary Exam Data
+
+temp/
+cache/
+session/
+
+# Production Dump
+
+dump/
+database-backup/
+
+# =====================================================
+
+# KEEP THESE
+
+# =====================================================
+
+!public/assets/img/logo.png
+!public/assets/img/stg.jpg
+
+!dashboard-panitia/
+!dashboard-pengawas/
+!moodle-client/
+
+!README.md
+!vercel.json
 
