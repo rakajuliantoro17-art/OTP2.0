@@ -69,56 +69,6 @@ window.UI = {
 
 };
 
-/* =========================
-   GLOBAL OTP ENGINE
-========================= */
-
-window.GLOBAL_OTP = {
-
-    code: "000000",
-
-    expires: 60,
-
-    generatedAt: Date.now(),
-
-    source: "local",
-
-    updatedBy: "system"
-
-};
-
-function generateSystemOTP() {
-
-    GLOBAL_OTP.code =
-        Math.floor(
-            100000 + Math.random() * 900000
-        ).toString();
-
-    GLOBAL_OTP.generatedAt =
-        Date.now();
-
-    GLOBAL_OTP.expires = 60;
-
-    addAlert("System OTP berhasil diperbarui");
-
-}
-
-function startOTPCountdown() {
-
-    setInterval(() => {
-
-        const elapsed =
-            Math.floor(
-                (Date.now() -
-                    GLOBAL_OTP.generatedAt) / 1000
-            );
-
-        GLOBAL_OTP.expires =
-            Math.max(0, 60 - elapsed);
-
-    }, 1000);
-
-}
 
 /* =========================
    DOM HELPERS
