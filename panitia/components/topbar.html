@@ -184,29 +184,78 @@ body {
 
 <header class="topbar glass">
 
-  <div class="left">
-    <div class="title">SMANSASOO CBT CONTROL TOWER</div>
-    <div class="subtitle">Panitia Monitoring System • Layer 7 Ready</div>
-  </div>
+    <div class="left">
 
-  <div class="right">
+        <div class="title">
+            SMANSASOO CBT CONTROL TOWER
+        </div>
 
-    <div class="status-indicator" title="Firebase Realtime Connected">
-      <div class="dot"></div>
-      <span>LIVE</span>
+        <div class="subtitle">
+            CBT Security Monitoring • 1500 Concurrent Users Ready
+        </div>
+
     </div>
 
-    <div class="clock" id="clock">00:00:00</div>
+    <div class="right">
 
-    <button class="btn btn-secondary" onclick="refreshSystem()">
-      🔄 Refresh
-    </button>
+        <div class="status-indicator">
 
-    <button class="btn btn-primary" onclick="triggerGlobalOTP()">
-      🔑 Global OTP
-    </button>
+            <div
+                id="firebaseDot"
+                class="dot">
+            </div>
 
-  </div>
+            <span id="firebaseStatus">
+                CONNECTING
+            </span>
+
+        </div>
+
+        <div class="mini-stat">
+
+            <span>👥</span>
+
+            <b id="topActive">
+                0
+            </b>
+
+        </div>
+
+        <div class="mini-stat">
+
+            <span>🚨</span>
+
+            <b id="topAlert">
+                0
+            </b>
+
+        </div>
+
+        <div
+            id="clock"
+            class="clock">
+
+            00:00:00
+
+        </div>
+
+        <button
+            class="btn btn-secondary"
+            onclick="refreshSystem()">
+
+            Refresh
+
+        </button>
+
+        <button
+            class="btn btn-primary"
+            onclick="triggerGlobalOTP()">
+
+            Global OTP
+
+        </button>
+
+    </div>
 
 </header>
 
