@@ -379,3 +379,32 @@ firebaseHeartbeat,
 ```
 
 );
+
+setInterval(()=>{
+
+    const badge =
+        document.getElementById(
+            "serverStatus"
+        );
+
+    if(!badge) return;
+
+    if(window.db){
+
+        badge.innerText =
+            "ONLINE";
+
+        badge.className =
+            "badge safe";
+
+    }else{
+
+        badge.innerText =
+            "OFFLINE";
+
+        badge.className =
+            "badge danger";
+
+    }
+
+},1000);
