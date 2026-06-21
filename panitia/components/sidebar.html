@@ -212,6 +212,27 @@ body {
     </div>
   </div>
 
+   <div class="statusItem">
+    <span>OTP ACTIVE</span>
+    <span class="badge" id="otpCounter">
+        0
+    </span>
+   </div>
+
+   <div class="statusItem">
+    <span>UNLOCK REQ</span>
+    <span class="badge warn" id="unlockCounter">
+        0
+    </span>
+   </div>
+
+   <div class="statusItem">
+    <span>CRITICAL</span>
+    <span class="badge danger" id="criticalCounter">
+        0
+    </span>
+   </div>
+   
   <div class="menu active" onclick="navigate(this, 'dashboard')">
     <span class="icon">📊</span> Dashboard
   </div>
@@ -230,7 +251,13 @@ body {
 
   <div class="spacer"></div>
   <div class="divider"></div>
-
+   <div class="statusItem">
+    <span>SERVER</span>
+    <span class="badge safe" id="serverStatus">
+        ONLINE
+    </span>
+   </div>
+   
   <div class="statusBox">
     <div class="statusItem">
       <span>ACTIVE</span>
@@ -245,7 +272,23 @@ body {
       <span class="badge danger" id="sDanger">9</span>
     </div>
   </div>
+   
+   <div class="quickActions">
 
+   <button onclick="triggerGlobalOTP()">
+   🔑 Global OTP
+   </button>
+
+   <button onclick="generateSystemOTP()">
+   ♻ Refresh OTP
+   </button>
+
+   <button onclick="filterTable('danger')">
+   🚨 Critical
+   </button>
+
+   </div>
+   
 </aside>
 
 <script>
