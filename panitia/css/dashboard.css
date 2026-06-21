@@ -104,6 +104,22 @@ body {
   gap: 8px;
 }
 
+.quickActions{
+display:flex;
+flex-direction:column;
+gap:10px;
+margin-top:12px;
+}
+
+.quickActions button{
+border:none;
+padding:12px;
+border-radius:12px;
+cursor:pointer;
+font-weight:600;
+background:#007aff;
+color:white;
+}
 /* MENU ITEM */
 .menu {
   padding: 12px 16px;
