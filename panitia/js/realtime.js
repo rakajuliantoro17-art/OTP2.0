@@ -1,202 +1,516 @@
 /* =====================================================
-   SMANSASOO CBT CONTROL TOWER
-   REALTIME EVENT ENGINE (LAYER 4–7 READY)
+SMANSASOO Security System 2.0
+REALTIME ENGINE
+Firebase Synchronization Layer
 ===================================================== */
 
-/**
- * CORE FUNCTION:
- * - Sinkron siswa realtime (Konversi Object ke Array untuk UI)
- * - Sinkron stats realtime
- * - Sinkron alert realtime
- * - Bridge ke UI (Auto Render Tabel & Stats)
- * - Local fallback mode (tanpa Firebase tetap jalan)
- */
-
 /* =========================
-   GLOBAL STATE
+GLOBAL STATE
 ========================= */
 
 window.CBT_STATE = {
-    students: {},
-    stats: {},
-    alerts: []
+
+```
+students: {},
+
+stats: {},
+
+alerts: [],
+
+systemOTP: null,
+
+unlockOTP: {}
+```
+
 };
 
 /* =========================
-   EVENT BUS SYSTEM
+EVENT BUS
 ========================= */
 
 const EventBus = {
-    listeners: {},
-    
-    on(event, callback) {
-        if (!this.listeners[event]) {
-            this.listeners[event] = [];
-        }
-        this.listeners[event].push(callback);
-    },
-    
-    emit(event, data) {
-        if (this.listeners[event]) {
-            this.listeners[event].forEach(cb => cb(data));
-        }
+
+```
+listeners: {},
+
+on(event, callback) {
+
+    if (!this.listeners[event]) {
+
+        this.listeners[event] = [];
+
     }
+
+    this.listeners[event].push(callback);
+
+},
+
+emit(event, data) {
+
+    if (!this.listeners[event])
+        return;
+
+    this.listeners[event].forEach(
+
+        cb => cb(data)
+
+    );
+
+}
+```
+
 };
 
 /* =========================
-   INIT FIREBASE SAFE
+FIREBASE HELPER
 ========================= */
 
 function db() {
-    // Memastikan memanggil instance Firebase database jika tersedia dari firebase.js
-    return window.db || null; 
+
+```
+return window.db || null;
+```
+
 }
 
 /* =========================
-   REALTIME STUDENTS STREAM
+STUDENTS LISTENER
 ========================= */
 
 function listenStudents() {
-    if (!db()) {
-        console.warn("Realtime: Firebase offline. UI akan menggunakan data Dummy.");
-        return;
+
+```
+if (!db()) {
+
+    console.warn(
+        "Realtime Offline Mode"
+    );
+
+    return;
+
+}
+
+db()
+.ref("students")
+.on("value", snap => {
+
+    const data =
+        snap.val() || {};
+
+    CBT_STATE.students =
+        data;
+
+    const studentsArray =
+        Object.keys(data).map(
+
+            key => ({
+
+                id: key,
+
+                ...data[key]
+
+            })
+
+        );
+
+    EventBus.emit(
+        "students:update",
+        studentsArray
+    );
+
+    if (
+        typeof renderStudentsTable ===
+        "function"
+    ) {
+
+        renderStudentsTable(
+            studentsArray
+        );
+
     }
 
-    db().ref("students").on("value", (snap) => {
-        const data = snap.val() || {};
-        CBT_STATE.students = data;
+    if (
+        typeof updateDashboardStats ===
+        "function"
+    ) {
 
-        // 1. Konversi Object Firebase menjadi Array agar bisa dibaca oleh renderStudentsTable()
-        const studentsArray = Object.keys(data).map(key => ({
-            id: key,
-            ...data[key]
-        }));
+        updateDashboardStats(
+            studentsArray
+        );
 
-        // 2. Pancarkan Event
-        EventBus.emit("students:update", studentsArray);
+    }
 
-        // 3. AUTO UI BRIDGE (Update UI langsung jika fungsi tersedia)
-        if (typeof window.renderStudentsTable === "function") {
-            window.renderStudentsTable(studentsArray);
-        }
-        if (typeof window.updateDashboardStats === "function") {
-            window.updateDashboardStats(studentsArray);
-        }
+    console.log(
 
-        console.log("Realtime: Students synced (" + studentsArray.length + " users)");
-    });
+        "Students Sync:",
+        studentsArray.length
+
+    );
+
+});
+```
+
 }
 
 /* =========================
-   REALTIME STATS STREAM
-========================= */
-
-function listenStats() {
-    if (!db()) return;
-
-    db().ref("stats").on("value", (snap) => {
-        const data = snap.val() || {};
-        CBT_STATE.stats = data;
-        EventBus.emit("stats:update", data);
-    });
-}
-
-/* =========================
-   REALTIME ALERT STREAM
+ALERT LISTENER
 ========================= */
 
 function listenAlerts() {
-    if (!db()) return;
 
-    // Hanya mendengarkan data baru yang masuk (child_added)
-    db().ref("alerts").limitToLast(1).on("child_added", (snap) => {
-        const data = snap.val();
-        if(!data) return;
+```
+if (!db())
+    return;
 
-        CBT_STATE.alerts.unshift(data);
-        EventBus.emit("alert:new", data);
+db()
+.ref("alerts")
+.limitToLast(10)
+.on("child_added",
 
-        // AUTO UI BRIDGE (Munculkan ke panel kanan bawah)
-        if (typeof window.addAlert === "function") {
-            window.addAlert(data.msg || data.message);
+    snap => {
+
+        const alert =
+            snap.val();
+
+        if (!alert)
+            return;
+
+        CBT_STATE.alerts.unshift(
+            alert
+        );
+
+        EventBus.emit(
+            "alert:new",
+            alert
+        );
+
+        if (
+            typeof addAlert ===
+            "function"
+        ) {
+
+            addAlert(
+
+                alert.msg ||
+                alert.message
+
+            );
+
         }
-    });
+
+    }
+
+);
+```
+
 }
 
 /* =========================
-   PUSH ALERT (KE FIREBASE & LOKAL)
+SYSTEM OTP LISTENER
 ========================= */
 
-function pushRealtimeAlert(type, message) {
-    const payload = {
-        type: type || "info",
-        msg: message,
-        time: Date.now()
-    };
+function listenSystemOTP() {
 
-    CBT_STATE.alerts.unshift(payload);
-    EventBus.emit("alert:new", payload);
+```
+if (!db())
+    return;
 
-    if (db()) {
-        db().ref("alerts").push(payload);
-    } else {
-        // Fallback jika offline: Langsung tembak ke UI
-        if (typeof window.addAlert === "function") {
-            window.addAlert(`[LOKAL] ${message}`);
-        }
+db()
+.ref("system/otp")
+.on("value",
+
+    snap => {
+
+        const data =
+            snap.val();
+
+        if (!data)
+            return;
+
+        CBT_STATE.systemOTP =
+            data;
+
+        EventBus.emit(
+            "otp:update",
+            data
+        );
+
+        console.log(
+            "System OTP Sync"
+        );
+
     }
+
+);
+```
+
 }
 
 /* =========================
-   UPDATE STUDENT (VIOLATION / STATUS)
+UNLOCK OTP LISTENER
 ========================= */
 
-function updateStudent(id, payload) {
-    if (!db()) {
-        console.warn("Realtime: offline update student skipped");
-        return;
+function listenUnlockOTP() {
+
+```
+if (!db())
+    return;
+
+db()
+.ref("unlockOtp")
+.on("value",
+
+    snap => {
+
+        CBT_STATE.unlockOTP =
+            snap.val() || {};
+
+        EventBus.emit(
+            "unlock:update",
+            CBT_STATE.unlockOTP
+        );
+
     }
-    db().ref("students/" + id).update(payload);
+
+);
+```
+
 }
 
 /* =========================
-   SYSTEM HEARTBEAT
+PUSH ALERT
+========================= */
+
+function pushRealtimeAlert(
+
+```
+type,
+message
+```
+
+) {
+
+```
+const payload = {
+
+    type:
+        type || "info",
+
+    msg:
+        message,
+
+    time:
+        Date.now()
+
+};
+
+if (db()) {
+
+    db()
+    .ref("alerts")
+    .push(payload);
+
+}
+
+if (
+    typeof addAlert ===
+    "function"
+) {
+
+    addAlert(message);
+
+}
+```
+
+}
+
+/* =========================
+UPDATE STUDENT
+========================= */
+
+function updateStudent(
+
+```
+id,
+payload
+```
+
+) {
+
+```
+if (!db())
+    return;
+
+db()
+.ref(
+
+    "students/" + id
+
+)
+.update(payload);
+```
+
+}
+
+/* =========================
+AUTO SUBMIT CHECK
+========================= */
+
+function checkViolationAutoSubmit(
+
+```
+studentId,
+violation
+```
+
+) {
+
+```
+if (
+    violation >= 30 &&
+    typeof triggerAutoSubmit ===
+    "function"
+) {
+
+    triggerAutoSubmit(
+        studentId
+    );
+
+}
+```
+
+}
+
+/* =========================
+HEARTBEAT
 ========================= */
 
 function heartbeat() {
-    if (!db()) return;
 
-    db().ref("system/heartbeat").set({
-        time: Date.now(),
-        status: "live",
-        activeStudents: Object.keys(CBT_STATE.students || {}).length
-    });
+```
+if (!db())
+    return;
+
+db()
+.ref("system/heartbeat")
+.set({
+
+    timestamp:
+        Date.now(),
+
+    status:
+        "online",
+
+    activeStudents:
+
+        Object.keys(
+            CBT_STATE.students
+        ).length
+
+});
+```
+
 }
 
 /* =========================
-   AUTO INIT SYSTEM
+CONNECTION MONITOR
+========================= */
+
+function monitorConnection() {
+
+```
+setInterval(() => {
+
+    if (navigator.onLine) {
+
+        if (window.UI) {
+
+            UI.connection =
+                "online";
+
+        }
+
+    }
+
+    else {
+
+        if (window.UI) {
+
+            UI.connection =
+                "offline";
+
+        }
+
+    }
+
+}, 5000);
+```
+
+}
+
+/* =========================
+INIT REALTIME
 ========================= */
 
 function initRealtime() {
-    console.log("CBT Realtime Engine starting...");
 
-    listenStudents();
-    listenStats();
-    listenAlerts();
+```
+console.log(
 
-    setInterval(heartbeat, 5000);
+    "Realtime Engine Starting..."
 
-    console.log("CBT Realtime Engine READY ✔");
+);
+
+listenStudents();
+
+listenAlerts();
+
+listenSystemOTP();
+
+listenUnlockOTP();
+
+monitorConnection();
+
+heartbeat();
+
+setInterval(
+
+    heartbeat,
+
+    5000
+
+);
+
+console.log(
+
+    "Realtime Engine READY"
+
+);
+```
+
 }
 
 /* =========================
-   EVENT HOOK EXPORT
+EXPORT
 ========================= */
 
-window.EventBus = EventBus;
-window.pushRealtimeAlert = pushRealtimeAlert;
-window.updateStudent = updateStudent;
-window.initRealtime = initRealtime;
+window.EventBus =
+EventBus;
 
-/* AUTO START */
+window.initRealtime =
+initRealtime;
+
+window.updateStudent =
+updateStudent;
+
+window.pushRealtimeAlert =
+pushRealtimeAlert;
+
+window.checkViolationAutoSubmit =
+checkViolationAutoSubmit;
+
+/* =========================
+AUTO START
+========================= */
+
 initRealtime();
