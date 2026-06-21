@@ -1,251 +1,245 @@
 /* =====================================================
    SMANSASOO CBT LOCK 2.0
-   DASHBOARD PENGAWAS - SIMPLE MODE
+   DASHBOARD PENGAWAS - SIMPLE MODE (UTUH & OPTIMAL)
 ===================================================== */
 
-:root{
-
-  --glass: rgba(255,255,255,0.65);
-
-  --glass-soft: rgba(255,255,255,0.45);
-
-  --border: rgba(255,255,255,0.35);
-
+:root {
+  /* Glassmorphism Configuration */
+  --glass: rgba(255, 255, 255, 0.65);
+  --glass-soft: rgba(255, 255, 255, 0.45);
+  --border: rgba(255, 255, 255, 0.45);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+  
+  /* Apple System Palette */
   --text: #1c1c1e;
-
+  --text-secondary: #6e6e73;
   --accent: #007aff;
-
+  
+  /* Status Color Dynamic */
+  --success: #34c759;
+  --warn: #ff9500;
   --danger: #ff3b30;
-
-  --shadow: 0 10px 30px rgba(0,0,0,0.12);
-
+  
+  /* Depth Elevation */
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
 /* =====================================================
-   RESET
+   RESET & SYSTEM CORE
 ===================================================== */
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* =====================================================
-   BODY BACKGROUND (PENGAWAS MODE)
+   BODY BACKGROUND & ATMOSPHERE LAYER
 ===================================================== */
-
-body{
-
-  height:100vh;
-
-  overflow:hidden;
-
-  background:
-    url('../../public/assets/img/bg.jpg')
-    center center / cover
-    no-repeat fixed;
-
-  color:var(--text);
-
+body {
+  height: 100vh;
+  overflow: hidden;
+  background: url('../../public/assets/img/bg.jpg') center center / cover no-repeat fixed;
+  color: var(--text);
 }
 
-/* overlay agar teks tetap terbaca */
-body::before{
-
-  content:"";
-
-  position:fixed;
-
-  inset:0;
-
-  background:rgba(255,255,255,0.18);
-
-  backdrop-filter: blur(3px);
-
-  z-index:-1;
-
+/* Layer filter reflektif penunjang kontras teks tinggi */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+  backdrop-filter: blur(4px) saturate(140%);
+  -webkit-backdrop-filter: blur(4px) saturate(140%);
+  z-index: -1;
 }
 
 /* =====================================================
-   GLASS BASE
+   GLASS SPECIFICATION PATTERN
 ===================================================== */
-
-.glass{
-
-  background:var(--glass);
-
-  backdrop-filter: blur(20px);
-
-  -webkit-backdrop-filter: blur(20px);
-
-  border:1px solid var(--border);
-
-  border-radius:16px;
-
-  box-shadow:var(--shadow);
-
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow), inset 0 1px 1px var(--glass-highlight);
 }
 
 /* =====================================================
-   LAYOUT
+   LAYOUT VIEWPORT
 ===================================================== */
-
-.container{
-
-  height:100vh;
-
-  display:flex;
-
-  justify-content:center;
-
-  align-items:center;
-
+.container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
 }
 
 /* =====================================================
-   OTP PANEL (FOCUS UTAMA)
+   OTP MAIN KONTROLLER PANEL
 ===================================================== */
+.otp-panel {
+  width: 100%;
+  max-width: 420px;
+  padding: 36px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-.otp-panel{
+/* TITLE STYLE */
+.title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
 
-  width:420px;
-
-  padding:30px;
-
-  text-align:center;
-
+/* OTP DISPLAY (MONOSPACE LOCK ENGINE) */
+.otp-code {
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--accent);
+  margin: 14px 0;
+  /* Mengunci lebar horizontal angka agar tidak goyang saat berganti kode */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-shadow: 0 4px 16px rgba(0, 122, 255, 0.15);
+  line-height: 1;
 }
 
 /* =====================================================
-   TITLE
+   SMOOTH PROGRESS COUNTDOWN BAR
 ===================================================== */
+.progress-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
 
-.title{
-
-  font-size:22px;
-
-  font-weight:700;
-
-  margin-bottom:10px;
-
+.progress-bar {
+  height: 100%;
+  width: 100%;
+  background: var(--success);
+  border-radius: 10px;
+  /* Transisi linear 0.1 detik menjamin animasi bar berjalan mulus di 60fps */
+  transition: width 0.1s linear, background-color 0.4s ease;
 }
 
 /* =====================================================
-   OTP DISPLAY
+   ACTION BUTTON SYSTEM
 ===================================================== */
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-.otp-code{
+button:active {
+  transform: scale(0.97);
+}
 
-  font-size:64px;
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+}
 
-  font-weight:800;
+.btn-primary:hover {
+  background: #0066d6;
+  transform: translateY(-1px);
+}
 
-  letter-spacing:6px;
+.btn-danger {
+  background: rgba(255, 59, 48, 0.1);
+  color: var(--danger);
+  margin-top: 4px;
+  border: 1px solid rgba(255, 59, 48, 0.15);
+}
 
-  color:var(--accent);
-
-  margin:20px 0;
-
+.btn-danger:hover {
+  background: var(--danger);
+  color: white;
 }
 
 /* =====================================================
-   BUTTON
+   STATUS & METRICS BAR
 ===================================================== */
-
-button{
-
-  width:100%;
-
-  padding:12px;
-
-  border:none;
-
-  border-radius:12px;
-
-  cursor:pointer;
-
-  font-size:14px;
-
-  font-weight:600;
-
-  transition:0.2s;
-
-}
-
-.btn-primary{
-
-  background:var(--accent);
-
-  color:white;
-
-}
-
-.btn-primary:hover{
-
-  transform:scale(1.02);
-
-}
-
-.btn-danger{
-
-  background:var(--danger);
-
-  color:white;
-
-  margin-top:10px;
-
+.status-bar {
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 14px;
 }
 
 /* =====================================================
-   STATUS BAR
+   FLOATING LIVE ALERT PANEL
 ===================================================== */
+.alert {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 280px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-.status-bar{
-
-  margin-top:15px;
-
-  font-size:12px;
-
-  opacity:0.8;
-
+/* Custom Mini Scrollbar untuk Panel Alert */
+.alert::-webkit-scrollbar {
+  width: 4px;
+}
+.alert::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
 }
 
 /* =====================================================
-   ALERT MINI
+   HARDWARE RESPONSIVE SCALE HOOK
 ===================================================== */
-
-.alert{
-
-  position:fixed;
-
-  bottom:20px;
-
-  right:20px;
-
-  width:260px;
-
-  max-height:180px;
-
-  overflow:auto;
-
-  padding:10px;
-
-  font-size:12px;
-
-}
-
-/* =====================================================
-   RESPONSIVE (LAPTOP ONLY PRIORITY)
-===================================================== */
-
-@media (max-width: 1024px){
-
-  .otp-panel{
-
-    transform:scale(0.95);
-
+@media (max-width: 1024px) {
+  .otp-panel {
+    transform: scale(0.96);
   }
+}
 
+@media (max-width: 440px) {
+  .otp-panel {
+    border-radius: 0;
+    height: 100vh;
+    max-width: 100vw;
+    justify-content: center;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+  body::before {
+    background: rgba(255, 255, 255, 0.6); /* Tambah kontras jika dibuka di HP */
+    backdrop-filter: blur(20px);
+  }
 }
