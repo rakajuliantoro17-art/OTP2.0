@@ -1,18 +1,30 @@
 # =====================================================
 
-# SMANSASOO CBT LOCK 2.0
+# SMANSASOO Security System 2.0
 
 # Git Ignore
 
 # =====================================================
 
-# OS
+# =========================
+
+# Operating System
+
+# =========================
 
 .DS_Store
 Thumbs.db
 desktop.ini
+.AppleDouble
+.LSOverride
+ehthumbs.db
+ehthumbs_vista.db
+
+# =========================
 
 # Logs
+
+# =========================
 
 *.log
 logs/
@@ -20,129 +32,196 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environment
+# =========================
+
+# Environment Variables
+
+# =========================
 
 .env
-.env.local
-.env.development
-.env.production
-.env.test
+.env.*
+!.env.example
 
-# Firebase Secret Config
+# =========================
+
+# Firebase Secret Files
+
+# =========================
 
 firebase-adminsdk*.json
 serviceAccountKey.json
 
+# =========================
+
 # Vercel
+
+# =========================
 
 .vercel
 
-# Node Modules
+# =========================
+
+# Dependencies
+
+# =========================
 
 node_modules/
 
-# Cache
+# =========================
 
-.cache/
-.parcel-cache/
+# Build Output
+
+# =========================
+
 dist/
 build/
 coverage/
+.cache/
+.parcel-cache/
 
-# VS Code
+# =========================
+
+# IDE
+
+# =========================
 
 .vscode/
-
-# JetBrains
-
 .idea/
 
+# =========================
+
 # Temporary Files
+
+# =========================
 
 *.tmp
 *.temp
 *.bak
 *.swp
 
-# Runtime Data
+# =========================
 
-pids
+# Runtime Files
+
+# =========================
+
+pids/
 *.pid
 *.seed
 *.pid.lock
 
-# MacOS
-
-.AppleDouble
-.LSOverride
-
-# Windows
-
-ehthumbs.db
-ehthumbs_vista.db
-
-# Generated Reports
-
-reports/
-exports/
-backup/
-
-# Local Testing
-
-test-data/
-mock-data/
+# =========================
 
 # Firebase Emulator
+
+# =========================
 
 firebase-debug.log
 ui-debug.log
 
+# =========================
+
+# Database
+
+# =========================
+
+*.sqlite
+*.db
+
+# =========================
+
+# Local Backup
+
+# =========================
+
+backup/
+backups/
+dump/
+database-backup/
+
+# =========================
+
+# Generated Files
+
+# =========================
+
+reports/
+exports/
+
+# =========================
+
+# Local Testing
+
+# =========================
+
+test-data/
+mock-data/
+
+# =========================
+
+# Uploads
+
+# =========================
+
+uploads/
+
+# =========================
+
+# Archives
+
+# =========================
+
+*.zip
+*.rar
+*.7z
+
+# =========================
+
+# Temporary Session
+
+# =========================
+
+temp/
+cache/
+session/
+
+# =========================
+
 # Secrets
+
+# =========================
 
 secret/
 secrets/
 private/
 credentials/
 
-# Upload Folder (optional)
-
-uploads/
-
-# ZIP Backup
-
-*.zip
-*.rar
-*.7z
-
-# Local Database
-
-*.sqlite
-*.db
-
-# Temporary Exam Data
-
-temp/
-cache/
-session/
-
-# Production Dump
-
-dump/
-database-backup/
-
 # =====================================================
 
-# KEEP THESE
+# IMPORTANT PROJECT FILES
 
 # =====================================================
-
-!public/assets/img/logo.png
-!public/assets/img/stg.jpg
-
-!dashboard-panitia/
-!dashboard-pengawas/
-!moodle-client/
 
 !README.md
 !vercel.json
 
+# Assets
+
+!public/assets/
+!public/assets/img/
+!public/assets/img/logo.png
+!public/assets/img/favicon.ico
+!public/assets/img/stg.jpg
+!public/assets/img/bg.jpg
+
+# Application
+
+!public/panitia/
+!public/pengawas/
+!public/shared/
+!public/firebase/
+!public/moodle/
+
+# Documentation
+
+!docs/
