@@ -335,11 +335,29 @@ function openDrawer(student) {
             student.status
         );
 
-    const statusEl =
-        $("d-status");
+    const statusEl = $("d-status");
 
-    statusEl.innerText =
-        student.status.toUpperCase();
+   statusEl.className =
+    "drawer-status";
+
+   switch(student.status){
+
+    case "safe":
+        statusEl.classList.add("status-safe");
+        break;
+
+    case "warn":
+        statusEl.classList.add("status-warn");
+        break;
+
+    case "danger":
+        statusEl.classList.add("status-danger");
+        break;
+
+}
+
+statusEl.innerText =
+    student.status.toUpperCase();
 
     statusEl.style.color =
         color;
