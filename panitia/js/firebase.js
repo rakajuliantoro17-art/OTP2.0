@@ -1,202 +1,86 @@
 /* =====================================================
    SMANSASOO CBT CONTROL TOWER
-   FIREBASE BRIDGE ENGINE (LAYER 4 READY)
+   FIREBASE CONNECTION MANAGER (LAYER 4)
 ===================================================== */
 
 /**
- * NOTE:
- * - Ini SAFE untuk Vercel static hosting
- * - Akan aktif FULL ketika Firebase config diisi
- * - Tidak crash jika Firebase belum dipasang
+ * TUGAS FILE INI:
+ * 1. Menginisialisasi Firebase App secara aman.
+ * 2. Mengekspor instance 'window.db' agar bisa dipakai oleh realtime.js & otp.js
+ * 3. Memantau status koneksi (Online/Offline) ke server.
  */
 
 /* =========================
-   FIREBASE PLACEHOLDER CONFIG
+   FIREBASE CONFIGURATION
 ========================= */
-
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "XXXX",
-  appId: "XXXX"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "XXXX",
+    appId: "XXXX"
 };
 
 /* =========================
-   SAFE INIT WRAPPER
+   GLOBAL INSTANCE
 ========================= */
+window.db = null; // Akan dipakai oleh seluruh sistem (realtime.js, otp.js)
 
-let firebaseApp = null;
-let db = null;
+/* =========================
+   SAFE INIT FIREBASE
+========================= */
+function initFirebase() {
+    try {
+        // Cek apakah script SDK Firebase dari index.html berhasil dimuat
+        if (typeof firebase === "undefined") {
+            console.warn("🔥 Firebase SDK tidak terdeteksi. Sistem berjalan di mode LOKAL/DUMMY.");
+            return false;
+        }
 
-function initFirebase(){
+        // Cegah inisialisasi ganda
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
 
-  try{
+        // Simpan instance database ke window agar bisa diakses global
+        window.db = firebase.database();
+        console.log("🔥 Firebase Init: SUCCESS ✔");
 
-    if(typeof firebase === "undefined"){
-      console.warn("Firebase SDK belum di-load (safe mode active)");
-      return false;
+        // Jalankan pemantau koneksi otomatis
+        monitorConnection();
+
+        return true;
+
+    } catch (e) {
+        console.error("🔥 Firebase Init ERROR:", e);
+        return false;
     }
-
-    firebaseApp = firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-
-    console.log("Firebase CONNECTED ✔");
-
-    return true;
-
-  }catch(e){
-    console.error("Firebase INIT ERROR:",e);
-    return false;
-  }
 }
 
 /* =========================
-   REALTIME STUDENTS STREAM
+   CONNECTION MONITORING
 ========================= */
+function monitorConnection() {
+    if (!window.db) return;
 
-function listenStudents(callback){
-
-  if(!db){
-    console.warn("DB not ready");
-    return;
-  }
-
-  db.ref("students").on("value", (snap)=>{
-    const data = snap.val();
-    if(callback) callback(data);
-  });
-
+    // '.info/connected' adalah fitur bawaan Firebase untuk mengecek status koneksi jaringan
+    const connectedRef = window.db.ref(".info/connected");
+    
+    connectedRef.on("value", (snap) => {
+        if (snap.val() === true) {
+            console.log("🔥 Firebase: TERHUBUNG KE SERVER");
+            if (typeof window.addAlert === "function") {
+                window.addAlert("Sistem terhubung ke Firebase Server ✔");
+            }
+        } else {
+            console.warn("🔥 Firebase: KONEKSI TERPUTUS");
+        }
+    });
 }
 
 /* =========================
-   REALTIME STATS STREAM
+   AUTO START
 ========================= */
-
-function listenStats(callback){
-
-  if(!db){
-    console.warn("DB not ready");
-    return;
-  }
-
-  db.ref("stats").on("value", (snap)=>{
-    const data = snap.val();
-    if(callback) callback(data);
-  });
-
-}
-
-/* =========================
-   ALERT SYSTEM STREAM
-========================= */
-
-function pushAlert(data){
-
-  if(!db){
-    console.warn("DB not ready (alert skipped)");
-    return;
-  }
-
-  db.ref("alerts").push({
-    ...data,
-    timestamp: Date.now()
-  });
-
-}
-
-/* =========================
-   OTP SYSTEM
-========================= */
-
-function sendOTP(studentId, otp){
-
-  if(!db){
-    console.warn("DB not ready (OTP skipped)");
-    return;
-  }
-
-  db.ref("otp/"+studentId).set({
-    otp: otp,
-    created: Date.now(),
-    status: "active"
-  });
-
-}
-
-/* =========================
-   GLOBAL OTP BROADCAST
-========================= */
-
-function sendGlobalOTP(otp){
-
-  if(!db){
-    console.warn("DB not ready (global OTP skipped)");
-    return;
-  }
-
-  db.ref("otp/global").set({
-    otp: otp,
-    created: Date.now()
-  });
-
-}
-
-/* =========================
-   VIOLATION UPDATE SYSTEM
-========================= */
-
-function updateViolation(studentId, value){
-
-  if(!db){
-    console.warn("DB not ready (violation skipped)");
-    return;
-  }
-
-  db.ref("students/"+studentId).update({
-    violation: value
-  });
-
-}
-
-/* =========================
-   STATUS UPDATE SYSTEM
-========================= */
-
-function updateStatus(studentId, status){
-
-  if(!db){
-    console.warn("DB not ready (status skipped)");
-    return;
-  }
-
-  db.ref("students/"+studentId).update({
-    status: status
-  });
-
-}
-
-/* =========================
-   SYSTEM HEARTBEAT
-========================= */
-
-function systemHeartbeat(){
-
-  if(!db){
-    return;
-  }
-
-  db.ref("system/heartbeat").set({
-    time: Date.now(),
-    status: "active"
-  });
-
-}
-
-/* AUTO INIT */
 initFirebase();
-
-/* OPTIONAL AUTO HEARTBEAT */
-setInterval(systemHeartbeat, 5000);
