@@ -267,7 +267,7 @@ function filterTable(keyword) {
    STATS ENGINE
 ========================= */
 
-function updateDashboardStats(data) {
+function updateDashboardStats(data){
 
     const safe =
         data.filter(
@@ -287,26 +287,22 @@ function updateDashboardStats(data) {
     const total =
         data.length;
 
-    if ($("statActive"))
-        $("statActive").innerText =
-        total;
+    if($("statActive"))
+        $("statActive").innerText = total;
 
-    if ($("statWarning"))
-        $("statWarning").innerText =
-        warn;
+    if($("statWarning"))
+        $("statWarning").innerText = warn;
 
-    if ($("statCritical"))
-        $("statCritical").innerText =
-        danger;
+    if($("statCritical"))
+        $("statCritical").innerText = danger;
 
-    if ($("statOtp"))
+    if($("statOtp"))
         $("statOtp").innerText =
-        GLOBAL_OTP.code;
+            window.OTP_STATS?.normal || 0;
 
-    if ($("statMaster"))
+    if($("statMaster"))
         $("statMaster").innerText =
-        "READY";
-
+            window.OTP_STATS?.master || 0;
 }
 
 /* =========================
