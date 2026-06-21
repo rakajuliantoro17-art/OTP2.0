@@ -548,3 +548,51 @@ function addAlert(message) {
     }
 
 }
+
+/* ====================================
+   SIDEBAR LIVE SYNC
+==================================== */
+
+function syncSidebarStats(){
+
+    if(!window.CBT_STATE) return;
+
+    const students =
+        Object.values(
+            CBT_STATE.students || {}
+        );
+
+    const active =
+        students.length;
+
+    const warn =
+        students.filter(
+            s => s.status === "warn"
+        ).length;
+
+    const danger =
+        students.filter(
+            s => s.status === "danger"
+        ).length;
+
+    const unlock =
+        students.filter(
+            s => (s.unlockCount || 0) > 0
+        ).length;
+
+    document.getElementById("sActive").innerText =
+        active;
+
+    document.getElementById("sWarn").innerText =
+        warn;
+
+    document.getElementById("sDanger").innerText =
+        danger;
+
+    const unlockEl =
+        document.getElementById("unlockCounter");
+
+    if(unlockEl)
+        unlockEl.innerText = unlock;
+
+}
