@@ -5,10 +5,10 @@
 
 /**
  * CORE FUNCTION:
- * - Sinkron siswa realtime
+ * - Sinkron siswa realtime (Konversi Object ke Array untuk UI)
  * - Sinkron stats realtime
  * - Sinkron alert realtime
- * - Bridge ke Firebase (jika tersedia)
+ * - Bridge ke UI (Auto Render Tabel & Stats)
  * - Local fallback mode (tanpa Firebase tetap jalan)
  */
 
@@ -17,9 +17,9 @@
 ========================= */
 
 window.CBT_STATE = {
-  students: {},
-  stats: {},
-  alerts: []
+    students: {},
+    stats: {},
+    alerts: []
 };
 
 /* =========================
@@ -27,193 +27,166 @@ window.CBT_STATE = {
 ========================= */
 
 const EventBus = {
-
-  listeners: {},
-
-  on(event, callback){
-    if(!this.listeners[event]){
-      this.listeners[event] = [];
+    listeners: {},
+    
+    on(event, callback) {
+        if (!this.listeners[event]) {
+            this.listeners[event] = [];
+        }
+        this.listeners[event].push(callback);
+    },
+    
+    emit(event, data) {
+        if (this.listeners[event]) {
+            this.listeners[event].forEach(cb => cb(data));
+        }
     }
-    this.listeners[event].push(callback);
-  },
-
-  emit(event, data){
-    if(this.listeners[event]){
-      this.listeners[event].forEach(cb => cb(data));
-    }
-  }
-
 };
 
 /* =========================
    INIT FIREBASE SAFE
 ========================= */
 
-function db(){
-  return window.db || null;
+function db() {
+    // Memastikan memanggil instance Firebase database jika tersedia dari firebase.js
+    return window.db || null; 
 }
 
 /* =========================
    REALTIME STUDENTS STREAM
 ========================= */
 
-function listenStudents(){
+function listenStudents() {
+    if (!db()) {
+        console.warn("Realtime: Firebase offline. UI akan menggunakan data Dummy.");
+        return;
+    }
 
-  if(!db()){
-    console.warn("Realtime: Firebase not available (students offline mode)");
-    return;
-  }
+    db().ref("students").on("value", (snap) => {
+        const data = snap.val() || {};
+        CBT_STATE.students = data;
 
-  db().ref("students").on("value", (snap)=>{
+        // 1. Konversi Object Firebase menjadi Array agar bisa dibaca oleh renderStudentsTable()
+        const studentsArray = Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+        }));
 
-    const data = snap.val() || {};
+        // 2. Pancarkan Event
+        EventBus.emit("students:update", studentsArray);
 
-    CBT_STATE.students = data;
+        // 3. AUTO UI BRIDGE (Update UI langsung jika fungsi tersedia)
+        if (typeof window.renderStudentsTable === "function") {
+            window.renderStudentsTable(studentsArray);
+        }
+        if (typeof window.updateDashboardStats === "function") {
+            window.updateDashboardStats(studentsArray);
+        }
 
-    EventBus.emit("students:update", data);
-
-    console.log("Students synced:", Object.keys(data).length);
-
-  });
-
+        console.log("Realtime: Students synced (" + studentsArray.length + " users)");
+    });
 }
 
 /* =========================
    REALTIME STATS STREAM
 ========================= */
 
-function listenStats(){
+function listenStats() {
+    if (!db()) return;
 
-  if(!db()){
-    console.warn("Realtime: Firebase not available (stats offline mode)");
-    return;
-  }
-
-  db().ref("stats").on("value", (snap)=>{
-
-    const data = snap.val() || {};
-
-    CBT_STATE.stats = data;
-
-    EventBus.emit("stats:update", data);
-
-    console.log("Stats updated");
-
-  });
-
+    db().ref("stats").on("value", (snap) => {
+        const data = snap.val() || {};
+        CBT_STATE.stats = data;
+        EventBus.emit("stats:update", data);
+    });
 }
 
 /* =========================
    REALTIME ALERT STREAM
 ========================= */
 
-function listenAlerts(){
+function listenAlerts() {
+    if (!db()) return;
 
-  if(!db()){
-    console.warn("Realtime: Firebase not available (alerts offline mode)");
-    return;
-  }
+    // Hanya mendengarkan data baru yang masuk (child_added)
+    db().ref("alerts").limitToLast(1).on("child_added", (snap) => {
+        const data = snap.val();
+        if(!data) return;
 
-  db().ref("alerts").on("child_added", (snap)=>{
+        CBT_STATE.alerts.unshift(data);
+        EventBus.emit("alert:new", data);
 
-    const data = snap.val();
-
-    CBT_STATE.alerts.unshift(data);
-
-    EventBus.emit("alert:new", data);
-
-    console.log("New alert:", data);
-
-  });
-
+        // AUTO UI BRIDGE (Munculkan ke panel kanan bawah)
+        if (typeof window.addAlert === "function") {
+            window.addAlert(data.msg || data.message);
+        }
+    });
 }
 
 /* =========================
-   PUSH ALERT
+   PUSH ALERT (KE FIREBASE & LOKAL)
 ========================= */
 
-function pushRealtimeAlert(type, message){
+function pushRealtimeAlert(type, message) {
+    const payload = {
+        type: type || "info",
+        msg: message,
+        time: Date.now()
+    };
 
-  const payload = {
-    type: type || "info",
-    msg: message,
-    time: Date.now()
-  };
+    CBT_STATE.alerts.unshift(payload);
+    EventBus.emit("alert:new", payload);
 
-  CBT_STATE.alerts.unshift(payload);
-
-  EventBus.emit("alert:new", payload);
-
-  if(db()){
-    db().ref("alerts").push(payload);
-  }
-
+    if (db()) {
+        db().ref("alerts").push(payload);
+    } else {
+        // Fallback jika offline: Langsung tembak ke UI
+        if (typeof window.addAlert === "function") {
+            window.addAlert(`[LOKAL] ${message}`);
+        }
+    }
 }
 
 /* =========================
    UPDATE STUDENT (VIOLATION / STATUS)
 ========================= */
 
-function updateStudent(id, payload){
-
-  if(!db()){
-    console.warn("Realtime: offline update student skipped");
-    return;
-  }
-
-  db().ref("students/" + id).update(payload);
-
-}
-
-/* =========================
-   UPDATE STATS
-========================= */
-
-function updateStats(payload){
-
-  if(!db()){
-    console.warn("Realtime: offline stats update skipped");
-    return;
-  }
-
-  db().ref("stats").set(payload);
-
+function updateStudent(id, payload) {
+    if (!db()) {
+        console.warn("Realtime: offline update student skipped");
+        return;
+    }
+    db().ref("students/" + id).update(payload);
 }
 
 /* =========================
    SYSTEM HEARTBEAT
 ========================= */
 
-function heartbeat(){
+function heartbeat() {
+    if (!db()) return;
 
-  if(!db()){
-    return;
-  }
-
-  db().ref("system/heartbeat").set({
-    time: Date.now(),
-    status: "live",
-    activeStudents: Object.keys(CBT_STATE.students || {}).length
-  });
-
+    db().ref("system/heartbeat").set({
+        time: Date.now(),
+        status: "live",
+        activeStudents: Object.keys(CBT_STATE.students || {}).length
+    });
 }
 
 /* =========================
    AUTO INIT SYSTEM
 ========================= */
 
-function initRealtime(){
+function initRealtime() {
+    console.log("CBT Realtime Engine starting...");
 
-  console.log("CBT Realtime Engine starting...");
+    listenStudents();
+    listenStats();
+    listenAlerts();
 
-  listenStudents();
-  listenStats();
-  listenAlerts();
+    setInterval(heartbeat, 5000);
 
-  setInterval(heartbeat, 5000);
-
-  console.log("CBT Realtime Engine READY ✔");
-
+    console.log("CBT Realtime Engine READY ✔");
 }
 
 /* =========================
@@ -223,7 +196,6 @@ function initRealtime(){
 window.EventBus = EventBus;
 window.pushRealtimeAlert = pushRealtimeAlert;
 window.updateStudent = updateStudent;
-window.updateStats = updateStats;
 window.initRealtime = initRealtime;
 
 /* AUTO START */
