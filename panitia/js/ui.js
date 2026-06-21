@@ -592,3 +592,119 @@ function syncSidebarStats(){
         unlockEl.innerText = unlock;
 
 }
+function renderStudentsTable(students){
+
+    const tbody =
+        document.getElementById(
+            "studentsTableBody"
+        );
+
+    if(!tbody) return;
+
+    tbody.innerHTML = "";
+
+    students.forEach(student=>{
+
+        let statusClass = "status-safe";
+
+        if(student.violation >= 10)
+            statusClass = "status-warn";
+
+        if(student.violation >= 25)
+            statusClass = "status-danger";
+
+        const unlockType =
+            student.violation >= 25
+            ? "MASTER"
+            : "NORMAL";
+
+        const unlockClass =
+            student.violation >= 25
+            ? "unlock-master"
+            : "unlock-normal";
+
+        tbody.innerHTML += `
+
+        <tr onclick="openStudentDrawer('${student.id}')">
+
+            <td>${student.name || '-'}</td>
+
+            <td>${student.class || '-'}</td>
+
+            <td>
+                ${student.progress || 0}%
+            </td>
+
+            <td class="${statusClass}">
+                ${student.violation || 0}
+            </td>
+
+            <td class="${unlockClass}">
+                ${unlockType}
+            </td>
+
+            <td class="${statusClass}">
+                ${
+                    student.violation >= 25
+                    ? 'CRITICAL'
+                    : student.violation >= 10
+                    ? 'WARNING'
+                    : 'SAFE'
+                }
+            </td>
+
+        </tr>
+
+        `;
+    });
+
+}
+
+const searchInput =
+document.getElementById(
+    "studentSearch"
+);
+
+if(searchInput){
+
+    searchInput.addEventListener(
+        "keyup",
+        function(){
+
+            const keyword =
+            this.value.toLowerCase();
+
+            const rows =
+            document.querySelectorAll(
+                "#studentsTableBody tr"
+            );
+
+            rows.forEach(row=>{
+
+                const text =
+                row.innerText.toLowerCase();
+
+                row.style.display =
+                text.includes(keyword)
+                ? ""
+                : "none";
+
+            });
+
+        }
+    );
+
+}
+
+function refreshStudents(){
+
+    pushRealtimeAlert(
+        "info",
+        "Manual refresh executed"
+    );
+
+    if(typeof listenStudents==="function"){
+        listenStudents();
+    }
+
+}
