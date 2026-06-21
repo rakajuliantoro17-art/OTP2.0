@@ -4,208 +4,293 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Sidebar - SMANSASOO CBT</title>
+<title>Sidebar Component - SMANSASOO CBT</title>
 
 <style>
-:root{
-  --glass-bg: rgba(255,255,255,0.55);
-  --glass-border: rgba(0,0,0,0.08);
-  --accent:#007aff;
-  --warn:#ff9500;
-  --danger:#ff3b30;
-  --success:#34c759;
-  --text:#1c1c1e;
+/* =====================================================
+   CORE VARIABLES (iOS Glass Style)
+===================================================== */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-highlight: rgba(255, 255, 255, 0.8);
+  
+  --text: #1c1c1e;
+  --text-secondary: #6e6e73;
+  
+  --accent: #007aff;
+  --warn: #ff9500;
+  --danger: #ff3b30;
+  --success: #34c759;
+  
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-body{
-  background:#0b0f1a;
+body {
+  /* Latar belakang gelap agar efek kaca terlihat saat standalone testing */
+  background: linear-gradient(135deg, #0b0f1a, #1a2235);
+  min-height: 100vh;
 }
 
-/* GLASS */
-.glass{
-  background:var(--glass-bg);
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
-  border:1px solid var(--glass-border);
-  border-radius:16px;
+/* =====================================================
+   SIDEBAR PANEL (Floating iPadOS Style)
+===================================================== */
+.sidebar {
+  width: 280px;
+  height: calc(100vh - 32px); /* Mengurangi tinggi agar bisa melayang */
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: var(--shadow), inset 0 1px 1px var(--glass-highlight);
 }
 
-/* SIDEBAR */
-.sidebar{
-  width:260px;
-  height:100vh;
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  position:fixed;
-  left:0;
-  top:0;
+/* =====================================================
+   BRANDING & LOGO
+===================================================== */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 
-/* BRAND */
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:10px;
+/* Fallback gaya jika gambar logo tidak di-load saat testing */
+.brand-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: white;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
 }
 
-.brand img{
-  width:38px;
-  height:38px;
-  border-radius:8px;
+.brand-img img {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  object-fit: cover;
 }
 
-/* TITLE */
-.brand b{
-  font-size:14px;
-  letter-spacing:0.5px;
+.brand-text b {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  line-height: 1.2;
+  display: block;
 }
 
-.brand small{
-  font-size:11px;
-  opacity:0.7;
+.brand-text small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
 }
 
-/* MENU */
-.menu{
-  padding:12px;
-  border-radius:12px;
-  cursor:pointer;
-  font-size:13px;
-  transition:.2s;
-  display:flex;
-  align-items:center;
-  gap:8px;
+/* =====================================================
+   NAVIGATION MENU
+===================================================== */
+.menu {
+  padding: 12px 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.menu:hover{
-  background:rgba(255,255,255,0.7);
+.menu span.icon {
+  font-size: 18px;
 }
 
-.menu.active{
-  background:rgba(0,122,255,0.15);
-  border-left:3px solid var(--accent);
+.menu:hover {
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text);
+  transform: translateX(4px); /* Animasi geser kecil saat di-hover */
 }
 
-/* DIVIDER */
-.divider{
-  height:1px;
-  background:rgba(0,0,0,0.08);
-  margin:8px 0;
+.menu.active {
+  background: #ffffff;
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transform: translateX(0);
 }
 
-/* STATUS BOX */
-.statusBox{
-  padding:10px;
-  font-size:12px;
+/* =====================================================
+   DIVIDER & SPACER
+===================================================== */
+.spacer {
+  flex: 1; /* Mendorong widget status ke paling bawah */
 }
 
-.statusItem{
-  display:flex;
-  justify-content:space-between;
-  margin:4px 0;
+.divider {
+  height: 1px;
+  background: rgba(0,0,0,0.06);
+  margin: 12px 0;
 }
 
-.badge{
-  padding:2px 8px;
-  border-radius:20px;
-  font-size:10px;
+/* =====================================================
+   STATUS WIDGET (Inner Glass)
+===================================================== */
+.statusBox {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 16px;
+  padding: 14px;
+  font-size: 12px;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.8);
 }
 
-.safe{background:rgba(52,199,89,.15); color:var(--success);}
-.warn{background:rgba(255,149,0,.15); color:var(--warn);}
-.danger{background:rgba(255,59,48,.15); color:var(--danger);}
+.statusItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.statusItem:first-child { margin-top: 0; }
+.statusItem:last-child { margin-bottom: 0; }
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.safe { background: #e5f9eb; color: var(--success); }
+.warn { background: #fff4e5; color: var(--warn); }
+.danger { background: #ffebeb; color: var(--danger); }
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar glass">
+<aside class="sidebar glass">
 
-  <!-- BRAND -->
   <div class="brand">
-    <img src="./assets/img/logo.png" alt="logo">
-    <div>
-      <b>SMANSASOO</b><br>
+    <div class="brand-img">
+      <img src="../../public/assets/img/logo.png" alt="S" onerror="this.style.display='none'; this.parentNode.innerHTML='🛡️';">
+    </div>
+    <div class="brand-text">
+      <b>SMANSASOO</b>
       <small>CBT CONTROL HUB</small>
     </div>
   </div>
 
-  <!-- NAVIGATION -->
-  <div class="menu active" onclick="navigate('dashboard')">📊 Dashboard</div>
-  <div class="menu" onclick="navigate('monitor')">🧠 Monitor Siswa</div>
-  <div class="menu" onclick="navigate('otp')">🔐 OTP Center</div>
-  <div class="menu" onclick="navigate('alert')">🚨 Alert System</div>
-  <div class="menu" onclick="navigate('log')">📜 Audit Log</div>
+  <div class="menu active" onclick="navigate(this, 'dashboard')">
+    <span class="icon">📊</span> Dashboard
+  </div>
+  <div class="menu" onclick="navigate(this, 'monitor')">
+    <span class="icon">🧠</span> Monitor Siswa
+  </div>
+  <div class="menu" onclick="navigate(this, 'otp')">
+    <span class="icon">🔑</span> OTP Center
+  </div>
+  <div class="menu" onclick="navigate(this, 'alert')">
+    <span class="icon">🚨</span> Alert System
+  </div>
+  <div class="menu" onclick="navigate(this, 'log')">
+    <span class="icon">📜</span> Audit Log
+  </div>
 
+  <div class="spacer"></div>
   <div class="divider"></div>
 
-  <!-- STATUS PANEL -->
-  <div class="statusBox glass">
-
+  <div class="statusBox">
     <div class="statusItem">
       <span>ACTIVE</span>
       <span class="badge safe" id="sActive">1487</span>
     </div>
-
     <div class="statusItem">
       <span>WARNING</span>
       <span class="badge warn" id="sWarn">32</span>
     </div>
-
     <div class="statusItem">
       <span>CRITICAL</span>
       <span class="badge danger" id="sDanger">9</span>
     </div>
-
   </div>
 
-</div>
+</aside>
 
 <script>
+/* =====================================================
+   SIDEBAR ENGINE (Standalone UI Test Logic)
+===================================================== */
 
-/* =========================
-   SIDEBAR ENGINE (NAV + READY FIREBASE HOOK)
-========================= */
+/**
+ * Fungsi untuk menangani navigasi dan efek Active Menu
+ */
+function navigate(element, page){
+  console.log("NAVIGATE TO:", page);
 
-function navigate(page){
-  console.log("NAVIGATE:",page);
+  // 1. Hapus class 'active' dari semua menu
+  const menus = document.querySelectorAll('.menu');
+  menus.forEach(menu => menu.classList.remove('active'));
+
+  // 2. Tambahkan class 'active' ke menu yang diklik
+  element.classList.add('active');
 
   // READY FIREBASE / ROUTER HOOK
   // window.location.href = page + ".html";
-
-  alert("Navigate → " + page);
 }
 
-/* =========================
-   LIVE STATUS UPDATE (READY FIREBASE LAYER 4)
-========================= */
+/* =====================================================
+   LIVE STATUS UPDATE SIMULATION
+===================================================== */
 
-// contoh simulasi realtime update
+/**
+ * Update angka pada badge status
+ */
 function updateStatus(active, warn, danger){
   document.getElementById("sActive").innerText = active;
   document.getElementById("sWarn").innerText = warn;
   document.getElementById("sDanger").innerText = danger;
 }
 
-/* MOCK LIVE UPDATE */
-setInterval(()=>{
-  let a = 1480 + Math.floor(Math.random()*20);
-  let w = 20 + Math.floor(Math.random()*15);
-  let d = 5 + Math.floor(Math.random()*10);
+/* Loop simulasi data realtime */
+setInterval(() => {
+  let a = 1480 + Math.floor(Math.random() * 20);
+  let w = 20 + Math.floor(Math.random() * 15);
+  let d = 5 + Math.floor(Math.random() * 10);
 
-  updateStatus(a,w,d);
-},4000);
+  updateStatus(a, w, d);
+}, 3000); // Update setiap 3 detik agar lebih terasa hidup
 
 </script>
 
