@@ -1,1 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMANSASOO CBT LOCK 2.0 - Portal Utama</title>
 
+    <link rel="icon" href="assets/img/favicon.ico">
+    <link rel="stylesheet" href="assets/css/glass.css">
+
+    <style>
+        /* Reset & Base Setup */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* Latar Belakang Portal */
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.4)), url('assets/img/bg.jpg') center/cover fixed;
+            color: white; /* Text dasar warna putih agar kontras dengan background gelap */
+        }
+
+        /* Container Kartu Portal */
+        .portal-container {
+            text-align: center;
+            padding: 40px;
+            width: 90%;
+            max-width: 420px;
+            /* Menggunakan class .glass dari glass.css, kita tambah sedikit penyesuaian */
+            background: rgba(255, 255, 255, 0.15); 
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        /* Logo SMANSASOO */
+        .logo {
+            width: 100px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-bottom: 35px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Tombol Pilihan Peran */
+        .role-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            text-decoration: none;
+            color: #1c1c1e;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .role-btn:hover {
+            transform: translateY(-4px);
+            background: #ffffff;
+            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4); /* Efek glow biru (accent) */
+        }
+
+        .role-icon {
+            font-size: 22px;
+            margin-right: 12px;
+        }
+
+        /* Footer Info */
+        .footer {
+            margin-top: 25px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="portal-container glass fade-in">
+        
+        <img src="assets/img/logo.png" alt="Logo SMANSASOO" class="logo">
+        
+        <h1 class="title">CBT CONTROL TOWER</h1>
+        <p class="subtitle">Security System v2.0</p>
+
+        <a href="panitia/index.html" class="role-btn">
+            <span class="role-icon">👨‍💻</span> Masuk sebagai Panitia
+        </a>
+
+        <a href="pengawas/index.html" class="role-btn">
+            <span class="role-icon">👨‍🏫</span> Masuk sebagai Pengawas
+        </a>
+
+        <div class="footer">
+            &copy; 2024 Tim IT SMAN 1 Sooko Mojokerto
+        </div>
+
+    </div>
+
+</body>
+</html>
