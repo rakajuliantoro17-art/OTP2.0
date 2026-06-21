@@ -384,7 +384,55 @@ function generateSelectedStudentOTP() {
     closeDrawer();
 
 }
+function addAlert(message,type="info"){
 
+    const list =
+        document.getElementById("alertList");
+
+    if(!list) return;
+
+    const item =
+        document.createElement("div");
+
+    item.className =
+        "alert-item " + type;
+
+    item.innerHTML = `
+
+        <div>
+            ${message}
+        </div>
+
+        <div class="alert-time">
+            ${new Date()
+            .toLocaleTimeString("id-ID")}
+        </div>
+
+    `;
+
+    list.prepend(item);
+
+    while(list.children.length > 50){
+
+        list.removeChild(
+            list.lastChild
+        );
+
+    }
+
+    const counter =
+        document.getElementById(
+            "alertCount"
+        );
+
+    if(counter){
+
+        counter.innerText =
+            list.children.length;
+
+    }
+
+}
 /* =========================
    OTP MODAL
 ========================= */
