@@ -7,83 +7,101 @@
 
 <title>SMANSASOO CBT LOCK 2.0 - PENGAWAS</title>
 
-<link rel="icon" href="../public/favicon.ico">
+<link rel="icon" href="https://sman1sooko.sch.id/media_library/images/397a98c4618261af0d970851901f2b5b.png">
 
-<!-- GLASS CORE -->
 <link rel="stylesheet" href="../public/assets/css/glass.css">
 
-<!-- SIMPLE UI -->
 <link rel="stylesheet" href="css/simple.css">
 
 </head>
 
 <body>
 
-<!-- BACKGROUND LAYER -->
 <div class="container">
 
-    <!-- =========================
-         OTP MAIN PANEL
-    ========================== -->
-    <div class="otp-panel glass fade-in">
+    <div class="otp-panel glass">
 
-        <div class="title">
-            SMANSASOO CBT LOCK
+        <div style="margin-bottom: 16px;">
+            <div class="title">SMANSASOO CBT LOCK</div>
+            <small style="color: var(--text-secondary); font-weight: 600; letter-spacing: 1.5px; font-size: 11px;">
+                DASHBOARD PENGAWAS
+            </small>
         </div>
 
-        <small>
-            DASHBOARD PENGAWAS • OTP CENTER
-        </small>
+        <hr style="border: none; height: 1px; background: rgba(0,0,0,0.06); margin: 10px 0;">
 
-        <hr style="margin:10px 0; opacity:0.2">
-
-        <!-- OTP DISPLAY -->
         <div id="otpCode" class="otp-code">
-            ------
+            --- ---
         </div>
 
-        <!-- STATUS -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
         <div class="status-bar">
-            Status: <b>LIVE OTP ACTIVE</b>
+            Status: <b style="color: var(--success);">TOTP Dinamis Aktif</b> | Siklus 60s
         </div>
 
-        <br>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 20px;">
+            <button class="btn-primary" onclick="copyOTP()">
+                📋 Salin Kode Ruangan
+            </button>
 
-        <!-- ACTION BUTTON -->
-        <button class="btn-primary" onclick="copyOTP()">
-            COPY OTP
-        </button>
+            <button class="btn-primary" style="background: rgba(0,122,255,0.1); color: var(--accent); box-shadow: none;" onclick="forceGenerateOTP()">
+                🔄 Sinkronisasi Waktu
+            </button>
 
-        <button class="btn-primary" onclick="forceGenerateOTP()">
-            REFRESH OTP
-        </button>
-
-        <button class="btn-danger" onclick="resetOTP()">
-            RESET
-        </button>
+            <button class="btn-danger" onclick="resetOTP()">
+                🔒 Bekukan Sesi (Freeze)
+            </button>
+        </div>
 
     </div>
 
 </div>
 
-<!-- =========================
-     LOG PANEL
-========================== -->
-<div class="alert glass fade-in">
-
-    <b>LOG AKTIVITAS</b>
-
-    <div id="logList" style="margin-top:10px"></div>
-
+<div class="alert glass">
+    <b style="color: var(--text-secondary); letter-spacing: 1px; font-size: 11px;">📡 LOG AKTIVITAS SERVER</b>
+    <div id="logList" style="margin-top: 8px; display: flex; flex-direction: column;">
+        </div>
 </div>
 
-<!-- =========================
-     JS ENGINE
-========================== -->
-
 <script src="../public/assets/js/app.js"></script>
+
 <script src="js/unlock.js"></script>
 
-</body>
+<script>
+    // Membaca sisa waktu lokal (60s) agar selaras dengan TOTP di unlock.js
+    // Berjalan di 60fps untuk animasi bar yang mulus tanpa mengganggu DOM Teks
+    function animateProgressBar() {
+        const now = Date.now();
+        const interval = 60; // Siklus 60 detik (Harus sama dengan di unlock.js)
+        
+        // Kalkulasi sisa detik desimal
+        const exactRemain = interval - ((now / 1000) % interval);
+        const percentage = (exactRemain / interval) * 100;
+        
+        const progressBar = document.getElementById("progressBar");
+        
+        if (progressBar) {
+            progressBar.style.width = percentage + "%";
+            
+            // Logika pergantian warna
+            if (exactRemain > 20) {
+                progressBar.style.backgroundColor = "var(--success)"; // Hijau Aman
+            } else if (exactRemain > 10) {
+                progressBar.style.backgroundColor = "var(--warn)"; // Kuning Peringatan
+            } else {
+                progressBar.style.backgroundColor = "var(--danger)"; // Merah Hampir Ganti
+            }
+        }
+        
+        requestAnimationFrame(animateProgressBar);
+    }
 
+    // Mulai animasi saat halaman dimuat
+    requestAnimationFrame(animateProgressBar);
+</script>
+
+</body>
 </html>
