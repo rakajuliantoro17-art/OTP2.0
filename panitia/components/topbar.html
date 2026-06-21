@@ -4,182 +4,243 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Topbar - SMANSASOO CBT</title>
+<title>Topbar Component - SMANSASOO CBT</title>
 
 <style>
-:root{
-  --glass-bg: rgba(255,255,255,0.55);
-  --glass-border: rgba(0,0,0,0.08);
-  --text:#1c1c1e;
-  --accent:#007aff;
-  --warn:#ff9500;
-  --danger:#ff3b30;
-  --success:#34c759;
+/* =====================================================
+   CORE VARIABLES (iOS Glass Style)
+===================================================== */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-highlight: rgba(255, 255, 255, 0.8);
+  
+  --text: #1c1c1e;
+  --text-secondary: #6e6e73;
+  
+  --accent: #007aff;
+  --accent-muted: rgba(0, 122, 255, 0.1);
+  --success: #34c759;
+  
+  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-body{
-  background:#0b0f1a;
-  color:var(--text);
+body {
+  /* Latar belakang gelap agar panel kaca terlihat jelas saat testing */
+  background: linear-gradient(135deg, #0b0f1a, #1a2235);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 16px;
 }
 
-/* GLASS */
-.glass{
-  background:var(--glass-bg);
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
-  border:1px solid var(--glass-border);
-  border-radius:16px;
+/* =====================================================
+   TOPBAR PANEL (Sticky iOS Style Navigation)
+===================================================== */
+.topbar {
+  width: 100%;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm), inset 0 1px 1px var(--glass-highlight);
 }
 
-/* TOPBAR */
-.topbar{
-  width:100%;
-  padding:14px 18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  position:sticky;
-  top:0;
-  z-index:50;
+/* =====================================================
+   LEFT SECTION (Branding Info)
+===================================================== */
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-/* LEFT SECTION */
-.left{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
+.title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: var(--text);
 }
 
-.title{
-  font-size:14px;
-  font-weight:600;
-  letter-spacing:0.3px;
+.subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
-.subtitle{
-  font-size:11px;
-  opacity:0.6;
+/* =====================================================
+   RIGHT SECTION (Live Stats & Buttons)
+===================================================== */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-/* RIGHT SECTION */
-.right{
-  display:flex;
-  align-items:center;
-  gap:12px;
+/* BREATHING STATUS DOT (Animasi Nadi Hijau) */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
-/* CLOCK */
-.clock{
-  font-size:13px;
-  font-weight:600;
-  padding:6px 10px;
-  border-radius:10px;
-  background:rgba(255,255,255,0.4);
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  position: relative;
 }
 
-/* STATUS DOT */
-.dot{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:var(--success);
-  box-shadow:0 0 10px var(--success);
+.dot::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite ease-out;
+  top: 0;
+  left: 0;
 }
 
-/* ACTION BUTTON */
-button{
-  padding:8px 12px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  font-size:12px;
-  background:var(--accent);
-  color:white;
-  transition:.2s;
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(3.5); opacity: 0; }
 }
 
-button:hover{
-  transform:scale(1.05);
+/* APPLE SYSTEM CLOCK */
+.clock {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text);
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(0, 0, 0, 0.02);
 }
+
+/* BUTTONS GROUP */
+.btn {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover {
+  transform: scale(1.03);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-secondary {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text);
+}
+.btn-secondary:hover { background: rgba(0, 0, 0, 0.08); }
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+}
+.btn-primary:hover { box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35); }
+
 </style>
 </head>
 
 <body>
 
-<div class="topbar glass">
+<header class="topbar glass">
 
-  <!-- LEFT -->
   <div class="left">
     <div class="title">SMANSASOO CBT CONTROL TOWER</div>
     <div class="subtitle">Panitia Monitoring System • Layer 7 Ready</div>
   </div>
 
-  <!-- RIGHT -->
   <div class="right">
 
-    <div class="dot" title="System Active"></div>
+    <div class="status-indicator" title="Firebase Realtime Connected">
+      <div class="dot"></div>
+      <span>LIVE</span>
+    </div>
 
     <div class="clock" id="clock">00:00:00</div>
 
-    <button onclick="refreshSystem()">Refresh</button>
+    <button class="btn btn-secondary" onclick="refreshSystem()">
+      🔄 Refresh
+    </button>
 
-    <button onclick="triggerGlobalOTP()">OTP</button>
+    <button class="btn btn-primary" onclick="triggerGlobalOTP()">
+      🔑 Global OTP
+    </button>
 
   </div>
 
-</div>
+</header>
 
 <script>
+/* =====================================================
+   TOPBAR ENGINE (Standalone UI Test Logic)
+===================================================== */
 
-/* =========================
-   TOPBAR ENGINE (LAYER 7 READY)
-========================= */
+/* RUN LIVE CLOCK (Format Indonesia Waktu Setempat) */
+setInterval(() => {
+  document.getElementById("clock").innerText = new Date().toLocaleTimeString('id-ID');
+}, 1000);
 
-/* CLOCK LIVE */
-setInterval(()=>{
-  document.getElementById("clock").innerText =
-    new Date().toLocaleTimeString();
-},1000);
-
-/* REFRESH SYSTEM */
-function refreshSystem(){
-
-  alert("System Refresh Triggered");
-
-  // FIREBASE READY
+/* REFRESH SYSTEM SIMULATION */
+function refreshSystem() {
+  alert("🔄 Mengirim instruksi refresh sinyal antarmuka...");
+  
+  // READY FIREBASE LOGIC HOOK
   // firebase.database().ref("system/refresh").set(Date.now());
 }
 
-/* GLOBAL OTP TRIGGER */
-function triggerGlobalOTP(){
+/* GLOBAL OTP GENERATOR SIMULATION */
+function triggerGlobalOTP() {
+  // Generate 6 digit master code
+  const otp = Math.floor(100000 + Math.random() * 900000);
 
-  let otp = Math.floor(100000 + Math.random()*900000);
+  alert("🔑 GLOBAL MASTER OTP BARU: " + otp + "\n\nKode ini berlaku untuk seluruh pengawas ruangan.");
 
-  alert("GLOBAL OTP → " + otp);
-
-  // FIREBASE READY
+  // READY FIREBASE LOGIC HOOK
   // firebase.database().ref("otp/global").set({
   //   otp: otp,
   //   time: Date.now()
   // });
 }
-
-/* =========================
-   FUTURE INTEGRATION HOOK
-========================= */
-
-/*
-firebase.database().ref("system/status").on("value",(snap)=>{
-  // update status dot
-});
-*/
 
 </script>
 
