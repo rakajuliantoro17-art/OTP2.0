@@ -220,31 +220,48 @@ td {
 
 <body>
 
-<div class="wrapper glass">
+<div class="table glass">
 
-  <div class="controlBar">
-    <h3>Live Monitoring</h3>
-    <div class="actions">
-      <input type="text" id="search" placeholder="Cari nama atau kelas..." onkeyup="filterTable()">
-      <button onclick="refreshData()">🔄 Refresh</button>
+    <div class="table-toolbar">
+
+        <div class="table-title">
+            LIVE MONITORING
+        </div>
+
+        <div class="table-actions">
+
+            <input
+                id="studentSearch"
+                type="text"
+                placeholder="Cari nama / kelas..."
+            >
+
+            <button onclick="refreshStudents()">
+                Refresh
+            </button>
+
+        </div>
+
     </div>
-  </div>
 
-  <div class="tableBox">
     <table>
-      <thead>
-        <tr>
-          <th>Nama Siswa</th>
-          <th>Kelas</th>
-          <th>Progress</th>
-          <th>Pelanggaran</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="tbody">
+
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Kelas</th>
+                <th>Progress</th>
+                <th>Violation</th>
+                <th>Unlock</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody id="studentsTableBody">
+
         </tbody>
+
     </table>
-  </div>
 
 </div>
 
