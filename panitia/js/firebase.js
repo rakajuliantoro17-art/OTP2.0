@@ -6,411 +6,166 @@ FIREBASE CONNECTION MANAGER
 /* =========================
 FIREBASE CONFIG
 ===============
-
 GANTI DENGAN CONFIG
 DARI PROJECT FIREBASE ASLI
 ========================= */
-
 const firebaseConfig = {
-
-```
-apiKey: "YOUR_API_KEY",
-
-authDomain:
-    "YOUR_PROJECT.firebaseapp.com",
-
-databaseURL:
-    "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
-
-projectId:
-    "YOUR_PROJECT",
-
-storageBucket:
-    "YOUR_PROJECT.appspot.com",
-
-messagingSenderId:
-    "XXXXXXXX",
-
-appId:
-    "XXXXXXXX"
-```
-
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "XXXXXXXX",
+    appId: "XXXXXXXX"
 };
 
 /* =========================
 GLOBAL FIREBASE STATE
 ========================= */
-
 window.db = null;
 
 window.FIREBASE = {
-
-```
-initialized: false,
-
-connected: false,
-
-lastPing: null
-```
-
+    initialized: false,
+    connected: false,
+    lastPing: null
 };
 
-if(typeof setFirebaseStatus==="function"){
-    setFirebaseStatus(true);
-}
-if(typeof setFirebaseStatus==="function"){
-    setFirebaseStatus(false);
-}
 /* =========================
 INIT FIREBASE
 ========================= */
-
 function initFirebase() {
+    try {
+        if (typeof firebase === "undefined") {
+            console.warn("Firebase SDK tidak ditemukan");
+            return false;
+        }
 
-```
-try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
 
-    if (
+        window.db = firebase.database();
+        FIREBASE.initialized = true;
 
-        typeof firebase ===
-        "undefined"
+        console.log("Firebase Ready");
+        monitorFirebase();
 
-    ) {
-
-        console.warn(
-
-            "Firebase SDK tidak ditemukan"
-
-        );
-
+        return true;
+    } catch(error) {
+        console.error("Firebase Init Error", error);
         return false;
-
     }
-
-    if (
-
-        !firebase.apps.length
-
-    ) {
-
-        firebase.initializeApp(
-
-            firebaseConfig
-
-        );
-
-    }
-
-    window.db =
-        firebase.database();
-
-    FIREBASE.initialized =
-        true;
-
-    console.log(
-
-        "Firebase Ready"
-
-    );
-
-    monitorFirebase();
-
-    return true;
-
-}
-
-catch(error) {
-
-    console.error(
-
-        "Firebase Init Error",
-
-        error
-
-    );
-
-    return false;
-
-}
-```
-
 }
 
 /* =========================
 CONNECTION MONITOR
 ========================= */
-
 function monitorFirebase() {
+    if (!window.db) return;
 
-```
-if (!window.db)
-    return;
+    const connectedRef = window.db.ref(".info/connected");
 
-const connectedRef =
+    connectedRef.on("value", snapshot => {
+        if (snapshot.val() === true) {
+            FIREBASE.connected = true;
+            FIREBASE.lastPing = Date.now();
+            console.log("Firebase Connected");
 
-    db.ref(
-        ".info/connected"
-    );
-
-connectedRef.on(
-
-    "value",
-
-    snapshot => {
-
-        if (
-
-            snapshot.val() ===
-            true
-
-        ) {
-
-            FIREBASE.connected =
-                true;
-
-            FIREBASE.lastPing =
-                Date.now();
-
-            console.log(
-
-                "Firebase Connected"
-
-            );
-
-            if (
-
-                window.UI
-
-            ) {
-
-                UI.connection =
-                    "online";
-
+            if (window.UI) {
+                UI.connection = "online";
             }
 
-            if (
+            if (typeof addAlert === "function") {
+                addAlert("Firebase Connected", "info");
+            }
+            
+            // Hook ke UI.js untuk mengubah status indikator
+            if (typeof setFirebaseStatus === "function") {
+                setFirebaseStatus(true);
+            }
+        } else {
+            FIREBASE.connected = false;
+            console.warn("Firebase Disconnected");
 
-                typeof addAlert ===
-                "function"
-
-            ) {
-
-                addAlert(
-
-                    "Firebase Connected"
-
-                );
-
+            if (window.UI) {
+                UI.connection = "offline";
             }
 
+            // Hook ke UI.js untuk mengubah status indikator
+            if (typeof setFirebaseStatus === "function") {
+                setFirebaseStatus(false);
+            }
         }
-
-        else {
-
-            FIREBASE.connected =
-                false;
-
-            console.warn(
-
-                "Firebase Disconnected"
-
-            );
-
-            if (
-
-                window.UI
-
-            ) {
-
-                UI.connection =
-                    "offline";
-
-            }
-
-        }
-
-    }
-
-);
-```
-
+    });
 }
 
 /* =========================
 HEARTBEAT
 ========================= */
-
 function firebaseHeartbeat() {
+    if (!window.db || !FIREBASE.connected) return;
 
-```
-if (
-
-    !window.db ||
-
-    !FIREBASE.connected
-
-)
-
-    return;
-
-db.ref(
-
-    "system/server"
-
-).update({
-
-    timestamp:
-        Date.now(),
-
-    source:
-        "panitia",
-
-    version:
-        "2.0"
-
-});
-```
-
+    window.db.ref("system/server").update({
+        timestamp: Date.now(),
+        source: "panitia",
+        version: "2.0"
+    });
 }
 
 /* =========================
 WRITE HELPER
 ========================= */
-
-function writeData(
-
-```
-path,
-data
-```
-
-) {
-
-```
-if (!window.db)
-    return;
-
-return db.ref(path).set(data);
-```
-
+function writeData(path, data) {
+    if (!window.db) return;
+    return window.db.ref(path).set(data);
 }
 
 /* =========================
 UPDATE HELPER
 ========================= */
-
-function updateData(
-
-```
-path,
-data
-```
-
-) {
-
-```
-if (!window.db)
-    return;
-
-return db.ref(path).update(data);
-```
-
+function updateData(path, data) {
+    if (!window.db) return;
+    return window.db.ref(path).update(data);
 }
 
 /* =========================
 READ HELPER
 ========================= */
-
-function readData(
-
-```
-path,
-callback
-```
-
-) {
-
-```
-if (!window.db)
-    return;
-
-db.ref(path)
-  .on(
-
-    "value",
-
-    snapshot => {
-
-        callback(
-
-            snapshot.val()
-
-        );
-
-    }
-
-);
-```
-
+function readData(path, callback) {
+    if (!window.db) return;
+    
+    window.db.ref(path).on("value", snapshot => {
+        callback(snapshot.val());
+    });
 }
 
 /* =========================
-EXPORT
+EXPORT GLOBAL
 ========================= */
-
-window.writeData =
-writeData;
-
-window.updateData =
-updateData;
-
-window.readData =
-readData;
-
-window.initFirebase =
-initFirebase;
+window.writeData = writeData;
+window.updateData = updateData;
+window.readData = readData;
+window.initFirebase = initFirebase;
 
 /* =========================
 AUTO START
 ========================= */
-
 initFirebase();
 
-setInterval(
+// Detak Jantung Server (Heartbeat) tiap 10 detik
+setInterval(firebaseHeartbeat, 10000);
 
-```
-firebaseHeartbeat,
+// Fallback Pembaruan UI Status Server
+setInterval(() => {
+    const badge = document.getElementById("serverStatus");
+    if (!badge) return;
 
-10000
-```
-
-);
-
-setInterval(()=>{
-
-    const badge =
-        document.getElementById(
-            "serverStatus"
-        );
-
-    if(!badge) return;
-
-    if(window.db){
-
-        badge.innerText =
-            "ONLINE";
-
-        badge.className =
-            "badge safe";
-
-    }else{
-
-        badge.innerText =
-            "OFFLINE";
-
-        badge.className =
-            "badge danger";
-
+    // Lebih akurat menggunakan FIREBASE.connected daripada sekadar melihat ada objek db
+    if (FIREBASE.connected) {
+        badge.innerText = "ONLINE";
+        badge.className = "badge safe";
+    } else {
+        badge.innerText = "OFFLINE";
+        badge.className = "badge danger";
     }
-
-},1000);
+}, 1000);
