@@ -1,86 +1,381 @@
 /* =====================================================
-   SMANSASOO CBT CONTROL TOWER
-   FIREBASE CONNECTION MANAGER (LAYER 4)
+SMANSASOO Security System 2.0
+FIREBASE CONNECTION MANAGER
 ===================================================== */
 
-/**
- * TUGAS FILE INI:
- * 1. Menginisialisasi Firebase App secara aman.
- * 2. Mengekspor instance 'window.db' agar bisa dipakai oleh realtime.js & otp.js
- * 3. Memantau status koneksi (Online/Offline) ke server.
- */
-
 /* =========================
-   FIREBASE CONFIGURATION
+FIREBASE CONFIG
+===============
+
+GANTI DENGAN CONFIG
+DARI PROJECT FIREBASE ASLI
 ========================= */
+
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "XXXX",
-    appId: "XXXX"
+
+```
+apiKey: "YOUR_API_KEY",
+
+authDomain:
+    "YOUR_PROJECT.firebaseapp.com",
+
+databaseURL:
+    "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+projectId:
+    "YOUR_PROJECT",
+
+storageBucket:
+    "YOUR_PROJECT.appspot.com",
+
+messagingSenderId:
+    "XXXXXXXX",
+
+appId:
+    "XXXXXXXX"
+```
+
 };
 
 /* =========================
-   GLOBAL INSTANCE
+GLOBAL FIREBASE STATE
 ========================= */
-window.db = null; // Akan dipakai oleh seluruh sistem (realtime.js, otp.js)
+
+window.db = null;
+
+window.FIREBASE = {
+
+```
+initialized: false,
+
+connected: false,
+
+lastPing: null
+```
+
+};
 
 /* =========================
-   SAFE INIT FIREBASE
+INIT FIREBASE
 ========================= */
+
 function initFirebase() {
-    try {
-        // Cek apakah script SDK Firebase dari index.html berhasil dimuat
-        if (typeof firebase === "undefined") {
-            console.warn("🔥 Firebase SDK tidak terdeteksi. Sistem berjalan di mode LOKAL/DUMMY.");
-            return false;
-        }
 
-        // Cegah inisialisasi ganda
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+```
+try {
 
-        // Simpan instance database ke window agar bisa diakses global
-        window.db = firebase.database();
-        console.log("🔥 Firebase Init: SUCCESS ✔");
+    if (
 
-        // Jalankan pemantau koneksi otomatis
-        monitorConnection();
+        typeof firebase ===
+        "undefined"
 
-        return true;
+    ) {
 
-    } catch (e) {
-        console.error("🔥 Firebase Init ERROR:", e);
+        console.warn(
+
+            "Firebase SDK tidak ditemukan"
+
+        );
+
         return false;
+
     }
+
+    if (
+
+        !firebase.apps.length
+
+    ) {
+
+        firebase.initializeApp(
+
+            firebaseConfig
+
+        );
+
+    }
+
+    window.db =
+        firebase.database();
+
+    FIREBASE.initialized =
+        true;
+
+    console.log(
+
+        "Firebase Ready"
+
+    );
+
+    monitorFirebase();
+
+    return true;
+
+}
+
+catch(error) {
+
+    console.error(
+
+        "Firebase Init Error",
+
+        error
+
+    );
+
+    return false;
+
+}
+```
+
 }
 
 /* =========================
-   CONNECTION MONITORING
+CONNECTION MONITOR
 ========================= */
-function monitorConnection() {
-    if (!window.db) return;
 
-    // '.info/connected' adalah fitur bawaan Firebase untuk mengecek status koneksi jaringan
-    const connectedRef = window.db.ref(".info/connected");
-    
-    connectedRef.on("value", (snap) => {
-        if (snap.val() === true) {
-            console.log("🔥 Firebase: TERHUBUNG KE SERVER");
-            if (typeof window.addAlert === "function") {
-                window.addAlert("Sistem terhubung ke Firebase Server ✔");
+function monitorFirebase() {
+
+```
+if (!window.db)
+    return;
+
+const connectedRef =
+
+    db.ref(
+        ".info/connected"
+    );
+
+connectedRef.on(
+
+    "value",
+
+    snapshot => {
+
+        if (
+
+            snapshot.val() ===
+            true
+
+        ) {
+
+            FIREBASE.connected =
+                true;
+
+            FIREBASE.lastPing =
+                Date.now();
+
+            console.log(
+
+                "Firebase Connected"
+
+            );
+
+            if (
+
+                window.UI
+
+            ) {
+
+                UI.connection =
+                    "online";
+
             }
-        } else {
-            console.warn("🔥 Firebase: KONEKSI TERPUTUS");
+
+            if (
+
+                typeof addAlert ===
+                "function"
+
+            ) {
+
+                addAlert(
+
+                    "Firebase Connected"
+
+                );
+
+            }
+
         }
-    });
+
+        else {
+
+            FIREBASE.connected =
+                false;
+
+            console.warn(
+
+                "Firebase Disconnected"
+
+            );
+
+            if (
+
+                window.UI
+
+            ) {
+
+                UI.connection =
+                    "offline";
+
+            }
+
+        }
+
+    }
+
+);
+```
+
 }
 
 /* =========================
-   AUTO START
+HEARTBEAT
 ========================= */
+
+function firebaseHeartbeat() {
+
+```
+if (
+
+    !window.db ||
+
+    !FIREBASE.connected
+
+)
+
+    return;
+
+db.ref(
+
+    "system/server"
+
+).update({
+
+    timestamp:
+        Date.now(),
+
+    source:
+        "panitia",
+
+    version:
+        "2.0"
+
+});
+```
+
+}
+
+/* =========================
+WRITE HELPER
+========================= */
+
+function writeData(
+
+```
+path,
+data
+```
+
+) {
+
+```
+if (!window.db)
+    return;
+
+return db.ref(path).set(data);
+```
+
+}
+
+/* =========================
+UPDATE HELPER
+========================= */
+
+function updateData(
+
+```
+path,
+data
+```
+
+) {
+
+```
+if (!window.db)
+    return;
+
+return db.ref(path).update(data);
+```
+
+}
+
+/* =========================
+READ HELPER
+========================= */
+
+function readData(
+
+```
+path,
+callback
+```
+
+) {
+
+```
+if (!window.db)
+    return;
+
+db.ref(path)
+  .on(
+
+    "value",
+
+    snapshot => {
+
+        callback(
+
+            snapshot.val()
+
+        );
+
+    }
+
+);
+```
+
+}
+
+/* =========================
+EXPORT
+========================= */
+
+window.writeData =
+writeData;
+
+window.updateData =
+updateData;
+
+window.readData =
+readData;
+
+window.initFirebase =
+initFirebase;
+
+/* =========================
+AUTO START
+========================= */
+
 initFirebase();
+
+setInterval(
+
+```
+firebaseHeartbeat,
+
+10000
+```
+
+);
