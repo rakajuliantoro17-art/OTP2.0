@@ -1,161 +1,366 @@
 /* =====================================================
-   SMANSASOO CBT CONTROL TOWER
-   OTP ENGINE MODULE (LAYER 4–7 READY)
+   SMANSASOO Security System 2.0
+   OTP ENGINE
+   Auto OTP + Unlock OTP + Auto Submit
 ===================================================== */
-
-/**
- * FEATURES:
- * - Generate OTP lokal
- * - Global OTP broadcast
- * - OTP per siswa
- * - Firebase ready hook
- * - Safe fallback (tanpa Firebase tetap jalan)
- */
 
 /* =========================
    OTP STATE
 ========================= */
 
-let OTP_STATE = {
-  lastGenerated: null,
-  lastTarget: null
+window.OTP_STATE = {
+
+    systemOTP: "000000",
+
+    unlockOTP: null,
+
+    expires: 60,
+
+    generatedAt: Date.now(),
+
+    lastTarget: null
+
 };
 
 /* =========================
    RANDOM OTP GENERATOR
 ========================= */
 
-function generateOTPCode(){
+function generateOTPCode() {
 
-  return Math.floor(100000 + Math.random() * 900000);
-
-}
-
-/* =========================
-   LOCAL OTP (UI ONLY)
-========================= */
-
-function createLocalOTP(){
-
-  const otp = generateOTPCode();
-
-  OTP_STATE.lastGenerated = otp;
-
-  console.log("LOCAL OTP:", otp);
-
-  return otp;
-}
-
-/* =========================
-   GLOBAL OTP (ALL STUDENTS)
-========================= */
-
-function triggerGlobalOTP(){
-
-  const otp = generateOTPCode();
-
-  OTP_STATE.lastGenerated = otp;
-  OTP_STATE.lastTarget = "GLOBAL";
-
-  alert("GLOBAL OTP GENERATED → " + otp);
-
-  /* FIREBASE HOOK */
-  if(window.db){
-    window.db.ref("otp/global").set({
-      otp: otp,
-      created: Date.now(),
-      scope: "global"
-    });
-  }
-
-  /* OPTIONAL ALERT HOOK */
-  if(typeof pushAlert === "function"){
-    pushAlert({
-      type:"warn",
-      msg:"GLOBAL OTP GENERATED",
-      otp:otp
-    });
-  }
-
-  return otp;
-}
-
-/* =========================
-   STUDENT OTP
-========================= */
-
-function sendStudentOTP(studentId){
-
-  const otp = generateOTPCode();
-
-  OTP_STATE.lastGenerated = otp;
-  OTP_STATE.lastTarget = studentId;
-
-  alert("OTP → " + otp + " (Student ID: " + studentId + ")");
-
-  /* FIREBASE */
-  if(window.db){
-    window.db.ref("otp/" + studentId).set({
-      otp: otp,
-      created: Date.now(),
-      status: "active"
-    });
-  }
-
-  /* ALERT SYSTEM */
-  if(typeof pushAlert === "function"){
-    pushAlert({
-      type:"info",
-      msg:"OTP SENT TO STUDENT " + studentId
-    });
-  }
-
-  return otp;
-}
-
-/* =========================
-   VERIFY OTP (OPTIONAL FUTURE)
-========================= */
-
-function verifyOTP(inputOtp, targetOtp){
-
-  return String(inputOtp) === String(targetOtp);
+    return Math.floor(
+        100000 + Math.random() * 900000
+    ).toString();
 
 }
 
 /* =========================
-   REVOKE OTP
+   SYSTEM OTP
+   WARNING (11-25)
 ========================= */
 
-function revokeOTP(studentId){
+function generateSystemOTP() {
 
-  if(window.db){
-    window.db.ref("otp/" + studentId).update({
-      status:"revoked"
-    });
-  }
+    OTP_STATE.systemOTP =
+        generateOTPCode();
 
-  if(typeof pushAlert === "function"){
-    pushAlert({
-      type:"danger",
-      msg:"OTP REVOKED → " + studentId
-    });
-  }
+    OTP_STATE.generatedAt =
+        Date.now();
+
+    OTP_STATE.expires = 60;
+
+    console.log(
+        "SYSTEM OTP REFRESHED"
+    );
+
+    if (window.db) {
+
+        db.ref("system/otp").set({
+
+            code:
+                OTP_STATE.systemOTP,
+
+            expires:
+                60,
+
+            generatedAt:
+                Date.now(),
+
+            type:
+                "system"
+
+        });
+
+    }
+
+    return OTP_STATE.systemOTP;
 
 }
 
 /* =========================
-   QUICK DEBUG
+   OTP COUNTDOWN
 ========================= */
 
-function getLastOTP(){
-  return OTP_STATE.lastGenerated;
+function startOTPCountdown() {
+
+    setInterval(() => {
+
+        const elapsed = Math.floor(
+
+            (
+                Date.now() -
+                OTP_STATE.generatedAt
+
+            ) / 1000
+
+        );
+
+        OTP_STATE.expires =
+            Math.max(
+                0,
+                60 - elapsed
+            );
+
+        if (window.db) {
+
+            db.ref("system/otp/expires")
+                .set(
+                    OTP_STATE.expires
+                );
+
+        }
+
+    }, 1000);
+
 }
 
-/* EXPORT FOR GLOBAL USE */
-window.triggerGlobalOTP = triggerGlobalOTP;
-window.sendStudentOTP = sendStudentOTP;
-window.createLocalOTP = createLocalOTP;
-window.revokeOTP = revokeOTP;
-window.verifyOTP = verifyOTP;
-window.getLastOTP = getLastOTP;
+/* =========================
+   AUTO REFRESH OTP
+========================= */
+
+function startOTPRefresh() {
+
+    generateSystemOTP();
+
+    setInterval(() => {
+
+        generateSystemOTP();
+
+    }, 60000);
+
+}
+
+/* =========================
+   UNLOCK OTP
+   CRITICAL (26-29)
+========================= */
+
+function generateUnlockOTP(studentId) {
+
+    const otp =
+        generateOTPCode();
+
+    OTP_STATE.unlockOTP =
+        otp;
+
+    OTP_STATE.lastTarget =
+        studentId;
+
+    if (window.db) {
+
+        db.ref(
+            "unlockOtp/" +
+            studentId
+        ).set({
+
+            otp:
+                otp,
+
+            created:
+                Date.now(),
+
+            status:
+                "active",
+
+            type:
+                "unlock"
+
+        });
+
+    }
+
+    if (
+        typeof addAlert ===
+        "function"
+    ) {
+
+        addAlert(
+            "UNLOCK OTP diberikan kepada " +
+            studentId
+        );
+
+    }
+
+    return otp;
+
+}
+
+/* =========================
+   REVOKE UNLOCK OTP
+========================= */
+
+function revokeUnlockOTP(studentId) {
+
+    if (!window.db)
+        return;
+
+    db.ref(
+        "unlockOtp/" +
+        studentId
+    ).update({
+
+        status:
+            "revoked"
+
+    });
+
+}
+
+/* =========================
+   AUTO SUBMIT
+   >= 30 VIOLATION
+========================= */
+
+function triggerAutoSubmit(studentId) {
+
+    console.log(
+        "AUTO SUBMIT:",
+        studentId
+    );
+
+    if (window.db) {
+
+        db.ref(
+            "students/" +
+            studentId
+        ).update({
+
+            status:
+                "submitted",
+
+            autoSubmit:
+                true,
+
+            submittedAt:
+                Date.now()
+
+        });
+
+    }
+
+    if (
+        typeof addAlert ===
+        "function"
+    ) {
+
+        addAlert(
+            "AUTO SUBMIT dijalankan untuk " +
+            studentId
+        );
+
+    }
+
+}
+
+/* =========================
+   VERIFY OTP
+========================= */
+
+function verifyOTP(
+    inputOtp,
+    targetOtp
+) {
+
+    return String(
+        inputOtp
+    ) === String(
+        targetOtp
+    );
+
+}
+
+/* =========================
+   GET CURRENT SYSTEM OTP
+========================= */
+
+function getSystemOTP() {
+
+    return OTP_STATE.systemOTP;
+
+}
+
+/* =========================
+   GET CURRENT UNLOCK OTP
+========================= */
+
+function getUnlockOTP() {
+
+    return OTP_STATE.unlockOTP;
+
+}
+
+/* =========================
+   GET COUNTDOWN
+========================= */
+
+function getOTPCountdown() {
+
+    return OTP_STATE.expires;
+
+}
+
+/* =========================
+   DEBUG INFO
+========================= */
+
+function getOTPInfo() {
+
+    return {
+
+        systemOTP:
+            OTP_STATE.systemOTP,
+
+        unlockOTP:
+            OTP_STATE.unlockOTP,
+
+        expires:
+            OTP_STATE.expires,
+
+        generatedAt:
+            OTP_STATE.generatedAt,
+
+        lastTarget:
+            OTP_STATE.lastTarget
+
+    };
+
+}
+
+/* =========================
+   AUTO START
+========================= */
+
+startOTPRefresh();
+
+startOTPCountdown();
+
+/* =========================
+   GLOBAL EXPORT
+========================= */
+
+window.generateSystemOTP =
+    generateSystemOTP;
+
+window.generateUnlockOTP =
+    generateUnlockOTP;
+
+window.revokeUnlockOTP =
+    revokeUnlockOTP;
+
+window.triggerAutoSubmit =
+    triggerAutoSubmit;
+
+window.verifyOTP =
+    verifyOTP;
+
+window.getSystemOTP =
+    getSystemOTP;
+
+window.getUnlockOTP =
+    getUnlockOTP;
+
+window.getOTPCountdown =
+    getOTPCountdown;
+
+window.getOTPInfo =
+    getOTPInfo;
