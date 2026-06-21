@@ -940,3 +940,34 @@ background:#ff9500;
     color:#ff3b30;
     font-weight:700;
 }
+/* ==========================================
+   TOPBAR MINI STATS
+========================================== */
+
+.mini-stat{
+    display:flex;
+    align-items:center;
+    gap:6px;
+
+    padding:8px 12px;
+
+    border-radius:12px;
+
+    background:
+    rgba(255,255,255,.45);
+
+    font-size:13px;
+    font-weight:600;
+}
+
+.mini-stat b{
+    font-size:14px;
+}
+
+.firebase-online{
+    background:#34c759;
+}
+
+.firebase-offline{
+    background:#ff3b30;
+}
