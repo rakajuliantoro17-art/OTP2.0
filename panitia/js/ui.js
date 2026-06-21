@@ -1,876 +1,175 @@
 /* =====================================================
    SMANSASOO Security System 2.0
-   Control Center Engine
-   Dashboard Panitia
+   Control Center Engine - Dashboard Panitia (Refactored)
 ===================================================== */
 
 /* =========================
    GLOBAL UI STATE
 ========================= */
-
 window.UI = {
-
     selectedStudent: null,
-
     alerts: 0,
-
     connection: "offline",
-
     lastSync: null,
-
     dummyData: [
-
-        {
-            id: "S001",
-            name: "Ahmad Maulana",
-            kelas: "XI-1",
-            progress: "40/40",
-            violation: 0,
-            status: "safe"
-        },
-
-        {
-            id: "S002",
-            name: "Budi Santoso",
-            kelas: "XI-2",
-            progress: "25/40",
-            violation: 12,
-            status: "warn"
-        },
-
-        {
-            id: "S003",
-            name: "Citra Kirana",
-            kelas: "XI-3",
-            progress: "30/40",
-            violation: 28,
-            status: "danger"
-        },
-
-        {
-            id: "S004",
-            name: "Dewi Lestari",
-            kelas: "XI-1",
-            progress: "15/40",
-            violation: 5,
-            status: "safe"
-        },
-
-        {
-            id: "S005",
-            name: "Eko Pratama",
-            kelas: "XII-IPA",
-            progress: "10/40",
-            violation: 32,
-            status: "danger"
-        }
-
+        { id: "S001", name: "Ahmad Maulana", kelas: "XI-1", progress: "40/40", violation: 0, status: "safe" },
+        { id: "S002", name: "Budi Santoso", kelas: "XI-2", progress: "25/40", violation: 12, status: "warn" },
+        { id: "S003", name: "Citra Kirana", kelas: "XI-3", progress: "30/40", violation: 28, status: "danger" },
+        { id: "S004", name: "Dewi Lestari", kelas: "XI-1", progress: "15/40", violation: 5, status: "safe" },
+        { id: "S005", name: "Eko Pratama", kelas: "XII-IPA", progress: "10/40", violation: 32, status: "danger" }
     ]
-
 };
-
 
 /* =========================
    DOM HELPERS
 ========================= */
-
 function $(id) {
-
     return document.getElementById(id);
-
 }
 
 /* =========================
    INITIALIZATION
 ========================= */
-
 document.addEventListener("DOMContentLoaded", () => {
-
     startClock();
+    
+    // Inisialisasi awal menggunakan data dummy/lokal
+    renderStudentsTable(UI.dummyData);
+    updateDashboardStats(UI.dummyData);
 
-    renderStudentsTable(
-        UI.dummyData
-    );
+    // Mencegah error jika fungsi OTP berada di file JS terpisah (otp.js)
+    if (typeof generateSystemOTP === "function") generateSystemOTP();
+    if (typeof startOTPCountdown === "function") startOTPCountdown();
 
-    updateDashboardStats(
-        UI.dummyData
-    );
-
-    generateSystemOTP();
-
-    startOTPCountdown();
-
+    // Loop OTP Fallback (Bisa di-override oleh engine OTP utama jika ada)
     setInterval(() => {
-
-        generateSystemOTP();
-
+        if (typeof generateSystemOTP === "function") generateSystemOTP();
     }, 60000);
 
-    addAlert(
-        "SMANSASOO Security System 2.0 berhasil dimuat"
-    );
-
-    console.log(
-        "SMANSASOO Security System 2.0 - Control Center Ready"
-    );
-
+    addAlert("SMANSASOO Security System 2.0 berhasil dimuat", "info");
+    console.log("SMANSASOO Security System 2.0 - Control Center Ready");
 });
 
 /* =========================
-   CLOCK ENGINE
+   CLOCK ENGINE (Merged)
 ========================= */
-
 function startClock() {
-
     const clock = $("clock");
-
     if (!clock) return;
 
-    setInterval(() => {
+    const updateTime = () => {
+        clock.innerText = new Date().toLocaleTimeString("id-ID");
+    };
 
-        clock.innerText =
-            new Date().toLocaleTimeString(
-                "id-ID"
-            );
-
-    }, 1000);
-
+    updateTime(); // Panggil sekali saat start
+    setInterval(updateTime, 1000);
 }
 
 /* =========================
-   STATUS COLOR
+   STATUS COLOR HELPER
 ========================= */
-
 function getStatusColor(status) {
-
     switch (status) {
-
-        case "safe":
-            return "#34c759";
-
-        case "warn":
-            return "#ff9500";
-
-        case "danger":
-            return "#ff3b30";
-
-        default:
-            return "#6e6e73";
-
+        case "safe": return "#34c759";
+        case "warn": return "#ff9500";
+        case "danger": return "#ff3b30";
+        default: return "#6e6e73";
     }
-
 }
 
 /* =========================
-   TABLE ENGINE
+   TABLE ENGINE (Merged & Robust)
 ========================= */
-
 function renderStudentsTable(data) {
-
-    const tbody = $("tableBody");
-
+    // Memastikan kompatibilitas ID tabel lama maupun baru
+    const tbody = $("studentsTableBody") || $("tableBody");
     if (!tbody) return;
 
     tbody.innerHTML = "";
 
     data.forEach(student => {
-
-        const tr =
-            document.createElement("tr");
-
+        const tr = document.createElement("tr");
         tr.style.cursor = "pointer";
+        tr.style.borderBottom = "1px solid rgba(255,255,255,.08)";
+        tr.style.transition = "background 0.2s ease";
 
-        tr.style.borderBottom =
-            "1px solid rgba(255,255,255,.08)";
-
-        tr.onmouseover = () => {
-
-            tr.style.background =
-                "rgba(255,255,255,.08)";
-
+        tr.onmouseover = () => tr.style.background = "rgba(255,255,255,.08)";
+        tr.onmouseout = () => tr.style.background = "transparent";
+        
+        // Kompatibilitas fungsi drawer (openDrawer vs openStudentDrawer)
+        tr.onclick = () => {
+            if (typeof openStudentDrawer === "function") {
+                openStudentDrawer(student.id || student);
+            } else {
+                openDrawer(student);
+            }
         };
 
-        tr.onmouseout = () => {
+        // Fallback properti (mendukung dummyData dan data Firebase)
+        const studentName = student.name || '-';
+        const studentClass = student.kelas || student.class || '-';
+        const studentProgress = student.progress || "0%";
+        const violationCount = student.violation || 0;
+        
+        let status = student.status || "safe";
+        if (violationCount >= 25) status = "danger";
+        else if (violationCount >= 10) status = "warn";
 
-            tr.style.background =
-                "transparent";
-
-        };
-
-        tr.onclick = () =>
-            openDrawer(student);
-
-        const color =
-            getStatusColor(student.status);
+        const color = getStatusColor(status);
+        const unlockType = violationCount >= 25 ? "MASTER" : "NORMAL";
+        const unlockClass = violationCount >= 25 ? "unlock-master" : "unlock-normal";
 
         tr.innerHTML = `
-
-            <td>${student.name}</td>
-
-            <td>${student.kelas}</td>
-
-            <td>${student.progress}</td>
-
-            <td>
-                <b>${student.violation}</b>
-            </td>
-
-            <td
-                style="
-                    color:${color};
-                    font-weight:700;
-                    text-transform:uppercase;
-                "
-            >
-                ${student.status}
-            </td>
-
+            <td>${studentName}</td>
+            <td>${studentClass}</td>
+            <td>${studentProgress}</td>
+            <td><b style="color:${color}">${violationCount}</b></td>
+            <td class="${unlockClass}" style="font-size:12px; font-weight:600;">${unlockType}</td>
+            <td style="color:${color}; font-weight:700; text-transform:uppercase;">${status}</td>
         `;
 
         tbody.appendChild(tr);
-
     });
-
 }
 
 /* =========================
-   TABLE FILTER
+   TABLE FILTER & SEARCH
 ========================= */
-
 function filterTable(keyword) {
-
     let filtered = [];
-
     if (keyword === "all") {
-
         filtered = UI.dummyData;
-
     } else {
-
-        filtered =
-            UI.dummyData.filter(
-                s => s.status === keyword
-            );
-
+        filtered = UI.dummyData.filter(s => s.status === keyword);
     }
-
     renderStudentsTable(filtered);
+    addAlert("Filter tabel: " + keyword.toUpperCase(), "info");
+}
 
-    addAlert(
-        "Filter tabel: " +
-        keyword.toUpperCase()
-    );
+const searchInput = $("studentSearch");
+if (searchInput) {
+    searchInput.addEventListener("keyup", function() {
+        const keyword = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#studentsTableBody tr, #tableBody tr");
 
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(keyword) ? "" : "none";
+        });
+    });
 }
 
 /* =========================
    STATS ENGINE
 ========================= */
-
-function updateDashboardStats(data){
-
-    const safe =
-        data.filter(
-            s => s.status === "safe"
-        ).length;
-
-    const warn =
-        data.filter(
-            s => s.status === "warn"
-        ).length;
-
-    const danger =
-        data.filter(
-            s => s.status === "danger"
-        ).length;
-
-    const total =
-        data.length;
-
-    if($("statActive"))
-        $("statActive").innerText = total;
-
-    if($("statWarning"))
-        $("statWarning").innerText = warn;
-
-    if($("statCritical"))
-        $("statCritical").innerText = danger;
-
-    if($("statOtp"))
-        $("statOtp").innerText =
-            window.OTP_STATS?.normal || 0;
-
-    if($("statMaster"))
-        $("statMaster").innerText =
-            window.OTP_STATS?.master || 0;
-}
-
-/* =========================
-   DRAWER ENGINE
-========================= */
-
-function openDrawer(student) {
-
-    UI.selectedStudent =
-        student;
-
-    $("d-name").innerText =
-        student.name;
-
-    $("d-class").innerText =
-        student.kelas;
-
-    $("d-progress").innerText =
-        student.progress;
-
-    $("d-violation").innerText =
-        student.violation;
-
-    const color =
-        getStatusColor(
-            student.status
-        );
-
-    const statusEl = $("d-status");
-
-   statusEl.className =
-    "drawer-status";
-
-   switch(student.status){
-
-    case "safe":
-        statusEl.classList.add("status-safe");
-        break;
-
-    case "warn":
-        statusEl.classList.add("status-warn");
-        break;
-
-    case "danger":
-        statusEl.classList.add("status-danger");
-        break;
-
-}
-
-statusEl.innerText =
-    student.status.toUpperCase();
-
-    statusEl.style.color =
-        color;
-
-    statusEl.style.fontWeight =
-        "bold";
-
-    $("drawer")
-        ?.classList.add("active");
-
-}
-
-function closeDrawer() {
-
-    $("drawer")
-        ?.classList.remove("active");
-
-}
-
-/* =========================
-   MASTER OTP
-========================= */
-
-function generateSelectedStudentOTP() {
-
-    if (!UI.selectedStudent)
-        return;
-
-    const otp =
-        Math.floor(
-            100000 +
-            Math.random() * 900000
-        );
-
-    openOTPModal(otp);
-
-    addAlert(
-        "Master OTP diberikan kepada " +
-        UI.selectedStudent.name
-    );
-
-    closeDrawer();
-
-}
-function addAlert(message,type="info"){
-
-    const list =
-        document.getElementById("alertList");
-
-    if(!list) return;
-
-    const item =
-        document.createElement("div");
-
-    item.className =
-        "alert-item " + type;
-
-    item.innerHTML = `
-
-        <div>
-            ${message}
-        </div>
-
-        <div class="alert-time">
-            ${new Date()
-            .toLocaleTimeString("id-ID")}
-        </div>
-
-    `;
-
-    list.prepend(item);
-
-    while(list.children.length > 50){
-
-        list.removeChild(
-            list.lastChild
-        );
-
-    }
-
-    const counter =
-        document.getElementById(
-            "alertCount"
-        );
-
-    if(counter){
-
-        counter.innerText =
-            list.children.length;
-
-    }
-
-}
-/* =========================
-   OTP MODAL
-========================= */
-
-function openOTPModal(otpValue) {
-
-    const modal =
-        $("otpModal");
-
-    if (!modal)
-        return;
-
-    $("otpValue").innerText =
-        otpValue;
-
-    modal.classList.add(
-        "active"
-    );
-
-}
-
-function closeOTPModal() {
-
-    $("otpModal")
-        ?.classList.remove(
-            "active"
-        );
-
-}
-
-/* =========================
-   ALERT SYSTEM
-========================= */
-
-function addAlert(message) {
-
-    const list =
-        $("alertList");
-
-    if (!list)
-        return;
-
-    const item =
-        document.createElement(
-            "div"
-        );
-
-    item.style.padding =
-        "10px";
-
-    item.style.marginBottom =
-        "8px";
-
-    item.style.borderRadius =
-        "10px";
-
-    item.style.background =
-        "rgba(255,255,255,.08)";
-
-    item.style.borderLeft =
-        "4px solid #007aff";
-
-    item.innerHTML = `
-
-        <div
-            style="
-                font-size:10px;
-                opacity:.7;
-            "
-        >
-            ${new Date()
-                .toLocaleTimeString("id-ID")}
-        </div>
-
-        <div
-            style="
-                font-size:13px;
-            "
-        >
-            ${message}
-        </div>
-
-    `;
-
-    list.prepend(item);
-
-    while (
-        list.children.length > 10
-    ) {
-
-        list.removeChild(
-            list.lastChild
-        );
-
-    }
-
-}
-
-/* ====================================
-   SIDEBAR LIVE SYNC
-==================================== */
-
-function syncSidebarStats(){
-
-    if(!window.CBT_STATE) return;
-
-    const students =
-        Object.values(
-            CBT_STATE.students || {}
-        );
-
-    const active =
-        students.length;
-
-    const warn =
-        students.filter(
-            s => s.status === "warn"
-        ).length;
-
-    const danger =
-        students.filter(
-            s => s.status === "danger"
-        ).length;
-
-    const unlock =
-        students.filter(
-            s => (s.unlockCount || 0) > 0
-        ).length;
-
-    document.getElementById("sActive").innerText =
-        active;
-
-    document.getElementById("sWarn").innerText =
-        warn;
-
-    document.getElementById("sDanger").innerText =
-        danger;
-
-    const unlockEl =
-        document.getElementById("unlockCounter");
-
-    if(unlockEl)
-        unlockEl.innerText = unlock;
-
-}
-function renderStudentsTable(students){
-
-    const tbody =
-        document.getElementById(
-            "studentsTableBody"
-        );
-
-    if(!tbody) return;
-
-    tbody.innerHTML = "";
-
-    students.forEach(student=>{
-
-        let statusClass = "status-safe";
-
-        if(student.violation >= 10)
-            statusClass = "status-warn";
-
-        if(student.violation >= 25)
-            statusClass = "status-danger";
-
-        const unlockType =
-            student.violation >= 25
-            ? "MASTER"
-            : "NORMAL";
-
-        const unlockClass =
-            student.violation >= 25
-            ? "unlock-master"
-            : "unlock-normal";
-
-        tbody.innerHTML += `
-
-        <tr onclick="openStudentDrawer('${student.id}')">
-
-            <td>${student.name || '-'}</td>
-
-            <td>${student.class || '-'}</td>
-
-            <td>
-                ${student.progress || 0}%
-            </td>
-
-            <td class="${statusClass}">
-                ${student.violation || 0}
-            </td>
-
-            <td class="${unlockClass}">
-                ${unlockType}
-            </td>
-
-            <td class="${statusClass}">
-                ${
-                    student.violation >= 25
-                    ? 'CRITICAL'
-                    : student.violation >= 10
-                    ? 'WARNING'
-                    : 'SAFE'
-                }
-            </td>
-
-        </tr>
-
-        `;
-    });
-
-}
-
-const searchInput =
-document.getElementById(
-    "studentSearch"
-);
-
-if(searchInput){
-
-    searchInput.addEventListener(
-        "keyup",
-        function(){
-
-            const keyword =
-            this.value.toLowerCase();
-
-            const rows =
-            document.querySelectorAll(
-                "#studentsTableBody tr"
-            );
-
-            rows.forEach(row=>{
-
-                const text =
-                row.innerText.toLowerCase();
-
-                row.style.display =
-                text.includes(keyword)
-                ? ""
-                : "none";
-
-            });
-
-        }
-    );
-
-}
-
-function refreshStudents(){
-
-    pushRealtimeAlert(
-        "info",
-        "Manual refresh executed"
-    );
-
-    if(typeof listenStudents==="function"){
-        listenStudents();
-    }
-
-}
-
-/* ==========================================
-   LIVE CLOCK
-========================================== */
-
-setInterval(()=>{
-
-    const clock =
-    document.getElementById(
-        "clock"
-    );
-
-    if(clock){
-
-        clock.innerText =
-        new Date()
-        .toLocaleTimeString(
-            "id-ID"
-        );
-
-    }
-
-},1000);
-
-/* ==========================================
-   REFRESH SYSTEM
-========================================== */
-
-function refreshSystem(){
-
-    if(typeof pushRealtimeAlert==="function"){
-
-        pushRealtimeAlert(
-            "info",
-            "Manual refresh requested"
-        );
-
-    }
-
-    if(window.db){
-
-        window.db
-        .ref("system/refresh")
-        .set(Date.now());
-
-    }
-
-}
-
-/* ==========================================
-   FIREBASE STATUS
-========================================== */
-
-function setFirebaseStatus(
-    online=true
-){
-
-    const dot =
-    document.getElementById(
-        "firebaseDot"
-    );
-
-    const label =
-    document.getElementById(
-        "firebaseStatus"
-    );
-
-    if(!dot || !label)
-        return;
-
-    if(online){
-
-        dot.classList.remove(
-            "firebase-offline"
-        );
-
-        dot.classList.add(
-            "firebase-online"
-        );
-
-        label.innerText =
-        "LIVE";
-
-    }else{
-
-        dot.classList.remove(
-            "firebase-online"
-        );
-
-        dot.classList.add(
-            "firebase-offline"
-        );
-
-        label.innerText =
-        "OFFLINE";
-
-    }
-
-}
-
-/* ==========================================
-   TOPBAR COUNTERS
-========================================== */
-
-function updateTopbarCounters(){
-
-    const students =
-    Object.values(
-        CBT_STATE.students || {}
-    );
-
-    const alerts =
-    CBT_STATE.alerts || [];
-
-    const activeEl =
-    document.getElementById(
-        "topActive"
-    );
-
-    const alertEl =
-    document.getElementById(
-        "topAlert"
-    );
-
-    if(activeEl){
-
-        activeEl.innerText =
-        students.length;
-
-    }
-
-    if(alertEl){
-
-        alertEl.innerText =
-        alerts.length;
-
-    }
-
-}
-
-/* ==========================================
-   AUTO UPDATE
-========================================== */
-
-setInterval(
-    updateTopbarCounters,
-    2000
-);
-
-/* ==========================================
-   EVENT BUS HOOK
-========================================== */
-
-if(window.EventBus){
-
-    EventBus.on(
-        "students:update",
-        updateTopbarCounters
-    );
-
-    EventBus.on(
-        "alert:new",
-        updateTopbarCounters
-    );
-
-}
+function updateDashboardStats(data) {
+    const safe = data.filter(s => s.status === "safe").length;
+    const warn = data.filter(s => s.status === "warn").length;
+    const danger = data.filter(s => s.status === "danger").length;
+    const total = data.length;
+
+    if ($("statActive")) $("statActive").innerText = total;
+    if ($("statWarning")) $("statWarning").innerText = warn;
+    if ($("statCritical")) $("statCritical").innerText = danger;
+    if ($("statOtp")) $("statOtp").innerText = window.OTP_STATS?.normal || 0;
+    if ($("statMaster"))
