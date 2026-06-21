@@ -880,3 +880,63 @@ background:#ff9500;
 
 }
 ```
+/* ==========================================
+   TABLE TOOLBAR
+========================================== */
+
+.table-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 20px;
+    border-bottom:1px solid rgba(255,255,255,.3);
+}
+
+.table-title{
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:1px;
+}
+
+.table-actions{
+    display:flex;
+    gap:10px;
+}
+
+.table-actions input{
+    width:260px;
+    padding:10px 14px;
+    border:none;
+    outline:none;
+    border-radius:12px;
+    background:rgba(255,255,255,.6);
+}
+
+.table-actions input:focus{
+    background:#fff;
+}
+
+.unlock-normal{
+    color:#34c759;
+    font-weight:700;
+}
+
+.unlock-master{
+    color:#af52de;
+    font-weight:700;
+}
+
+.violation-safe{
+    color:#34c759;
+    font-weight:700;
+}
+
+.violation-warn{
+    color:#ff9500;
+    font-weight:700;
+}
+
+.violation-danger{
+    color:#ff3b30;
+    font-weight:700;
+}
