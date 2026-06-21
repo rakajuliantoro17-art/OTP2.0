@@ -55,6 +55,12 @@ lastPing: null
 
 };
 
+if(typeof setFirebaseStatus==="function"){
+    setFirebaseStatus(true);
+}
+if(typeof setFirebaseStatus==="function"){
+    setFirebaseStatus(false);
+}
 /* =========================
 INIT FIREBASE
 ========================= */
