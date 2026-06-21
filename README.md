@@ -1,19 +1,28 @@
-# SMANSASOO CBT LOCK 2.0
+# SMANSASOO Security System 2.0
 
-Sistem pengawasan dan pengamanan Computer Based Test (CBT) berbasis Moodle yang dikembangkan oleh Tim IT SMAN 1 Sooko Mojokerto.
+Sistem keamanan, monitoring, dan pengawasan ujian digital yang dikembangkan oleh Tim IT SMAN 1 Sooko Mojokerto.
 
 ---
 
 ## Overview
 
-SMANSASOO CBT LOCK 2.0 merupakan sistem pendamping Moodle yang dirancang untuk:
+SMANSASOO Security System 2.0 merupakan platform monitoring dan pengamanan ujian berbasis Moodle yang dirancang untuk mendeteksi pelanggaran, mengelola OTP, memonitor peserta secara realtime, serta menyediakan pusat kendali bagi panitia dan pengawas.
 
-* Mendeteksi pelanggaran peserta ujian secara realtime
-* Mengelola OTP Unlock secara terpusat
-* Menyediakan dashboard monitoring panitia
-* Menyediakan dashboard OTP untuk pengawas
-* Menampilkan statistik ujian secara realtime
-* Terintegrasi dengan Moodle, Firebase, GitHub, dan Vercel
+Sistem ini dibangun menggunakan HTML, CSS, JavaScript, Firebase Realtime Database, GitHub, dan Vercel.
+
+---
+
+## Tujuan Sistem
+
+* Monitoring peserta ujian secara realtime
+* Deteksi pelanggaran ujian otomatis
+* Sistem OTP Unlock terpusat
+* Dashboard Panitia (Control Center)
+* Dashboard Pengawas (Supervisor Panel)
+* Integrasi Moodle CBT
+* Monitoring status perangkat peserta
+* Monitoring progres pengerjaan soal
+* Statistik realtime selama ujian berlangsung
 
 ---
 
@@ -21,82 +30,95 @@ SMANSASOO CBT LOCK 2.0 merupakan sistem pendamping Moodle yang dirancang untuk:
 
 ### Panitia
 
-* Monitoring seluruh peserta ujian
+* Monitoring seluruh peserta
 * Monitoring pelanggaran realtime
-* Monitoring OTP
-* Monitoring status perangkat peserta
-* Monitoring progress pengerjaan soal
+* Monitoring OTP dan Master OTP
+* Monitoring status perangkat
+* Monitoring progres ujian
+* Monitoring Firebase dan server CBT
 
 ### Pengawas
 
-* Menampilkan OTP Unlock
-* Membantu peserta yang terkunci
-* Monitoring sederhana
+* Menampilkan OTP peserta
+* Membantu proses unlock peserta
+* Monitoring sederhana ruang ujian
 
 ### Tim IT
 
-* Monitoring sistem
-* Monitoring Firebase
-* Monitoring server Moodle
-* Monitoring konektivitas
+* Monitoring infrastruktur sistem
+* Monitoring Firebase Realtime Database
+* Monitoring integrasi Moodle
+* Monitoring deployment Vercel
 
 ---
 
 ## Arsitektur Sistem
 
-Moodle
+Moodle CBT
+
 ↓
-CBT Lock Client
+
+CBT Client Security Layer
+
 ↓
+
 Firebase Realtime Database
+
 ↓
-Dashboard Panitia
+
+Panitia Control Center
+
 ↓
-Dashboard Pengawas
+
+Supervisor Panel
 
 ---
 
 ## Struktur Project
 
 ```text
-SMANSASOO-CBTLOCK/
+public/
 
-├── dashboard-panitia/
+├── index.html
 │
+├── panitia/
 │   ├── index.html
-│
 │   ├── css/
-│   │   └── dashboard.css
+│   └── js/
 │
-│   ├── js/
-│   │   ├── firebase.js
-│   │   ├── otp.js
-│   │   ├── realtime.js
-│   │   └── ui.js
+├── pengawas/
+│   ├── index.html
+│   ├── css/
+│   └── js/
 │
-│   ├── components/
-│   │   ├── sidebar.html
-│   │   ├── topbar.html
-│   │   ├── stats.html
-│   │   ├── table.html
-│   │   ├── drawer.html
-│   │   └── alert.html
+├── shared/
+│   ├── constants.js
+│   ├── engine.js
+│   ├── otp-engine.js
+│   └── status-engine.js
 │
-│   └── assets/
+├── firebase/
+│   ├── config.js
+│   ├── schema.json
+│   └── rules.txt
 │
-├── dashboard-pengawas/
+├── moodle/
+│   ├── cbtlock.js
+│   ├── sync.js
+│   └── tracker.js
 │
-├── moodle-client/
-│
-├── public/
-│   └── assets/
-│       └── img/
-│           ├── logo.png
-│           └── stg.jpg
-│
-├── vercel.json
-│
-└── README.md
+└── assets/
+    ├── img/
+    │   ├── logo.png
+    │   ├── favicon.ico
+    │   ├── stg.jpg
+    │   └── bg.jpg
+    │
+    ├── css/
+    │   └── glass.css
+    │
+    └── js/
+        └── app.js
 ```
 
 ---
@@ -119,54 +141,35 @@ Peserta dapat membuka soal kembali menggunakan OTP Pengawas.
 
 26 – 29 pelanggaran
 
-Soal terkunci.
-
-Peserta wajib menggunakan Master OTP.
+Peserta wajib menggunakan Master OTP Panitia.
 
 ### AUTO SUBMIT
 
 30 pelanggaran
 
-Ujian otomatis diselesaikan dan dikirim.
+Ujian otomatis dikirim dan sesi berakhir.
 
 ---
 
-## Jenis Pelanggaran
-
-### Mobile Device
-
-* Keluar fullscreen
-* Berpindah tab
-* Berpindah aplikasi
-* Browser minimize
-* Screen lock
-* Membuka notifikasi
-* Swipe notification bar
-* Mengaktifkan paket data
-* Menonaktifkan paket data
-* Membuka aplikasi lain
-
----
-
-## OTP System
+## Sistem OTP
 
 ### OTP Pengawas
 
-Digunakan pada pelanggaran:
+Digunakan pada status:
 
-11 – 25
+* WARNING
 
 ### Master OTP Panitia
 
-Digunakan pada pelanggaran:
+Digunakan pada status:
 
-26 – 29
+* CRITICAL
 
 ### Auto Submit
 
 Terjadi pada:
 
-30 pelanggaran
+* 30 pelanggaran
 
 ---
 
@@ -176,10 +179,10 @@ Fitur utama:
 
 * Live Monitoring
 * Live Statistics
-* Alert System
+* Realtime Alert System
 * OTP Center
 * Master OTP Center
-* Detail Siswa
+* Detail Peserta
 * Violation Monitoring
 * Progress Monitoring
 * Firebase Monitoring
@@ -191,33 +194,62 @@ Fitur utama:
 
 Fitur utama:
 
-* Global OTP Display
-* Auto Refresh OTP
-* Tampilan sederhana
-* Realtime sinkron dengan Panitia
+* OTP Display
+* OTP Unlock
+* Auto Refresh
+* Realtime Sinkronisasi
+* Monitoring Ruang Ujian
 
 ---
 
 ## Teknologi
 
-Frontend:
+### Frontend
 
 * HTML5
 * CSS3
-* JavaScript
+* JavaScript ES6
 
-Backend:
+### Backend
 
 * Firebase Realtime Database
 
-Deployment:
+### Deployment
 
 * GitHub
 * Vercel
 
-CBT Platform:
+### CBT Platform
 
 * Moodle
+
+---
+
+## Asset Standar
+
+### Logo
+
+```text
+/assets/img/logo.png
+```
+
+### Favicon
+
+```text
+/assets/img/favicon.ico
+```
+
+### Background Dashboard Panitia
+
+```text
+/assets/img/stg.jpg
+```
+
+### Background Dashboard Pengawas
+
+```text
+/ assets/img/bg.jpg
+```
 
 ---
 
@@ -225,58 +257,61 @@ CBT Platform:
 
 Nama Sistem:
 
-SMANSASOO CBT LOCK 2.0
+SMANSASOO Security System 2.0
 
 Sekolah:
 
 SMAN 1 Sooko Mojokerto
 
-Logo:
+Developer:
 
-public/assets/img/logo.png
-
-Background:
-
-public/assets/img/stg.jpg
+Tim IT SMAN 1 Sooko
 
 ---
 
 ## Roadmap
 
-### Phase 1
+### Layer 1
+
+Project Foundation
+
+### Layer 2
 
 Dashboard Panitia
 
-### Phase 2
+### Layer 3
 
 Dashboard Pengawas
 
-### Phase 3
+### Layer 4
 
-Firebase Realtime
+Firebase Realtime Integration
 
-### Phase 4
+### Layer 5
+
+OTP Engine
+
+### Layer 6
 
 Moodle Integration
 
-### Phase 5
-
-CBT Lock Client
-
-### Phase 6
+### Layer 7
 
 Production Deployment
 
-### Phase 7
+### Layer 8
 
-Full Live Examination System
+Full Security Monitoring System
 
 ---
 
-## Developer
+## License
 
-Tim IT
+Internal Project
+
 SMAN 1 Sooko Mojokerto
 
-SMANSASOO CBT LOCK 2.0
+---
 
+SMANSASOO Security System 2.0
+© Tim IT SMAN 1 Sooko Mojokerto
