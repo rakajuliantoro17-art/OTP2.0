@@ -708,3 +708,169 @@ function refreshStudents(){
     }
 
 }
+
+/* ==========================================
+   LIVE CLOCK
+========================================== */
+
+setInterval(()=>{
+
+    const clock =
+    document.getElementById(
+        "clock"
+    );
+
+    if(clock){
+
+        clock.innerText =
+        new Date()
+        .toLocaleTimeString(
+            "id-ID"
+        );
+
+    }
+
+},1000);
+
+/* ==========================================
+   REFRESH SYSTEM
+========================================== */
+
+function refreshSystem(){
+
+    if(typeof pushRealtimeAlert==="function"){
+
+        pushRealtimeAlert(
+            "info",
+            "Manual refresh requested"
+        );
+
+    }
+
+    if(window.db){
+
+        window.db
+        .ref("system/refresh")
+        .set(Date.now());
+
+    }
+
+}
+
+/* ==========================================
+   FIREBASE STATUS
+========================================== */
+
+function setFirebaseStatus(
+    online=true
+){
+
+    const dot =
+    document.getElementById(
+        "firebaseDot"
+    );
+
+    const label =
+    document.getElementById(
+        "firebaseStatus"
+    );
+
+    if(!dot || !label)
+        return;
+
+    if(online){
+
+        dot.classList.remove(
+            "firebase-offline"
+        );
+
+        dot.classList.add(
+            "firebase-online"
+        );
+
+        label.innerText =
+        "LIVE";
+
+    }else{
+
+        dot.classList.remove(
+            "firebase-online"
+        );
+
+        dot.classList.add(
+            "firebase-offline"
+        );
+
+        label.innerText =
+        "OFFLINE";
+
+    }
+
+}
+
+/* ==========================================
+   TOPBAR COUNTERS
+========================================== */
+
+function updateTopbarCounters(){
+
+    const students =
+    Object.values(
+        CBT_STATE.students || {}
+    );
+
+    const alerts =
+    CBT_STATE.alerts || [];
+
+    const activeEl =
+    document.getElementById(
+        "topActive"
+    );
+
+    const alertEl =
+    document.getElementById(
+        "topAlert"
+    );
+
+    if(activeEl){
+
+        activeEl.innerText =
+        students.length;
+
+    }
+
+    if(alertEl){
+
+        alertEl.innerText =
+        alerts.length;
+
+    }
+
+}
+
+/* ==========================================
+   AUTO UPDATE
+========================================== */
+
+setInterval(
+    updateTopbarCounters,
+    2000
+);
+
+/* ==========================================
+   EVENT BUS HOOK
+========================================== */
+
+if(window.EventBus){
+
+    EventBus.on(
+        "students:update",
+        updateTopbarCounters
+    );
+
+    EventBus.on(
+        "alert:new",
+        updateTopbarCounters
+    );
+
+}
