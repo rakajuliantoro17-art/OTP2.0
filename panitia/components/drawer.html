@@ -7,243 +7,156 @@
 <title>Drawer Control - SMANSASOO CBT</title>
 
 <style>
-:root{
-  --glass-bg: rgba(255,255,255,0.55);
-  --glass-border: rgba(0,0,0,0.08);
-  --accent:#007aff;
-  --warn:#ff9500;
-  --danger:#ff3b30;
-  --success:#34c759;
-  --text:#1c1c1e;
+/* =====================================================
+   CORE VARIABLES (iOS Glass Style)
+===================================================== */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-highlight: rgba(255, 255, 255, 0.8);
+  
+  --text: #1c1c1e;
+  --text-secondary: #6e6e73;
+  
+  --accent: #007aff;
+  --warn: #ff9500;
+  --danger: #ff3b30;
+  --success: #34c759;
+  
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-body{
-  background:#0b0f1a;
+body {
+  background: linear-gradient(135deg, #0b0f1a, #1a2235);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
 }
 
-/* GLASS */
-.glass{
-  background:var(--glass-bg);
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
-  border:1px solid var(--glass-border);
-  border-radius:18px;
+/* Tombol Trigger untuk Testing */
+.trigger-btn {
+  padding: 14px 24px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.trigger-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
+
+/* =====================================================
+   DRAWER PANEL (Floating iPadOS Style)
+===================================================== */
+.drawer {
+  position: fixed;
+  right: -420px; /* Sembunyikan di luar layar */
+  top: 16px;
+  bottom: 16px;
+  width: 380px;
+  padding: 28px;
+  
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px; /* Lebih membulat */
+  box-shadow: -10px 0 40px rgba(0,0,0,0.15), inset 0 1px 1px var(--glass-highlight);
+  
+  transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Efek pantul/elastis */
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-/* DRAWER */
-.drawer{
-  position:fixed;
-  top:0;
-  right:-380px;
-  width:360px;
-  height:100vh;
-  padding:20px;
-  transition:.25s ease;
-  z-index:999;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
+.drawer.active {
+  right: 16px; /* Floating margin */
 }
 
-.drawer.active{
-  right:0;
+/* =====================================================
+   HEADER & STATUS BADGE
+===================================================== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-/* HEADER */
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+#name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+#class { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+
+.badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
-/* STATUS BADGE */
-.badge{
-  padding:4px 10px;
-  border-radius:20px;
-  font-size:11px;
-  font-weight:600;
+.safe { background: #e5f9eb; color: var(--success); border: 1px solid rgba(52,199,89,0.3); }
+.warn { background: #fff4e5; color: var(--warn); border: 1px solid rgba(255,149,0,0.3); }
+.danger { background: #ffebeb; color: var(--danger); border: 1px solid rgba(255,59,48,0.3); }
+
+/* =====================================================
+   INFO CARD (Inner Glass)
+===================================================== */
+.info-card {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid rgba(255,255,255,0.6);
 }
 
-.safe{background:rgba(52,199,89,.15); color:var(--success);}
-.warn{background:rgba(255,149,0,.15); color:var(--warn);}
-.danger{background:rgba(255,59,48,.15); color:var(--danger);}
-
-/* INFO */
-.info{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  font-size:13px;
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
-/* ACTION BUTTONS */
-.actions{
-  margin-top:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+.info-row b {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
 }
 
-button{
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:600;
+/* =====================================================
+   ACTION BUTTONS
+===================================================== */
+.actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.primary{
-  background:var(--accent);
-  color:white;
-}
-
-.warnBtn{
-  background:var(--warn);
-  color:white;
-}
-
-.dangerBtn{
-  background:var(--danger);
-  color:white;
-}
-
-.closeBtn{
-  background:rgba(0,0,0,0.08);
-}
-</style>
-</head>
-
-<body>
-
-<!-- DRAWER -->
-<div id="drawer" class="drawer glass">
-
-  <div class="header">
-    <div>
-      <b id="name">Nama Siswa</b><br>
-      <small id="class">Kelas</small>
-    </div>
-
-    <div id="status" class="badge safe">SAFE</div>
-  </div>
-
-  <div class="info">
-    <div>Progress: <b id="progress">0/40</b></div>
-    <div>Violation: <b id="violation">0</b></div>
-    <div>ID Session: <b id="sid">-</b></div>
-  </div>
-
-  <div class="actions">
-
-    <button class="primary" onclick="generateOTP()">
-      🔐 Generate OTP
-    </button>
-
-    <button class="warnBtn" onclick="warnStudent()">
-      ⚠ Warning
-    </button>
-
-    <button class="dangerBtn" onclick="lockStudent()">
-      🔴 Lock Access
-    </button>
-
-    <button class="closeBtn" onclick="closeDrawer()">
-      Close
-    </button>
-
-  </div>
-
-</div>
-
-<script>
-
-/* =========================
-   DRAWER ENGINE (READY FIREBASE HOOK)
-========================= */
-
-let currentStudent=null;
-
-/* OPEN DRAWER */
-function openDrawer(data){
-
-  currentStudent=data;
-
-  document.getElementById("name").innerText=data.name;
-  document.getElementById("class").innerText=data.class;
-  document.getElementById("progress").innerText=data.progress;
-  document.getElementById("violation").innerText=data.violation;
-  document.getElementById("sid").innerText=data.id || "-";
-
-  const status=document.getElementById("status");
-  status.className="badge "+data.status;
-  status.innerText=data.status.toUpperCase();
-
-  document.getElementById("drawer").classList.add("active");
-
-  // FIREBASE HOOK READY
-  // firebase.database().ref("logs").push({event:"open_drawer",data});
-}
-
-/* CLOSE */
-function closeDrawer(){
-  document.getElementById("drawer").classList.remove("active");
-}
-
-/* =========================
-   ACTION ENGINE (LAYER 7 LOGIC HOOK)
-========================= */
-
-/* OTP */
-function generateOTP(){
-
-  if(!currentStudent) return;
-
-  const otp=Math.floor(100000+Math.random()*900000);
-
-  alert("OTP: "+otp);
-
-  // FIREBASE READY
-  // firebase.database().ref("otp/"+currentStudent.id).set({otp});
-}
-
-/* WARNING */
-function warnStudent(){
-
-  if(!currentStudent) return;
-
-  // increase violation locally (simulation)
-  currentStudent.violation++;
-
-  alert("WARNING SENT → "+currentStudent.name);
-
-  // FIREBASE READY
-  // firebase.database().ref("students/"+currentStudent.id).update({
-  //   violation: currentStudent.violation,
-  //   status: "warn"
-  // });
-}
-
-/* LOCK */
-function lockStudent(){
-
-  if(!currentStudent) return;
-
-  alert("ACCESS LOCKED → "+currentStudent.name);
-
-  // FIREBASE READY
-  // firebase.database().ref("students/"+currentStudent.id).update({
-  //   status:"danger"
-  // });
-}
-
-</script>
-
-</body>
-</html>
+button {
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all
