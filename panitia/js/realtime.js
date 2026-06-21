@@ -151,6 +151,14 @@ db()
 ```
 
 }
+if(window.EventBus){
+
+    EventBus.on(
+        "students:update",
+        syncSidebarStats
+    );
+
+}
 
 /* =========================
 ALERT LISTENER
