@@ -56,8 +56,7 @@ body {
   height: 100vh;
   overflow: hidden;
   color: var(--text);
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.05)),
-              url("../assets/img/stg.jpg") no-repeat center center fixed;
+  background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.25)),url("/assets/img/stg.jpg") center center / cover fixed;
   background-size: cover;
 }
 
@@ -152,6 +151,29 @@ body {
   background: var(--success);
   box-shadow: 0 0 12px var(--success);
 }
+.system-info{
+display:flex;
+gap:12px;
+align-items:center;
+}
+
+.connection-online{
+padding:6px 12px;
+border-radius:12px;
+background:rgba(52,199,89,.15);
+color:#34c759;
+font-size:12px;
+font-weight:700;
+}
+
+.connection-offline{
+padding:6px 12px;
+border-radius:12px;
+background:rgba(255,59,48,.15);
+color:#ff3b30;
+font-size:12px;
+font-weight:700;
+}
 
 /* =====================================================
    CARDS / STATS
@@ -162,27 +184,57 @@ body {
   gap: 12px;
 }
 
-.card {
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--text-secondary);
+.card{
+
+position:relative;
+
+overflow:hidden;
+
 }
 
-.card h2 {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--text);
+.card::before{
+
+content:"";
+
+position:absolute;
+
+top:0;
+
+left:0;
+
+right:0;
+
+height:4px;
+
+background:#007aff;
+
+}
+
+.card h2{
+
+font-size:34px;
+
+font-weight:900;
+
 }
 
 .card:hover {
   transform: translateY(-5px);
+}
+
+.sidebar-brand{
+display:flex;
+justify-content:center;
+align-items:center;
+padding-bottom:20px;
+margin-bottom:20px;
+border-bottom:1px solid rgba(255,255,255,.2);
+}
+
+.logo{
+width:90px;
+height:auto;
+filter:drop-shadow(0 8px 20px rgba(0,0,0,.25));
 }
 
 /* =====================================================
@@ -233,9 +285,29 @@ tr:hover {
 /* =====================================================
    STATUS COLORS
 ===================================================== */
-.status-safe { color: var(--success); font-weight: 700; text-transform: uppercase;}
-.status-warn { color: var(--warn); font-weight: 700; text-transform: uppercase;}
-.status-danger { color: var(--danger); font-weight: 700; text-transform: uppercase;}
+.status-safe{
+
+color:#34c759;
+
+font-weight:800;
+
+}
+
+.status-warn{
+
+color:#ff9500;
+
+font-weight:800;
+
+}
+
+.status-danger{
+
+color:#ff3b30;
+
+font-weight:800;
+
+}
 
 /* =====================================================
    DRAWER (PANEL KANAN)
@@ -322,6 +394,53 @@ button:active {
   color: var(--accent);
   margin: 20px 0;
 }
+.otp-panel{
+
+padding:20px;
+
+text-align:center;
+
+margin-top:15px;
+
+}
+
+.otp-title{
+
+font-size:12px;
+
+font-weight:700;
+
+letter-spacing:1px;
+
+color:#6e6e73;
+
+}
+
+.otp-code{
+
+font-size:42px;
+
+font-weight:900;
+
+letter-spacing:6px;
+
+margin-top:10px;
+
+color:#007aff;
+
+}
+
+.otp-timer{
+
+margin-top:8px;
+
+font-size:13px;
+
+font-weight:600;
+
+color:#6e6e73;
+
+}
 
 /* =====================================================
    ALERT SYSTEM (iOS Notification Bubble Style)
@@ -330,7 +449,7 @@ button:active {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 320px;
+  width: 360px;
   display: flex;
   flex-direction: column-reverse; /* Alert terbaru muncul di bawah/atas */
   gap: 10px;
@@ -354,7 +473,7 @@ button:active {
   flex-direction: column;
   gap: 8px;
   pointer-events: auto;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
