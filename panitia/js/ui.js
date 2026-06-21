@@ -1,24 +1,72 @@
 /* =====================================================
-   SMANSASOO CBT CONTROL TOWER
-   UI ENGINE & LOGIC (DASHBOARD PANITIA)
+   SMANSASOO Security System 2.0
+   Control Center Engine
+   Dashboard Panitia
 ===================================================== */
 
 /* =========================
    GLOBAL UI STATE
 ========================= */
 window.UI = {
-    selectedStudent: null,
-    alerts: 0,
-    // Data Dummy (Simulasi Siswa)
-    dummyData: [
-        { id: "S001", name: "Ahmad Maulana", kelas: "XI-1", progress: "40/40", violation: 0, status: "safe" },
-        { id: "S002", name: "Budi Santoso", kelas: "XI-2", progress: "25/40", violation: 12, status: "warn" },
-        { id: "S003", name: "Citra Kirana", kelas: "XI-3", progress: "30/40", violation: 28, status: "danger" },
-        { id: "S004", name: "Dewi Lestari", kelas: "XI-1", progress: "15/40", violation: 5, status: "safe" },
-        { id: "S005", name: "Eko Pratama", kelas: "XII-IPA", progress: "10/40", violation: 32, status: "danger" }
-    ]
-};
 
+    selectedStudent: null,
+
+    alerts: 0,
+
+    connection: "offline",
+
+    lastSync: null,
+
+    dummyData: [
+
+        {
+            id: "S001",
+            name: "Ahmad Maulana",
+            kelas: "XI-1",
+            progress: "40/40",
+            violation: 0,
+            status: "safe"
+        },
+
+        {
+            id: "S002",
+            name: "Budi Santoso",
+            kelas: "XI-2",
+            progress: "25/40",
+            violation: 12,
+            status: "warn"
+        },
+
+        {
+            id: "S003",
+            name: "Citra Kirana",
+            kelas: "XI-3",
+            progress: "30/40",
+            violation: 28,
+            status: "danger"
+        },
+
+        {
+            id: "S004",
+            name: "Dewi Lestari",
+            kelas: "XI-1",
+            progress: "15/40",
+            violation: 5,
+            status: "safe"
+        },
+
+        {
+            id: "S005",
+            name: "Eko Pratama",
+            kelas: "XII-IPA",
+            progress: "10/40",
+            violation: 32,
+            status: "danger"
+        }
+
+    ]
+
+};
 /* =========================
    DOM HELPERS & INIT
 ========================= */
@@ -31,8 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
     renderStudentsTable(UI.dummyData);
     updateDashboardStats(UI.dummyData);
     
-    addAlert("Sistem UI berhasil dimuat. Mode: Local Dummy");
-    console.log("SMANSASOO UI ENGINE READY ✔");
+    addAlert("SMANSASOO Security System 2.0 berhasil dimuat");
+    console.log("SMANSASOO Security System 2.0 - Control Center Ready");
 });
 
 /* =========================
@@ -67,7 +115,7 @@ function renderStudentsTable(data) {
         tr.onclick = () => openDrawer(student);
 
         // Warna teks status
-        let color = student.status === 'safe' ? 'green' : (student.status === 'warn' ? 'orange' : 'red');
+        const color = getStatusColor(student.status);.status === 'safe' ? 'green' : (student.status === 'warn' ? 'orange' : 'red');
 
         tr.innerHTML = `
             <td style="padding:12px;">${student.name}</td>
@@ -144,7 +192,7 @@ function closeDrawer() {
 function generateGlobalOTP() {
     const otp = Math.floor(100000 + Math.random() * 900000);
     openOTPModal(otp);
-    addAlert(`Global OTP berhasil di-generate: ${otp}`);
+    addAlert(`Global OTP dibuat oleh Panitia`);
     
     // Update counter OTP di stat
     let currentOtpCount = parseInt($("statOtp").innerText) || 0;
@@ -155,13 +203,31 @@ function generateSelectedStudentOTP() {
     if (!UI.selectedStudent) return;
     const otp = Math.floor(100000 + Math.random() * 900000);
     openOTPModal(otp);
-    addAlert(`OTP dibuat untuk ${UI.selectedStudent.name}`);
+    addAlert(`OTP diberikan kepada ${UI.selectedStudent.name}`);
     closeDrawer(); // Tutup laci otomatis
     
     let currentOtpCount = parseInt($("statOtp").innerText) || 0;
     $("statOtp").innerText = currentOtpCount + 1;
 }
 
+function getStatusColor(status){
+
+    switch(status){
+
+        case "safe":
+            return "#34c759";
+
+        case "warn":
+            return "#ff9500";
+
+        case "danger":
+            return "#ff3b30";
+
+        default:
+            return "#6e6e73";
+    }
+
+}
 function openOTPModal(otpValue) {
     const modal = $("otpModal");
     if(modal) {
@@ -173,6 +239,66 @@ function openOTPModal(otpValue) {
 function closeOTPModal() {
     if($("otpModal")) $("otpModal").classList.remove("active");
 }
+
+/* =========================
+   GLOBAL OTP ENGINE
+========================= */
+
+window.GLOBAL_OTP = {
+
+    code: "000000",
+
+    expires: 60,
+
+    generatedAt: Date.now()
+
+};
+
+function generateSystemOTP(){
+
+    GLOBAL_OTP.code =
+        Math.floor(
+            100000 + Math.random() * 900000
+        ).toString();
+
+    GLOBAL_OTP.generatedAt =
+        Date.now();
+
+    GLOBAL_OTP.expires = 60;
+
+    console.log(
+        "OTP UPDATED:",
+        GLOBAL_OTP.code
+    );
+
+}
+
+generateSystemOTP();
+
+setInterval(() => {
+
+    generateSystemOTP();
+
+}, 60000);
+
+function startOTPCountdown(){
+
+    setInterval(() => {
+
+        const elapsed =
+            Math.floor(
+                (Date.now() -
+                GLOBAL_OTP.generatedAt) / 1000
+            );
+
+        GLOBAL_OTP.expires =
+            Math.max(0, 60 - elapsed);
+
+    }, 1000);
+
+}
+
+startOTPCountdown();
 
 /* =========================
    ALERT SYSTEM
