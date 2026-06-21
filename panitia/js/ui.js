@@ -7,6 +7,7 @@
 /* =========================
    GLOBAL UI STATE
 ========================= */
+
 window.UI = {
 
     selectedStudent: null,
@@ -67,152 +68,132 @@ window.UI = {
     ]
 
 };
+
 /* =========================
-   DOM HELPERS & INIT
+   GLOBAL OTP ENGINE
 ========================= */
-function $(id) {
-    return document.getElementById(id);
+
+window.GLOBAL_OTP = {
+
+    code: "000000",
+
+    expires: 60,
+
+    generatedAt: Date.now(),
+
+    source: "local",
+
+    updatedBy: "system"
+
+};
+
+function generateSystemOTP() {
+
+    GLOBAL_OTP.code =
+        Math.floor(
+            100000 + Math.random() * 900000
+        ).toString();
+
+    GLOBAL_OTP.generatedAt =
+        Date.now();
+
+    GLOBAL_OTP.expires = 60;
+
+    addAlert("System OTP berhasil diperbarui");
+
 }
 
+function startOTPCountdown() {
+
+    setInterval(() => {
+
+        const elapsed =
+            Math.floor(
+                (Date.now() -
+                    GLOBAL_OTP.generatedAt) / 1000
+            );
+
+        GLOBAL_OTP.expires =
+            Math.max(0, 60 - elapsed);
+
+    }, 1000);
+
+}
+
+/* =========================
+   DOM HELPERS
+========================= */
+
+function $(id) {
+
+    return document.getElementById(id);
+
+}
+
+/* =========================
+   INITIALIZATION
+========================= */
+
 document.addEventListener("DOMContentLoaded", () => {
+
     startClock();
-    renderStudentsTable(UI.dummyData);
-    updateDashboardStats(UI.dummyData);
-    
-    addAlert("SMANSASOO Security System 2.0 berhasil dimuat");
-    console.log("SMANSASOO Security System 2.0 - Control Center Ready");
+
+    renderStudentsTable(
+        UI.dummyData
+    );
+
+    updateDashboardStats(
+        UI.dummyData
+    );
+
+    generateSystemOTP();
+
+    startOTPCountdown();
+
+    setInterval(() => {
+
+        generateSystemOTP();
+
+    }, 60000);
+
+    addAlert(
+        "SMANSASOO Security System 2.0 berhasil dimuat"
+    );
+
+    console.log(
+        "SMANSASOO Security System 2.0 - Control Center Ready"
+    );
+
 });
 
 /* =========================
    CLOCK ENGINE
 ========================= */
+
 function startClock() {
+
     const clock = $("clock");
+
     if (!clock) return;
+
     setInterval(() => {
-        clock.innerText = new Date().toLocaleTimeString("id-ID");
+
+        clock.innerText =
+            new Date().toLocaleTimeString(
+                "id-ID"
+            );
+
     }, 1000);
+
 }
 
 /* =========================
-   TABLE ENGINE
+   STATUS COLOR
 ========================= */
-function renderStudentsTable(data) {
-    const tbody = $("tableBody"); // <-- Disesuaikan dengan HTML Anda
-    if (!tbody) return;
-    tbody.innerHTML = ""; 
 
-    data.forEach(student => {
-        const tr = document.createElement("tr");
-        tr.style.cursor = "pointer";
-        tr.style.borderBottom = "1px solid rgba(0,0,0,0.05)";
-        
-        // Efek hover
-        tr.onmouseover = () => tr.style.backgroundColor = "rgba(255,255,255,0.4)";
-        tr.onmouseout = () => tr.style.backgroundColor = "transparent";
+function getStatusColor(status) {
 
-        // Klik baris untuk buka Drawer
-        tr.onclick = () => openDrawer(student);
-
-        // Warna teks status
-        const color = getStatusColor(student.status);.status === 'safe' ? 'green' : (student.status === 'warn' ? 'orange' : 'red');
-
-        tr.innerHTML = `
-            <td style="padding:12px;">${student.name}</td>
-            <td style="padding:12px;">${student.kelas}</td>
-            <td style="padding:12px;">${student.progress}</td>
-            <td style="padding:12px;"><b>${student.violation}</b></td>
-            <td style="padding:12px; font-weight:bold; color:${color}; text-transform:uppercase;">
-                ${student.status}
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-// Fungsi filter saat klik menu sidebar (Dashboard, Aman, Warning, Critical)
-function filterTable(keyword) {
-    let filtered;
-    if (keyword === 'all') {
-        filtered = UI.dummyData;
-    } else if (['safe', 'warn', 'danger'].includes(keyword)) {
-        filtered = UI.dummyData.filter(s => s.status === keyword);
-    }
-    renderStudentsTable(filtered);
-    addAlert(`Tabel difilter berdasarkan: ${keyword.toUpperCase()}`);
-}
-
-/* =========================
-   STATS ENGINE
-========================= */
-function updateDashboardStats(data) {
-    const safe = data.filter(s => s.status === "safe").length;
-    const warn = data.filter(s => s.status === "warn").length;
-    const danger = data.filter(s => s.status === "danger").length;
-    const total = data.length;
-
-    // Update panel statistik utama
-    if($("statActive")) $("statActive").innerText = total;
-    if($("statWarning")) $("statWarning").innerText = warn;
-    if($("statCritical")) $("statCritical").innerText = danger;
-    
-    // Angka dummy untuk OTP dan Master
-    if($("statOtp")) $("statOtp").innerText = "2"; 
-    if($("statMaster")) $("statMaster").innerText = "0"; 
-}
-
-/* =========================
-   DRAWER ENGINE (PANEL KANAN)
-========================= */
-function openDrawer(student) {
-    UI.selectedStudent = student;
-    
-    $("d-name").innerText = student.name;
-    $("d-class").innerText = student.kelas;
-    $("d-progress").innerText = student.progress;
-    $("d-violation").innerText = student.violation;
-    
-    let color = student.status === 'safe' ? 'green' : (student.status === 'warn' ? 'orange' : 'red');
-    const statusEl = $("d-status");
-    statusEl.innerText = student.status.toUpperCase();
-    statusEl.style.color = color;
-    statusEl.style.fontWeight = "bold";
-
-    // Buka Drawer (Pastikan class .active ada di dashboard.css)
-    if($("drawer")) $("drawer").classList.add("active");
-}
-
-function closeDrawer() {
-    if($("drawer")) $("drawer").classList.remove("active");
-}
-
-/* =========================
-   OTP MODAL ENGINE
-========================= */
-function generateGlobalOTP() {
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    openOTPModal(otp);
-    addAlert(`Global OTP dibuat oleh Panitia`);
-    
-    // Update counter OTP di stat
-    let currentOtpCount = parseInt($("statOtp").innerText) || 0;
-    $("statOtp").innerText = currentOtpCount + 1;
-}
-
-function generateSelectedStudentOTP() {
-    if (!UI.selectedStudent) return;
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    openOTPModal(otp);
-    addAlert(`OTP diberikan kepada ${UI.selectedStudent.name}`);
-    closeDrawer(); // Tutup laci otomatis
-    
-    let currentOtpCount = parseInt($("statOtp").innerText) || 0;
-    $("statOtp").innerText = currentOtpCount + 1;
-}
-
-function getStatusColor(status){
-
-    switch(status){
+    switch (status) {
 
         case "safe":
             return "#34c759";
@@ -225,103 +206,329 @@ function getStatusColor(status){
 
         default:
             return "#6e6e73";
+
     }
 
-}
-function openOTPModal(otpValue) {
-    const modal = $("otpModal");
-    if(modal) {
-        $("otpValue").innerText = otpValue;
-        modal.classList.add("active"); // Munculkan Modal
-    }
-}
-
-function closeOTPModal() {
-    if($("otpModal")) $("otpModal").classList.remove("active");
 }
 
 /* =========================
-   GLOBAL OTP ENGINE
+   TABLE ENGINE
 ========================= */
 
-window.GLOBAL_OTP = {
+function renderStudentsTable(data) {
 
-    code: "000000",
+    const tbody = $("tableBody");
 
-    expires: 60,
+    if (!tbody) return;
 
-    generatedAt: Date.now()
+    tbody.innerHTML = "";
 
-};
+    data.forEach(student => {
 
-function generateSystemOTP(){
+        const tr =
+            document.createElement("tr");
 
-    GLOBAL_OTP.code =
-        Math.floor(
-            100000 + Math.random() * 900000
-        ).toString();
+        tr.style.cursor = "pointer";
 
-    GLOBAL_OTP.generatedAt =
-        Date.now();
+        tr.style.borderBottom =
+            "1px solid rgba(255,255,255,.08)";
 
-    GLOBAL_OTP.expires = 60;
+        tr.onmouseover = () => {
 
-    console.log(
-        "OTP UPDATED:",
-        GLOBAL_OTP.code
+            tr.style.background =
+                "rgba(255,255,255,.08)";
+
+        };
+
+        tr.onmouseout = () => {
+
+            tr.style.background =
+                "transparent";
+
+        };
+
+        tr.onclick = () =>
+            openDrawer(student);
+
+        const color =
+            getStatusColor(student.status);
+
+        tr.innerHTML = `
+
+            <td>${student.name}</td>
+
+            <td>${student.kelas}</td>
+
+            <td>${student.progress}</td>
+
+            <td>
+                <b>${student.violation}</b>
+            </td>
+
+            <td
+                style="
+                    color:${color};
+                    font-weight:700;
+                    text-transform:uppercase;
+                "
+            >
+                ${student.status}
+            </td>
+
+        `;
+
+        tbody.appendChild(tr);
+
+    });
+
+}
+
+/* =========================
+   TABLE FILTER
+========================= */
+
+function filterTable(keyword) {
+
+    let filtered = [];
+
+    if (keyword === "all") {
+
+        filtered = UI.dummyData;
+
+    } else {
+
+        filtered =
+            UI.dummyData.filter(
+                s => s.status === keyword
+            );
+
+    }
+
+    renderStudentsTable(filtered);
+
+    addAlert(
+        "Filter tabel: " +
+        keyword.toUpperCase()
     );
 
 }
 
-generateSystemOTP();
+/* =========================
+   STATS ENGINE
+========================= */
 
-setInterval(() => {
+function updateDashboardStats(data) {
 
-    generateSystemOTP();
+    const safe =
+        data.filter(
+            s => s.status === "safe"
+        ).length;
 
-}, 60000);
+    const warn =
+        data.filter(
+            s => s.status === "warn"
+        ).length;
 
-function startOTPCountdown(){
+    const danger =
+        data.filter(
+            s => s.status === "danger"
+        ).length;
 
-    setInterval(() => {
+    const total =
+        data.length;
 
-        const elapsed =
-            Math.floor(
-                (Date.now() -
-                GLOBAL_OTP.generatedAt) / 1000
-            );
+    if ($("statActive"))
+        $("statActive").innerText =
+        total;
 
-        GLOBAL_OTP.expires =
-            Math.max(0, 60 - elapsed);
+    if ($("statWarning"))
+        $("statWarning").innerText =
+        warn;
 
-    }, 1000);
+    if ($("statCritical"))
+        $("statCritical").innerText =
+        danger;
+
+    if ($("statOtp"))
+        $("statOtp").innerText =
+        GLOBAL_OTP.code;
+
+    if ($("statMaster"))
+        $("statMaster").innerText =
+        "READY";
 
 }
 
-startOTPCountdown();
+/* =========================
+   DRAWER ENGINE
+========================= */
+
+function openDrawer(student) {
+
+    UI.selectedStudent =
+        student;
+
+    $("d-name").innerText =
+        student.name;
+
+    $("d-class").innerText =
+        student.kelas;
+
+    $("d-progress").innerText =
+        student.progress;
+
+    $("d-violation").innerText =
+        student.violation;
+
+    const color =
+        getStatusColor(
+            student.status
+        );
+
+    const statusEl =
+        $("d-status");
+
+    statusEl.innerText =
+        student.status.toUpperCase();
+
+    statusEl.style.color =
+        color;
+
+    statusEl.style.fontWeight =
+        "bold";
+
+    $("drawer")
+        ?.classList.add("active");
+
+}
+
+function closeDrawer() {
+
+    $("drawer")
+        ?.classList.remove("active");
+
+}
+
+/* =========================
+   MASTER OTP
+========================= */
+
+function generateSelectedStudentOTP() {
+
+    if (!UI.selectedStudent)
+        return;
+
+    const otp =
+        Math.floor(
+            100000 +
+            Math.random() * 900000
+        );
+
+    openOTPModal(otp);
+
+    addAlert(
+        "Master OTP diberikan kepada " +
+        UI.selectedStudent.name
+    );
+
+    closeDrawer();
+
+}
+
+/* =========================
+   OTP MODAL
+========================= */
+
+function openOTPModal(otpValue) {
+
+    const modal =
+        $("otpModal");
+
+    if (!modal)
+        return;
+
+    $("otpValue").innerText =
+        otpValue;
+
+    modal.classList.add(
+        "active"
+    );
+
+}
+
+function closeOTPModal() {
+
+    $("otpModal")
+        ?.classList.remove(
+            "active"
+        );
+
+}
 
 /* =========================
    ALERT SYSTEM
 ========================= */
-function addAlert(message) {
-    const list = $("alertList");
-    if (!list) return;
 
-    const item = document.createElement("div");
-    item.style.padding = "10px";
-    item.style.marginBottom = "8px";
-    item.style.background = "rgba(255,255,255,0.6)";
-    item.style.borderRadius = "8px";
-    item.style.borderLeft = "4px solid #007aff";
+function addAlert(message) {
+
+    const list =
+        $("alertList");
+
+    if (!list)
+        return;
+
+    const item =
+        document.createElement(
+            "div"
+        );
+
+    item.style.padding =
+        "10px";
+
+    item.style.marginBottom =
+        "8px";
+
+    item.style.borderRadius =
+        "10px";
+
+    item.style.background =
+        "rgba(255,255,255,.08)";
+
+    item.style.borderLeft =
+        "4px solid #007aff";
+
     item.innerHTML = `
-        <div style="font-size:10px; opacity:0.7;">${new Date().toLocaleTimeString()}</div>
-        <div style="font-size:13px;">${message}</div>
+
+        <div
+            style="
+                font-size:10px;
+                opacity:.7;
+            "
+        >
+            ${new Date()
+                .toLocaleTimeString("id-ID")}
+        </div>
+
+        <div
+            style="
+                font-size:13px;
+            "
+        >
+            ${message}
+        </div>
+
     `;
 
     list.prepend(item);
 
-    // Maksimal 10 log di layar
-    while (list.children.length > 10) {
-        list.removeChild(list.lastChild);
+    while (
+        list.children.length > 10
+    ) {
+
+        list.removeChild(
+            list.lastChild
+        );
+
     }
+
 }
