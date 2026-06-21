@@ -7,99 +7,173 @@
 <title>Alert System - SMANSASOO CBT</title>
 
 <style>
-:root{
-  --glass-bg: rgba(255,255,255,0.55);
-  --glass-border: rgba(0,0,0,0.08);
-  --text:#1c1c1e;
-  --accent:#007aff;
-  --warn:#ff9500;
-  --danger:#ff3b30;
-  --success:#34c759;
+/* =====================================================
+   CORE VARIABLES (iOS Glass Style)
+===================================================== */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-highlight: rgba(255, 255, 255, 0.8);
+  
+  --text: #1c1c1e;
+  --text-secondary: #6e6e73;
+  
+  --accent: #007aff;
+  --warn: #ff9500;
+  --danger: #ff3b30;
+  --success: #34c759;
+  
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-body{
-  background:#0b0f1a;
-  color:var(--text);
+body {
+  background: linear-gradient(135deg, #0b0f1a, #1a2235); /* Background gelap agar glass menonjol */
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
 }
 
-/* GLASS PANEL */
-.glass{
-  background:var(--glass-bg);
-  backdrop-filter:blur(22px);
-  -webkit-backdrop-filter:blur(22px);
-  border:1px solid var(--glass-border);
-  border-radius:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.15);
+/* =====================================================
+   CUSTOM SCROLLBAR (Mac Style)
+===================================================== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.4); }
+
+/* =====================================================
+   GLASS PANEL CONTAINER
+===================================================== */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: var(--shadow), inset 0 1px 1px var(--glass-highlight);
 }
 
-/* CONTAINER */
-.wrapper{
-  padding:20px;
-  max-width:420px;
+.wrapper {
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
 }
 
-/* HEADER */
-.header{
-  padding:14px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
+/* =====================================================
+   HEADER & COUNTER
+===================================================== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 
-/* ALERT LIST */
-.alert-box{
-  height:420px;
-  overflow:auto;
-  padding:10px;
+.header b {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
-/* ALERT ITEM */
-.item{
-  padding:10px;
-  margin-bottom:8px;
-  border-radius:12px;
-  font-size:12px;
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  animation:fadeIn .2s ease;
+#count {
+  background: var(--accent);
+  color: white;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
 }
 
-/* TYPE COLORS */
-.safe{border-left:4px solid var(--success);}
-.warn{border-left:4px solid var(--warn);}
-.danger{border-left:4px solid var(--danger);}
-
-/* TIME */
-.time{
-  font-size:10px;
-  opacity:.6;
+/* =====================================================
+   ALERT LIST & ITEMS (Notification Bubbles)
+===================================================== */
+.alert-box {
+  height: 380px;
+  overflow-y: auto;
+  padding-right: 8px; /* Ruang untuk scrollbar */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* BUTTON */
-.btn{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  border:none;
-  border-radius:10px;
-  background:var(--accent);
-  color:white;
-  cursor:pointer;
+.item {
+  background: rgba(255, 255, 255, 0.85); /* Gelembung putih */
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: slideIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.1); /* Elastic bounce */
 }
 
-/* ANIMATION */
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(5px);}
-  to{opacity:1; transform:translateY(0);}
+/* TYPE ACCENTS (Border Kiri ala iOS Widget) */
+.item.safe { border-left: 5px solid var(--success); }
+.item.warn { border-left: 5px solid var(--warn); }
+.item.danger { border-left: 5px solid var(--danger); }
+.item.info { border-left: 5px solid var(--accent); }
+
+.item b {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.time {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* =====================================================
+   BUTTON ACTION
+===================================================== */
+.btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 14px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+}
+
+.btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* =====================================================
+   ANIMATIONS
+===================================================== */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(30px) scale(0.95); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
 }
 </style>
 </head>
@@ -109,47 +183,45 @@ body{
 <div class="wrapper glass">
 
   <div class="header">
-    <b>🚨 ALERT SYSTEM</b>
+    <b>🚨 LIVE EVENT LOGS</b>
     <span id="count">0</span>
   </div>
 
   <div id="alertBox" class="alert-box"></div>
 
-  <button class="btn" onclick="pushAlert()">Test Alert</button>
+  <button class="btn" onclick="triggerRandomAlert()">Trigger Test Alert</button>
 
 </div>
 
 <script>
+/* =====================================================
+   ALERT COMPONENT ENGINE (Standalone Test)
+===================================================== */
+let alerts = [];
 
-/* =========================
-   ALERT ENGINE (READY FIREBASE LAYER 4)
-========================= */
-
-let alerts=[];
-
-/* PUSH ALERT */
-function pushAlert(type="warn", msg="System event detected"){
-  
-  const data={
+/* Fungsi Utama Menerima Data */
+function pushAlert(type = "info", msg = "System event detected") {
+  const data = {
     type,
     msg,
-    time:new Date().toLocaleTimeString()
+    time: new Date().toLocaleTimeString('id-ID')
   };
 
-  alerts.unshift(data);
+  alerts.unshift(data); // Tambah di paling atas
+  
+  // Batasi maksimal 20 log agar tidak berat
+  if (alerts.length > 20) alerts.pop(); 
+  
   render();
-
-  // READY FIREBASE HOOK
-  // firebase.database().ref("alerts").push(data);
 }
 
-/* RENDER */
-function render(){
-  const box=document.getElementById("alertBox");
-  box.innerHTML="";
+/* Fungsi Render ke DOM */
+function render() {
+  const box = document.getElementById("alertBox");
+  box.innerHTML = "";
 
-  alerts.forEach(a=>{
-    box.innerHTML+=`
+  alerts.forEach(a => {
+    box.innerHTML += `
       <div class="item ${a.type}">
         <b>${a.msg}</b>
         <span class="time">${a.time}</span>
@@ -157,13 +229,30 @@ function render(){
     `;
   });
 
-  document.getElementById("count").innerText=alerts.length;
+  document.getElementById("count").innerText = alerts.length;
 }
 
-/* INIT SAMPLE */
-pushAlert("safe","System initialized");
-pushAlert("warn","Tab switching detected");
-pushAlert("danger","Violation threshold reached");
+/* =====================================================
+   TESTING & SIMULATION
+===================================================== */
+
+// Data Dummy untuk disimulasikan saat tombol diklik
+const dummyEvents = [
+  { type: "safe", msg: "✅ Budi Santoso berhasil login ke sesi ujian." },
+  { type: "warn", msg: "⚠️ Ahmad Maulana terdeteksi berpindah tab (Alt+Tab)." },
+  { type: "danger", msg: "🚨 Eko Pratama mencapai batas 30 pelanggaran! Auto-Submit dijalankan." },
+  { type: "info", msg: "ℹ️ Master OTP '541299' berhasil digenerate oleh Panitia." },
+  { type: "warn", msg: "⚠️ Citra Kirana terdeteksi klik kanan (Right Click)." }
+];
+
+function triggerRandomAlert() {
+  // Pilih event acak dari dummy array
+  const randomEvent = dummyEvents[Math.floor(Math.random() * dummyEvents.length)];
+  pushAlert(randomEvent.type, randomEvent.msg);
+}
+
+// Inisialisasi awal saat pertama dibuka
+pushAlert("safe", "Sistem Alert UI berhasil dimuat.");
 
 </script>
 
