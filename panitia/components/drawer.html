@@ -1,117 +1,48 @@
-```html
 <div id="drawer" class="drawer glass">
 
     <div class="drawer-header">
-
         <div>
-
-            <div id="d-name" class="drawer-name">
-                Nama Peserta
-            </div>
-
-            <div id="d-class" class="drawer-class">
-                Kelas
-            </div>
-
+            <div id="d-name" class="drawer-name">Nama Peserta</div>
+            <div id="d-class" class="drawer-class">Kelas</div>
         </div>
-
-        <button
-            class="drawer-close"
-            onclick="closeDrawer()">
-
-            ✕
-
-        </button>
-
+        <button class="drawer-close" onclick="closeDrawer()">✕</button>
     </div>
 
-    <div
-        id="d-status"
-        class="drawer-status status-safe">
-
-        SAFE
-
-    </div>
+    <div id="d-status" class="drawer-status status-safe">SAFE</div>
 
     <div class="drawer-card">
-
         <div class="drawer-row">
-
             <span>Progress</span>
-
-            <b id="d-progress">
-                0/40
-            </b>
-
+            <b id="d-progress">0/40</b>
         </div>
-
         <div class="drawer-row">
-
             <span>Pelanggaran</span>
-
-            <b id="d-violation">
-                0
-            </b>
-
+            <b id="d-violation">0</b>
         </div>
-
         <div class="drawer-row">
-
             <span>Status CBT</span>
-
-            <b id="d-cbt">
-                Aktif
-            </b>
-
+            <b id="d-cbt">Aktif</b>
         </div>
-
         <div class="drawer-row">
-
             <span>Perangkat</span>
-
-            <b id="d-device">
-                Android
-            </b>
-
+            <b id="d-device">Android</b>
         </div>
-
     </div>
 
     <div class="drawer-section">
-
-        <h4>
-            Riwayat Pelanggaran
-        </h4>
-
+        <h4>Riwayat Pelanggaran</h4>
         <div id="d-history">
-
-            <div class="history-item">
-                Belum ada pelanggaran
-            </div>
-
+            <div class="history-item">Belum ada pelanggaran</div>
         </div>
-
     </div>
 
     <div class="drawer-actions">
-
-        <button
-            class="btn-primary"
-            onclick="generateSelectedStudentOTP()">
-
+        <button class="btn-primary" onclick="generateSelectedStudentOTP()">
             Kirim OTP Unlock
-
         </button>
-
-        <button
-            class="btn-warning"
-            onclick="generateMasterOTP()">
-
+        <button class="btn-warning" onclick="generateMasterOTP()">
             Generate Master OTP
-
         </button>
-
     </div>
 
 </div>
-```
