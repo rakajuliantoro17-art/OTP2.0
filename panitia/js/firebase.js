@@ -152,7 +152,7 @@ AUTO START
 ========================= */
 initFirebase();
 
-// Detak Jantung Server (Heartbeat) tiap 10 detik
+// Detak Jantung Server tiap 10 detik
 setInterval(firebaseHeartbeat, 10000);
 
 // Fallback Pembaruan UI Status Server
