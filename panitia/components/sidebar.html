@@ -1,341 +1,92 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Sidebar Component - SMANSASOO CBT</title>
-
-<style>
-/* =====================================================
-   CORE VARIABLES (iOS Glass Style)
-===================================================== */
-:root {
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-highlight: rgba(255, 255, 255, 0.8);
-  
-  --text: #1c1c1e;
-  --text-secondary: #6e6e73;
-  
-  --accent: #007aff;
-  --warn: #ff9500;
-  --danger: #ff3b30;
-  --success: #34c759;
-  
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-
-body {
-  /* Latar belakang gelap agar efek kaca terlihat saat standalone testing */
-  background: linear-gradient(135deg, #0b0f1a, #1a2235);
-  min-height: 100vh;
-}
-
-/* =====================================================
-   SIDEBAR PANEL (Floating iPadOS Style)
-===================================================== */
-.sidebar {
-  width: 280px;
-  height: calc(100vh - 32px); /* Mengurangi tinggi agar bisa melayang */
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  
-  position: fixed;
-  left: 16px;
-  top: 16px;
-  
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  box-shadow: var(--shadow), inset 0 1px 1px var(--glass-highlight);
-}
-
-/* =====================================================
-   BRANDING & LOGO
-===================================================== */
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0,0,0,0.08);
-}
-
-/* Fallback gaya jika gambar logo tidak di-load saat testing */
-.brand-img {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: white;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.brand-img img {
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.brand-text b {
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  color: var(--text);
-  line-height: 1.2;
-  display: block;
-}
-
-.brand-text small {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 1px;
-}
-
-/* =====================================================
-   NAVIGATION MENU
-===================================================== */
-.menu {
-  padding: 12px 16px;
-  border-radius: 14px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.menu span.icon {
-  font-size: 18px;
-}
-
-.menu:hover {
-  background: rgba(255, 255, 255, 0.6);
-  color: var(--text);
-  transform: translateX(4px); /* Animasi geser kecil saat di-hover */
-}
-
-.menu.active {
-  background: #ffffff;
-  color: var(--accent);
-  font-weight: 600;
-  box-shadow: var(--shadow-sm);
-  transform: translateX(0);
-}
-
-/* =====================================================
-   DIVIDER & SPACER
-===================================================== */
-.spacer {
-  flex: 1; /* Mendorong widget status ke paling bawah */
-}
-
-.divider {
-  height: 1px;
-  background: rgba(0,0,0,0.06);
-  margin: 12px 0;
-}
-
-/* =====================================================
-   STATUS WIDGET (Inner Glass)
-===================================================== */
-.statusBox {
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255,255,255,0.6);
-  border-radius: 16px;
-  padding: 14px;
-  font-size: 12px;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.8);
-}
-
-.statusItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 8px 0;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.statusItem:first-child { margin-top: 0; }
-.statusItem:last-child { margin-bottom: 0; }
-
-.badge {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.safe { background: #e5f9eb; color: var(--success); }
-.warn { background: #fff4e5; color: var(--warn); }
-.danger { background: #ffebeb; color: var(--danger); }
-</style>
-</head>
-
-<body>
-
 <aside class="sidebar glass">
 
-  <div class="brand">
-    <div class="brand-img">
-      <img src="../../public/assets/img/logo.png" alt="S" onerror="this.style.display='none'; this.parentNode.innerHTML='🛡️';">
+    <div class="brand">
+        <div class="brand-img">
+            <img src="../assets/img/logo.png" alt="S"
+                onerror="this.style.display='none'; this.parentNode.innerHTML='🛡️';">
+        </div>
+        <div class="brand-text">
+            <b>SMANSASOO</b>
+            <small>CBT CONTROL HUB</small>
+        </div>
     </div>
-    <div class="brand-text">
-      <b>SMANSASOO</b>
-      <small>CBT CONTROL HUB</small>
-    </div>
-  </div>
 
-   <div class="statusItem">
-    <span>OTP ACTIVE</span>
-    <span class="badge" id="otpCounter">
-        0
-    </span>
-   </div>
-
-   <div class="statusItem">
-    <span>UNLOCK REQ</span>
-    <span class="badge warn" id="unlockCounter">
-        0
-    </span>
-   </div>
-
-   <div class="statusItem">
-    <span>CRITICAL</span>
-    <span class="badge danger" id="criticalCounter">
-        0
-    </span>
-   </div>
-   
-  <div class="menu active" onclick="navigate(this, 'dashboard')">
-    <span class="icon">📊</span> Dashboard
-  </div>
-  <div class="menu" onclick="navigate(this, 'monitor')">
-    <span class="icon">🧠</span> Monitor Siswa
-  </div>
-  <div class="menu" onclick="navigate(this, 'otp')">
-    <span class="icon">🔑</span> OTP Center
-  </div>
-  <div class="menu" onclick="navigate(this, 'alert')">
-    <span class="icon">🚨</span> Alert System
-  </div>
-  <div class="menu" onclick="navigate(this, 'log')">
-    <span class="icon">📜</span> Audit Log
-  </div>
-
-  <div class="spacer"></div>
-  <div class="divider"></div>
-   <div class="statusItem">
-    <span>SERVER</span>
-    <span class="badge safe" id="serverStatus">
-        ONLINE
-    </span>
-   </div>
-   
-  <div class="statusBox">
     <div class="statusItem">
-      <span>ACTIVE</span>
-      <span class="badge safe" id="sActive">1487</span>
+        <span>OTP ACTIVE</span>
+        <span class="badge safe" id="otpCounter">0</span>
     </div>
     <div class="statusItem">
-      <span>WARNING</span>
-      <span class="badge warn" id="sWarn">32</span>
+        <span>UNLOCK REQ</span>
+        <span class="badge warn" id="unlockCounter">0</span>
     </div>
     <div class="statusItem">
-      <span>CRITICAL</span>
-      <span class="badge danger" id="sDanger">9</span>
+        <span>CRITICAL</span>
+        <span class="badge danger" id="criticalCounter">0</span>
     </div>
-  </div>
-   
-   <div class="quickActions">
 
-   <button onclick="triggerGlobalOTP()">
-   🔑 Global OTP
-   </button>
+    <div class="menu active" onclick="navigate(this, 'dashboard')">
+        <span class="icon">📊</span> Dashboard
+    </div>
+    <div class="menu" onclick="navigate(this, 'monitor')">
+        <span class="icon">🧠</span> Monitor Siswa
+    </div>
+    <div class="menu" onclick="navigate(this, 'otp')">
+        <span class="icon">🔑</span> OTP Center
+    </div>
+    <div class="menu" onclick="navigate(this, 'alert')">
+        <span class="icon">🚨</span> Alert System
+    </div>
+    <div class="menu" onclick="navigate(this, 'log')">
+        <span class="icon">📜</span> Audit Log
+    </div>
 
-   <button onclick="generateSystemOTP()">
-   ♻ Refresh OTP
-   </button>
+    <div class="spacer"></div>
+    <div class="divider"></div>
 
-   <button onclick="filterTable('danger')">
-   🚨 Critical
-   </button>
+    <div class="statusItem">
+        <span>SERVER</span>
+        <span class="badge safe" id="serverStatus">ONLINE</span>
+    </div>
 
-   </div>
-   
+    <div class="statusBox">
+        <div class="statusItem">
+            <span>ACTIVE</span>
+            <span class="badge safe" id="sActive">0</span>
+        </div>
+        <div class="statusItem">
+            <span>WARNING</span>
+            <span class="badge warn" id="sWarn">0</span>
+        </div>
+        <div class="statusItem">
+            <span>CRITICAL</span>
+            <span class="badge danger" id="sDanger">0</span>
+        </div>
+    </div>
+
+    <div class="quickActions">
+        <button onclick="triggerGlobalOTP()">🔑 Global OTP</button>
+        <button onclick="generateSystemOTP()">♻ Refresh OTP</button>
+        <button onclick="filterTable('danger')">🚨 Critical</button>
+    </div>
+
 </aside>
 
 <script>
-/* =====================================================
-   SIDEBAR ENGINE (Standalone UI Test Logic)
-===================================================== */
-
-/**
- * Fungsi untuk menangani navigasi dan efek Active Menu
- */
-function navigate(element, page){
-  console.log("NAVIGATE TO:", page);
-
-  // 1. Hapus class 'active' dari semua menu
-  const menus = document.querySelectorAll('.menu');
-  menus.forEach(menu => menu.classList.remove('active'));
-
-  // 2. Tambahkan class 'active' ke menu yang diklik
-  element.classList.add('active');
-
-  // READY FIREBASE / ROUTER HOOK
-  // window.location.href = page + ".html";
+function navigate(element, page) {
+    document.querySelectorAll('.menu').forEach(m => m.classList.remove('active'));
+    element.classList.add('active');
+    console.log('[NAV]', page);
 }
 
-/* =====================================================
-   LIVE STATUS UPDATE SIMULATION
-===================================================== */
-
-/**
- * Update angka pada badge status
- */
-function updateStatus(active, warn, danger){
-  document.getElementById("sActive").innerText = active;
-  document.getElementById("sWarn").innerText = warn;
-  document.getElementById("sDanger").innerText = danger;
+function syncSidebarStats(data) {
+    const warn   = data.filter(s => s.status === 'warn').length;
+    const danger = data.filter(s => s.status === 'danger').length;
+    const active = data.length;
+    const el = id => document.getElementById(id);
+    if (el('sActive'))        el('sActive').innerText        = active;
+    if (el('sWarn'))          el('sWarn').innerText          = warn;
+    if (el('sDanger'))        el('sDanger').innerText        = danger;
+    if (el('criticalCounter'))el('criticalCounter').innerText= danger;
 }
-
-/* Loop simulasi data realtime */
-setInterval(() => {
-  let a = 1480 + Math.floor(Math.random() * 20);
-  let w = 20 + Math.floor(Math.random() * 15);
-  let d = 5 + Math.floor(Math.random() * 10);
-
-  updateStatus(a, w, d);
-}, 3000); // Update setiap 3 detik agar lebih terasa hidup
-
+window.syncSidebarStats = syncSidebarStats;
 </script>
-
-</body>
-</html>
