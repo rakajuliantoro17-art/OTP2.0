@@ -1,30 +1,29 @@
 /* =====================================================
-SMANSASOO Security System 2.0
-REALTIME ENGINE
-Firebase Synchronization Layer
+   SMANSASOO Security System 2.0
+   REALTIME ENGINE
+   Firebase Synchronization Layer
 ===================================================== */
 
 /* =========================
-GLOBAL STATE
+   GLOBAL STATE
 ========================= */
 window.CBT_STATE = {
     students: {},
-    stats: {},
-    alerts: [],
+    stats:    {},
+    alerts:   [],
     systemOTP: null,
+    masterOtp: null,
     unlockOTP: {}
 };
 
 /* =========================
-EVENT BUS
+   EVENT BUS
 ========================= */
 const EventBus = {
     listeners: {},
 
     on(event, callback) {
-        if (!this.listeners[event]) {
-            this.listeners[event] = [];
-        }
+        if (!this.listeners[event]) this.listeners[event] = [];
         this.listeners[event].push(callback);
     },
 
@@ -35,24 +34,24 @@ const EventBus = {
 };
 
 /* =========================
-FIREBASE HELPER
+   FIREBASE HELPER
+   Renamed db() → getDB() agar
+   tidak bentrok dengan window.db
 ========================= */
-function db() {
+function getDB() {
     return window.db || null;
 }
 
 /* =========================
-STUDENTS LISTENER
+   STUDENTS LISTENER
 ========================= */
 function listenStudents() {
-    if (!db()) {
-        console.warn("Realtime Offline Mode");
+    if (!getDB()) {
+        console.warn("[REALTIME] Offline Mode — Firebase tidak tersedia");
         return;
     }
 
-    db()
-    .ref("students")
-    .on("value", snap => {
+    getDB().ref("students").on("value", snap => {
         const data = snap.val() || {};
         CBT_STATE.students = data;
 
@@ -63,116 +62,99 @@ function listenStudents() {
 
         EventBus.emit("students:update", studentsArray);
 
-        if (typeof renderStudentsTable === "function") {
-            renderStudentsTable(studentsArray);
-        }
+        if (typeof renderStudentsTable  === "function") renderStudentsTable(studentsArray);
+        if (typeof updateDashboardStats === "function") updateDashboardStats(studentsArray);
 
-        if (typeof updateDashboardStats === "function") {
-            updateDashboardStats(studentsArray);
-        }
-
-        console.log("Students Sync:", studentsArray.length);
-    });
-}
-
-// Deteksi EventBus lokal maupun global agar sinkronisasi sidebar berjalan optimal
-if (typeof EventBus !== "undefined" || window.EventBus) {
-    const activeBus = typeof EventBus !== "undefined" ? EventBus : window.EventBus;
-    activeBus.on("students:update", (data) => {
-        if (typeof syncSidebarStats === "function") {
-            syncSidebarStats(data);
-        }
+        console.log("[REALTIME] Students Sync:", studentsArray.length);
     });
 }
 
 /* =========================
-ALERT LISTENER
+   ALERT LISTENER
 ========================= */
 function listenAlerts() {
-    if (!db()) return;
+    if (!getDB()) return;
 
-    db()
-    .ref("alerts")
-    .limitToLast(10)
-    .on("child_added", snap => {
+    getDB().ref("alerts").limitToLast(10).on("child_added", snap => {
         const alert = snap.val();
         if (!alert) return;
 
         CBT_STATE.alerts.unshift(alert);
         EventBus.emit("alert:new", alert);
 
-        if (typeof addAlert === "function") {
-            addAlert(alert.msg || alert.message);
-        }
+        if (typeof addAlert === "function") addAlert(alert.msg || alert.message);
     });
 }
 
 /* =========================
-SYSTEM OTP LISTENER
+   SYSTEM OTP LISTENER
 ========================= */
 function listenSystemOTP() {
-    if (!db()) return;
+    if (!getDB()) return;
 
-    db()
-    .ref("system/otp")
-    .on("value", snap => {
+    getDB().ref("system/otp").on("value", snap => {
         const data = snap.val();
         if (!data) return;
 
         CBT_STATE.systemOTP = data;
         EventBus.emit("otp:update", data);
-        console.log("System OTP Sync");
+        console.log("[REALTIME] System OTP Sync");
     });
 }
 
 /* =========================
-UNLOCK OTP LISTENER
+   MASTER OTP LISTENER
+   Untuk siswa violation >= 26
+========================= */
+function listenMasterOTP() {
+    if (!getDB()) return;
+
+    getDB().ref("system/masterOtp").on("value", snap => {
+        const data = snap.val();
+        if (!data) return;
+
+        CBT_STATE.masterOtp = data;
+        EventBus.emit("masterOtp:update", data);
+        console.log("[REALTIME] Master OTP Sync:", data.code);
+    });
+}
+
+/* =========================
+   UNLOCK OTP LISTENER
 ========================= */
 function listenUnlockOTP() {
-    if (!db()) return;
+    if (!getDB()) return;
 
-    db()
-    .ref("unlockOtp")
-    .on("value", snap => {
+    getDB().ref("unlockOtp").on("value", snap => {
         CBT_STATE.unlockOTP = snap.val() || {};
         EventBus.emit("unlock:update", CBT_STATE.unlockOTP);
     });
 }
 
 /* =========================
-PUSH ALERT
+   PUSH ALERT
 ========================= */
 function pushRealtimeAlert(type, message) {
     const payload = {
         type: type || "info",
-        msg: message,
+        msg:  message,
         time: Date.now()
     };
 
-    if (db()) {
-        db()
-        .ref("alerts")
-        .push(payload);
-    }
-
-    if (typeof addAlert === "function") {
-        addAlert(message);
-    }
+    if (getDB()) getDB().ref("alerts").push(payload);
+    if (typeof addAlert === "function") addAlert(message);
 }
 
 /* =========================
-UPDATE STUDENT
+   UPDATE STUDENT
 ========================= */
 function updateStudent(id, payload) {
-    if (!db()) return;
-
-    db()
-    .ref("students/" + id)
-    .update(payload);
+    if (!getDB()) return;
+    getDB().ref("students/" + id).update(payload);
 }
 
 /* =========================
-AUTO SUBMIT CHECK
+   AUTO SUBMIT CHECK
 ========================= */
 function checkViolationAutoSubmit(studentId, violation) {
     if (violation >= 30 && typeof triggerAutoSubmit === "function") {
@@ -181,65 +163,65 @@ function checkViolationAutoSubmit(studentId, violation) {
 }
 
 /* =========================
-HEARTBEAT
+   HEARTBEAT
 ========================= */
 function heartbeat() {
-    if (!db()) return;
+    if (!getDB()) return;
 
-    db()
-    .ref("system/heartbeat")
-    .set({
-        timestamp: Date.now(),
-        status: "online",
+    getDB().ref("system/heartbeat").set({
+        timestamp:      Date.now(),
+        status:         "online",
         activeStudents: Object.keys(CBT_STATE.students).length
     });
 }
 
 /* =========================
-CONNECTION MONITOR
+   CONNECTION MONITOR
 ========================= */
 function monitorConnection() {
     setInterval(() => {
-        if (navigator.onLine) {
-            if (window.UI) {
-                UI.connection = "online";
-            }
-        } else {
-            if (window.UI) {
-                UI.connection = "offline";
-            }
+        if (window.UI) {
+            UI.connection = navigator.onLine ? "online" : "offline";
         }
     }, 5000);
 }
 
 /* =========================
-INIT REALTIME
+   INIT REALTIME
 ========================= */
 function initRealtime() {
-    console.log("Realtime Engine Starting...");
+    console.log("[REALTIME] Engine Starting...");
 
     listenStudents();
     listenAlerts();
     listenSystemOTP();
+    listenMasterOTP();
     listenUnlockOTP();
     monitorConnection();
     heartbeat();
 
+    // Hook sidebar & topbar — diregistrasi di sini agar urutan
+    // eksekusi terjamin setelah semua listener aktif
+    EventBus.on("students:update", data => {
+        if (typeof syncSidebarStats === "function") syncSidebarStats(data);
+        if (typeof syncTopbarStats  === "function") syncTopbarStats(data);
+    });
+
     setInterval(heartbeat, 5000);
 
-    console.log("Realtime Engine READY");
+    console.log("[REALTIME] Engine READY");
 }
 
 /* =========================
-EXPORT GLOBAL
+   EXPORT GLOBAL
 ========================= */
-window.EventBus = EventBus;
-window.initRealtime = initRealtime;
-window.updateStudent = updateStudent;
-window.pushRealtimeAlert = pushRealtimeAlert;
-window.checkViolationAutoSubmit = checkViolationAutoSubmit;
+window.EventBus                  = EventBus;
+window.initRealtime              = initRealtime;
+window.updateStudent             = updateStudent;
+window.pushRealtimeAlert         = pushRealtimeAlert;
+window.checkViolationAutoSubmit  = checkViolationAutoSubmit;
 
 /* =========================
-AUTO START
+   AUTO START
 ========================= */
 initRealtime();
