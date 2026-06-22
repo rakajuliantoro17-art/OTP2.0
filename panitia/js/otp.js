@@ -170,6 +170,72 @@ function getOTPInfo() {
 }
 
 /* =========================
+   GLOBAL OTP
+   Alias untuk System OTP
+========================= */
+function triggerGlobalOTP() {
+    const otp = generateSystemOTP();
+
+    if (typeof addAlert === "function") {
+        addAlert("GLOBAL OTP diperbarui: " + otp, "info");
+    }
+
+    console.log("[GLOBAL OTP]", otp);
+    return otp;
+}
+
+window.triggerGlobalOTP = triggerGlobalOTP;
+
+/* =========================
+   MASTER OTP
+   Untuk siswa violation >= 26
+========================= */
+function generateMasterOTP() {
+    const otp = generateOTPCode();
+    OTP_STATE.unlockOTP = otp;
+
+    if (window.db && typeof window.db.ref === 'function') {
+        window.db.ref("system/masterOtp").set({
+            code: otp,
+            created: Date.now(),
+            type: "master",
+            status: "active"
+        });
+    }
+
+    if (typeof addAlert === "function") {
+        addAlert("MASTER OTP generated: " + otp, "warn");
+    }
+
+    console.log("[MASTER OTP]", otp);
+    return otp;
+}
+
+window.generateMasterOTP = generateMasterOTP;
+
+/* =========================
+   SELECTED STUDENT OTP
+   Dari drawer — trigger Master OTP
+========================= */
+function generateSelectedStudentOTP() {
+    const student = window.UI_STATE?.selectedStudent;
+    if (!student) {
+        console.warn("[OTP] Tidak ada siswa dipilih di drawer");
+        return;
+    }
+
+    if (student.violation >= 26) {
+        return generateMasterOTP();
+    } else {
+        if (typeof addAlert === "function") {
+            addAlert("Siswa " + student.name + " belum mencapai threshold Master OTP", "info");
+        }
+    }
+}
+
+window.generateSelectedStudentOTP = generateSelectedStudentOTP;
+
+/* =========================
    AUTO START
 ========================= */
 startOTPRefresh();
