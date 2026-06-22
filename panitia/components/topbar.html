@@ -1,149 +1,54 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Topbar Component - SMANSASOO CBT</title>
+<div class="topbar glass">
 
-    <style>
-        /* =====================================================
-           CORE VARIABLES (iOS Glass Style)
-        ===================================================== */
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.5);
-            --glass-highlight: rgba(255, 255, 255, 0.8);
-            
-            --text: #1c1c1e;
-            --text-secondary: #6e6e73;
-            
-            --accent: #007aff;
-            --accent-muted: rgba(0, 122, 255, 0.1);
-            --success: #34c759;
-            
-            --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.06);
-        }
+    <div class="left">
+        <div class="title">CBT CONTROL HUB</div>
+        <div class="subtitle">SMANSASOO — Panitia Dashboard</div>
+    </div>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
+    <div class="right">
+        <div class="status-indicator">
+            <div class="dot" id="serverDot"></div>
+            <span id="serverLabel">ONLINE</span>
+        </div>
 
-        body {
-            /* Latar belakang gelap agar panel kaca terlihat jelas saat testing */
-            background: linear-gradient(135deg, #0b0f1a, #1a2235);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 16px;
-        }
+        <div class="mini-stat">
+            <span>👥</span>
+            <span id="topbarActive">0</span>
+        </div>
+        <div class="mini-stat">
+            <span>⚠️</span>
+            <span id="topbarWarn">0</span>
+        </div>
+        <div class="mini-stat">
+            <span>🚨</span>
+            <span id="topbarCritical">0</span>
+        </div>
 
-        /* =====================================================
-           TOPBAR PANEL (Sticky iOS Style Navigation)
-        ===================================================== */
-        .topbar {
-            width: 100%;
-            padding: 14px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            border-radius: 18px;
-            box-shadow: var(--shadow-sm), inset 0 1px 1px var(--glass-highlight);
-        }
+        <div class="clock" id="topbarClock">00:00:00</div>
 
-        /* =====================================================
-           LEFT SECTION (Branding Info)
-        ===================================================== */
-        .left {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
+        <button class="btn-danger" onclick="triggerGlobalOTP()">🔑 Global OTP</button>
+    </div>
 
-        .title {
-            font-size: 15px;
-            font-weight: 800;
-            letter-spacing: -0.2px;
-            color: var(--text);
-        }
+</div>
 
-        .subtitle {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
+<script>
+(function startClock() {
+    function tick() {
+        const el = document.getElementById('topbarClock');
+        if (el) el.innerText = new Date().toLocaleTimeString('id-ID');
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
 
-        /* =====================================================
-           RIGHT SECTION (Live Stats & Buttons)
-        ===================================================== */
-        .right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        /* BREATHING STATUS DOT (Animasi Nadi Hijau) */
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success);
-            position: relative;
-        }
-
-        .dot::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: var(--success);
-            animation: pulse 2s infinite ease-out;
-            top: 0;
-            left: 0;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(3.5); opacity: 0; }
-        }
-
-        /* MINI STATS (Added to fix missing styling) */
-        .mini-stat {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 14px;
-        }
-
-        /* APPLE SYSTEM CLOCK */
-        .clock {
-            font-size: 14px;
-            font-weight: 700;
-            padding: 8px 14px;
-            border-radius: 10px;
-            background: rgba(0, 0, 0, 0.04);
-            color: var(--text);
-            letter-spacing: 0.5px;
-            border: 1
+function syncTopbarStats(data) {
+    const warn     = data.filter(s => s.status === 'warn').length;
+    const danger   = data.filter(s => s.status === 'danger').length;
+    const active   = data.length;
+    const el = id => document.getElementById(id);
+    if (el('topbarActive'))   el('topbarActive').innerText   = active;
+    if (el('topbarWarn'))     el('topbarWarn').innerText     = warn;
+    if (el('topbarCritical')) el('topbarCritical').innerText = danger;
+}
+window.syncTopbarStats = syncTopbarStats;
+</script>
