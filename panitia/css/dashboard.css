@@ -48,7 +48,7 @@ body {
     overflow-x: hidden;
     background:
         linear-gradient(rgba(10,15,25,.72), rgba(10,15,25,.78)),
-        url("../assets/img/stg.jpg");
+        url("/assets/img/stg.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
