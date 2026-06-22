@@ -332,88 +332,21 @@
 
     <div class="container">
 
-        <aside class="sidebar glass">
-            <div class="sidebar-brand">
-                <img src="../public/assets/img/logo.png" class="logo" alt="SMANSASOO" onerror="this.style.display='none'; this.parentNode.innerHTML='🛡️';">
-                <div class="brand-text">
-                    <b>SMANSASOO</b>
-                    <small>CBT HUB PANITIA</small>
-                </div>
-            </div>
-
-            <div id="sidebar-container">
-                <div class="menu active" onclick="switchTableFilter(this, 'all')">📊 Semua Dashboard</div>
-                <div class="menu" onclick="switchTableFilter(this, 'safe')">🟢 Status Aman</div>
-                <div class="menu" onclick="switchTableFilter(this, 'warn')">🟡 Status Warning</div>
-                <div class="menu" onclick="switchTableFilter(this, 'danger')">🔴 Status Critical</div>
-                <div class="divider" style="height:1px; background:rgba(0,0,0,0.05); margin:8px 0;"></div>
-                <div class="menu" onclick="generateGlobalOTP()">🔐 Token Global OTP</div>
-            </div>
-        </aside>
+        <div id="sidebarMount"></div>
 
         <main class="main">
 
-            <section class="topbar glass">
-                <div>
-                    <h2>SMANSASOO CBT CONTROL TOWER</h2>
-                    <small>CBT LOCK 2.0 • Panitia Master Panel</small>
-                </div>
-                <div class="clock-wrapper">
-                    <div class="status-dot" title="Firebase Node Live Sync"></div>
-                    <div class="clock" id="clock">00:00:00</div>
-                </div>
-            </section>
+            <div id="topbarMount"></div>
 
-            <section class="cards">
-                <div class="card glass">Active Users <h2 id="statActive">0</h2></div>
-                <div class="card glass">Warning <h2 id="statWarning">0</h2></div>
-                <div class="card glass">Critical <h2 id="statCritical">0</h2></div>
-                <div class="card glass">Student OTP <h2 id="statOtp">0</h2></div>
-                <div class="card glass">Master OTP <h2 id="statMaster">0</h2></div>
-            </section>
+            <div id="statsMount"></div>
 
-            <section class="table-section glass">
-                <div class="table-header-bar">
-                    <h3>Daftar Pengawasan Ujian Real-Time</h3>
-                    <input type="text" id="mainSearch" class="search-box" placeholder="Cari nama atau kelas siswa..." onkeyup="searchTableInput()">
-                </div>
-
-                <div class="tableBox">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nama Siswa</th>
-                                <th>Kelas Room</th>
-                                <th>Progress Soal</th>
-                                <th>Total Pelanggaran</th>
-                                <th>Status Tindakan</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            </tbody>
-                    </table>
-                </div>
-            </section>
+            <div id="tableMount"></div>
 
         </main>
 
     </div>
 
-    <div id="drawer" class="drawer glass">
-        <h3 id="d-name">Nama Siswa</h3>
-        <hr>
-        <p><b>Kelas Room :</b> <span id="d-class">-</span></p>
-        <p><b>Progress Soal :</b> <span id="d-progress">-</span></p>
-        <p><b>Pelanggaran :</b> <span id="d-violation" style="font-weight:700;">-</span></p>
-        <p><b>Status Tindakan :</b> <span id="d-status">-</span></p>
-        <br style="flex: 1;">
-        <button class="btn btn-primary" onclick="generateSelectedStudentOTP()" style="width: 100%;">
-            🔑 Rilis Token OTP Siswa
-        </button>
-        <button class="btn btn-secondary" onclick="closeDrawer()" style="width: 100%;">
-            Tutup Panel
-        </button>
-    </div>
+    <<div id="drawerMount"></div>
 
     <div id="otpModal" class="otp-modal">
         <div class="glass otp-box">
@@ -424,3 +357,32 @@
             </button>
         </div>
     </div>
+<script>
+async function loadComponent(id, file){
+    try{
+        const res = await fetch(file);
+        const html = await res.text();
+
+        document.getElementById(id).innerHTML = html;
+
+        document
+            .getElementById(id)
+            .querySelectorAll("script")
+            .forEach(oldScript=>{
+                const s=document.createElement("script");
+
+                if(oldScript.src){
+                    s.src=oldScript.src;
+                }else{
+                    s.textContent=oldScript.textContent;
+                }
+
+                document.body.appendChild(s);
+            });
+
+    }catch(err){
+        console.error("Component Load Error:",file,err);
+    }
+}
+
+window.addEventListener("DOMContentLoaded",()=>{
