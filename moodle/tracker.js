@@ -1,211 +1,211 @@
 /* =====================================================
    SMANSASOO CBT LOCK 2.0
-   MOODLE BEHAVIOR TRACKER LAYER
-   ANALYTICS + EVENT AGGREGATOR
+   MOODLE CBT CLIENT INTEGRATION
+   LAYER: CLIENT MONITORING AGENT
 ===================================================== */
 
-const CBT_TRACKER = {
-    studentId: null,
-    sessionId: null,
-
-    events: [],
-    suspiciousScore: 0,
-
-    lastActionTime: Date.now(),
-    idleThreshold: 30000, // 30 detik
-
-    flushInterval: null
+const CBTLOCK = {
+    version:           "3.1",
+    mode:              "active",
+    studentId:         null,
+    sessionId:         null,
+    violation:         0,
+    heartbeatInterval: null,
+    _lastViolation:    0,    // untuk debounce
+    _debounceMs:       800   // jeda minimum antar violation
 };
 
 /* =========================
-   INIT TRACKER
+   CONFIG ENDPOINT
+   URL absolut ke Vercel —
+   GANTI dengan domain Vercel asli
 ========================= */
+const ENDPOINT = {
+    violation: "https://otp-2-0.vercel.app/api/violation",
+    heartbeat: "https://otp-2-0.vercel.app/api/heartbeat"
+};
 
-function initCBTTracker(studentId, sessionId) {
+/* =========================
+   INIT SESSION
+   Dipanggil dari injeksi Moodle:
+   initCBTLock(USER_ID, SESSION_ID)
+========================= */
+function initCBTLock(studentId, sessionId) {
+    CBTLOCK.studentId = studentId;
+    CBTLOCK.sessionId = sessionId;
 
-    CBT_TRACKER.studentId = studentId;
-    CBT_TRACKER.sessionId = sessionId;
+    startMonitoring();
+    startHeartbeat();
 
-    startTracking();
-    startEventFlush();
-
-    console.log("[CBT TRACKER] INIT OK", studentId);
+    console.log("[CBTLOCK] INIT", studentId, sessionId);
 }
 
 /* =========================
-   EVENT COLLECTOR
+   DEBOUNCED VIOLATION REGISTER
+   Mencegah satu aksi (ALT+TAB)
+   menghasilkan violation ganda
 ========================= */
+function registerViolation(type) {
+    const now = Date.now();
 
-function trackEvent(type, meta = {}) {
+    // Skip jika terlalu cepat dari violation sebelumnya
+    if (now - CBTLOCK._lastViolation < CBTLOCK._debounceMs) {
+        console.warn("[CBTLOCK] Debounced:", type);
+        return;
+    }
 
-    const event = {
-        type,
-        meta,
-        timestamp: Date.now()
+    CBTLOCK._lastViolation = now;
+    CBTLOCK.violation++;
+
+    const payload = {
+        studentId:      CBTLOCK.studentId,
+        sessionId:      CBTLOCK.sessionId,
+        type:           type,
+        violationCount: CBTLOCK.violation,
+        timestamp:      now
     };
 
-    CBT_TRACKER.events.push(event);
-    CBT_TRACKER.lastActionTime = Date.now();
-
-    evaluateRisk(type);
-
-    console.log("[TRACK EVENT]", event);
+    sendViolation(payload);
+    console.warn("[CBTLOCK VIOLATION]", payload);
 }
 
 /* =========================
-   RISK ENGINE (LIGHTWEIGHT)
+   VIOLATION DETECTORS
 ========================= */
 
-function evaluateRisk(type) {
+// Tab switch — visibilitychange adalah yang utama
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) registerViolation("tab_switch");
+});
 
-    switch (type) {
+// Blur hanya untuk deteksi ALT+TAB tanpa tab baru
+// Debounce di registerViolation mencegah double-count
+window.addEventListener("blur", () => {
+    // Delay 200ms — jika visibilitychange juga trigger,
+    // debounce akan block yang kedua
+    setTimeout(() => {
+        if (!document.hidden) registerViolation("window_blur");
+    }, 200);
+});
 
-        case "tab_switch":
-            CBT_TRACKER.suspiciousScore += 5;
-            break;
+// Klik kanan
+document.addEventListener("contextmenu", e => {
+    e.preventDefault();
+    registerViolation("right_click");
+});
 
-        case "window_blur":
-            CBT_TRACKER.suspiciousScore += 4;
-            break;
+// Copy
+document.addEventListener("copy", () => {
+    registerViolation("copy_action");
+});
 
-        case "right_click":
-            CBT_TRACKER.suspiciousScore += 2;
-            break;
-
-        case "copy":
-            CBT_TRACKER.suspiciousScore += 3;
-            break;
-
-        case "idle":
-            CBT_TRACKER.suspiciousScore += 6;
-            break;
-
-        default:
-            CBT_TRACKER.suspiciousScore += 1;
+// Keyboard shortcut berbahaya
+document.addEventListener("keydown", e => {
+    const blocked = (
+        (e.ctrlKey && ["c","v","u","s","a","p"].includes(e.key.toLowerCase())) ||
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && e.key === "I")
+    );
+    if (blocked) {
+        e.preventDefault();
+        registerViolation("keyboard_shortcut");
     }
+});
 
-    if (CBT_TRACKER.suspiciousScore > 30) {
-        triggerCriticalState();
+/* =========================
+   SEND VIOLATION KE VERCEL API
+========================= */
+async function sendViolation(data) {
+    try {
+        await fetch(ENDPOINT.violation, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify(data)
+        });
+    } catch (err) {
+        console.error("[CBTLOCK] Send violation fail:", err);
+        // Simpan ke localStorage sebagai fallback
+        const queue = JSON.parse(localStorage.getItem("cbt_queue") || "[]");
+        queue.push(data);
+        localStorage.setItem("cbt_queue", JSON.stringify(queue.slice(-20)));
     }
 }
 
 /* =========================
-   IDLE DETECTOR
+   FLUSH OFFLINE QUEUE
+   Kirim ulang violation yang
+   gagal saat koneksi kembali
 ========================= */
+window.addEventListener("online", async () => {
+    const queue = JSON.parse(localStorage.getItem("cbt_queue") || "[]");
+    if (!queue.length) return;
 
-function startTracking() {
+    console.log("[CBTLOCK] Flushing offline queue:", queue.length);
+    for (const item of queue) {
+        await sendViolation(item);
+    }
+    localStorage.removeItem("cbt_queue");
+});
 
-    setInterval(() => {
+/* =========================
+   HEARTBEAT SYSTEM
+========================= */
+function startHeartbeat() {
+    CBTLOCK.heartbeatInterval = setInterval(async () => {
+        const payload = {
+            studentId: CBTLOCK.studentId,
+            sessionId: CBTLOCK.sessionId,
+            status:    "active",
+            violation: CBTLOCK.violation,
+            timestamp: Date.now()
+        };
 
-        const now = Date.now();
-
-        if (now - CBT_TRACKER.lastActionTime > CBT_TRACKER.idleThreshold) {
-
-            trackEvent("idle");
-
-            CBT_TRACKER.lastActionTime = now;
+        try {
+            await fetch(ENDPOINT.heartbeat, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify(payload)
+            });
+        } catch (err) {
+            console.warn("[CBTLOCK] Heartbeat fail:", err);
         }
-
     }, 5000);
 }
 
 /* =========================
-   FLUSH EVENTS TO SYNC LAYER
+   FULLSCREEN ENFORCER
 ========================= */
-
-function startEventFlush() {
-
-    CBT_TRACKER.flushInterval = setInterval(() => {
-
-        if (CBT_TRACKER.events.length === 0) return;
-
-        const payload = {
-            studentId: CBT_TRACKER.studentId,
-            sessionId: CBT_TRACKER.sessionId,
-            events: [...CBT_TRACKER.events],
-            suspiciousScore: CBT_TRACKER.suspiciousScore,
-            timestamp: Date.now()
-        };
-
-        sendToSync(payload);
-
-        CBT_TRACKER.events = [];
-
-    }, 7000); // flush tiap 7 detik
+function enforceFullscreen() {
+    const el = document.documentElement;
+    if (el.requestFullscreen)       el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 }
 
 /* =========================
-   SEND TO SYNC LAYER
+   MONITORING START
 ========================= */
+function startMonitoring() {
+    enforceFullscreen();
 
-async function sendToSync(data) {
-
-    try {
-
-        // prefer Firebase API jika tersedia
-        if (window.FirebaseAPI) {
-
-            await window.FirebaseAPI.pushData(
-                `logs/${data.studentId}`,
-                data
-            );
-
-            return;
+    // Deteksi fullscreen exit sebagai violation
+    document.addEventListener("fullscreenchange", () => {
+        if (!document.fullscreenElement) {
+            registerViolation("fullscreen_exit");
         }
-
-        // fallback ke sync.js handler
-        if (window.forceResync) {
-            window.forceResync();
-        }
-
-    } catch (err) {
-        console.warn("[TRACKER SYNC FAIL]", err);
-    }
+    });
 }
 
 /* =========================
-   CRITICAL STATE HANDLER
+   EMERGENCY STOP
 ========================= */
-
-function triggerCriticalState() {
-
-    console.warn("[CBT TRACKER] CRITICAL STATE DETECTED");
-
-    if (window.CBTLOCK) {
-        window.CBTLOCK.violation += 5;
-    }
-
-    if (window.addAlert) {
-        window.addAlert("⚠ HIGH SUSPICIOUS ACTIVITY DETECTED");
-    }
+function stopCBTLock() {
+    clearInterval(CBTLOCK.heartbeatInterval);
+    console.log("[CBTLOCK] STOPPED");
 }
 
 /* =========================
-   MANUAL HOOKS (FROM CBT LOCK)
+   EXPORT GLOBAL
 ========================= */
-
-document.addEventListener("visibilitychange", () => {
-    if (document.hidden) trackEvent("tab_switch");
-});
-
-window.addEventListener("blur", () => {
-    trackEvent("window_blur");
-});
-
-document.addEventListener("copy", () => {
-    trackEvent("copy");
-});
-
-document.addEventListener("contextmenu", (e) => {
-    e.preventDefault();
-    trackEvent("right_click");
-});
-
-/* =========================
-   EXTERNAL ACCESS
-========================= */
-
-window.CBT_TRACKER = CBT_TRACKER;
-
-window.initCBTTracker = initCBTTracker;
-window.trackEvent = trackEvent;
+window.CBTLOCK       = CBTLOCK;
+window.initCBTLock   = initCBTLock;
+window.stopCBTLock   = stopCBTLock;
