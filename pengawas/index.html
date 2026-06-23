@@ -1,107 +1,157 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMANSASOO CBT LOCK 2.0 — Pengawas</title>
+    <link rel="icon" href="https://sman1sooko.sch.id/media_library/images/397a98c4618261af0d970851901f2b5b.png">
+    <link rel="stylesheet" href="./css/simple.css">
 
-<title>SMANSASOO CBT LOCK 2.0 - PENGAWAS</title>
-
-<link rel="icon" href="https://sman1sooko.sch.id/media_library/images/397a98c4618261af0d970851901f2b5b.png">
-
-<link rel="stylesheet" href="../public/assets/css/glass.css">
-
-<link rel="stylesheet" href="css/simple.css">
-
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
-
 <body>
 
 <div class="container">
-
     <div class="otp-panel glass">
 
-        <div style="margin-bottom: 16px;">
-            <div class="title">SMANSASOO CBT LOCK</div>
-            <small style="color: var(--text-secondary); font-weight: 600; letter-spacing: 1.5px; font-size: 11px;">
-                DASHBOARD PENGAWAS
-            </small>
+        <!-- HEADER -->
+        <div class="panel-header">
+            <img class="logo"
+                src="https://sman1sooko.sch.id/media_library/images/397a98c4618261af0d970851901f2b5b.png"
+                alt="Logo SMAN 1 Sooko">
+            <div>
+                <div class="title">SMANSASOO CBT LOCK</div>
+                <small class="subtitle">DASHBOARD PENGAWAS</small>
+            </div>
         </div>
 
-        <hr style="border: none; height: 1px; background: rgba(0,0,0,0.06); margin: 10px 0;">
+        <hr class="divider">
 
-        <div id="otpCode" class="otp-code">
-            --- ---
+        <!-- OTP DISPLAY -->
+        <div class="otp-section">
+            <div class="otp-label">OTP AKTIF</div>
+            <div id="otpCode" class="otp-code">--- ---</div>
+            <div class="otp-type" id="otpType">System OTP</div>
         </div>
 
+        <!-- COUNTDOWN BAR -->
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
-
-        <div class="status-bar">
-            Status: <b style="color: var(--success);">TOTP Dinamis Aktif</b> | Siklus 60s
+        <div class="countdown-label">
+            Sisa waktu: <b id="countdownSec">60</b> detik
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 20px;">
-            <button class="btn-primary" onclick="copyOTP()">
-                📋 Salin Kode Ruangan
-            </button>
+        <!-- STATUS -->
+        <div class="status-bar">
+            Status: <b id="statusLabel" style="color: var(--success);">TOTP Dinamis Aktif</b>
+            &nbsp;|&nbsp; Siklus 60 detik
+        </div>
 
-            <button class="btn-primary" style="background: rgba(0,122,255,0.1); color: var(--accent); box-shadow: none;" onclick="forceGenerateOTP()">
+        <!-- MASTER OTP BOX (tersembunyi, muncul saat ada master OTP dari Firebase) -->
+        <div id="masterBox" class="master-box" style="display:none;">
+            <div class="otp-label">MASTER OTP</div>
+            <div id="masterCode" class="otp-code master">--- ---</div>
+            <div class="otp-label" style="font-size:11px;">Untuk siswa violation ≥ 26 — sekali pakai</div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="actions">
+            <button class="btn-primary" onclick="copyOTP()">
+                📋 Salin Kode OTP
+            </button>
+            <button class="btn-secondary" onclick="forceGenerateOTP()">
                 🔄 Sinkronisasi Waktu
             </button>
-
             <button class="btn-danger" onclick="resetOTP()">
                 🔒 Bekukan Sesi (Freeze)
             </button>
         </div>
 
     </div>
-
 </div>
 
+<!-- LOG AKTIVITAS -->
 <div class="alert glass">
-    <b style="color: var(--text-secondary); letter-spacing: 1px; font-size: 11px;">📡 LOG AKTIVITAS SERVER</b>
-    <div id="logList" style="margin-top: 8px; display: flex; flex-direction: column;">
-        </div>
+    <b class="log-title">📡 LOG AKTIVITAS SERVER</b>
+    <div id="logList"></div>
 </div>
 
-<script src="../public/assets/js/app.js"></script>
-
-<script src="js/unlock.js"></script>
-
+<!-- FIREBASE CONFIG -->
 <script>
-    // Membaca sisa waktu lokal (60s) agar selaras dengan TOTP di unlock.js
-    // Berjalan di 60fps untuk animasi bar yang mulus tanpa mengganggu DOM Teks
-    function animateProgressBar() {
-        const now = Date.now();
-        const interval = 60; // Siklus 60 detik (Harus sama dengan di unlock.js)
-        
-        // Kalkulasi sisa detik desimal
-        const exactRemain = interval - ((now / 1000) % interval);
-        const percentage = (exactRemain / interval) * 100;
-        
-        const progressBar = document.getElementById("progressBar");
-        
-        if (progressBar) {
-            progressBar.style.width = percentage + "%";
-            
-            // Logika pergantian warna
-            if (exactRemain > 20) {
-                progressBar.style.backgroundColor = "var(--success)"; // Hijau Aman
-            } else if (exactRemain > 10) {
-                progressBar.style.backgroundColor = "var(--warn)"; // Kuning Peringatan
-            } else {
-                progressBar.style.backgroundColor = "var(--danger)"; // Merah Hampir Ganti
-            }
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "XXXXXXXX",
+    appId: "XXXXXXXX"
+};
+
+try {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    window.db = firebase.database();
+
+    // Listen Master OTP dari Firebase (dikirim panitia)
+    window.db.ref("system/masterOtp").on("value", snap => {
+        const data = snap.val();
+        const box  = document.getElementById("masterBox");
+        const el   = document.getElementById("masterCode");
+        if (data && data.status === "active" && data.code) {
+            const fmt = data.code.substring(0,3) + " " + data.code.substring(3,6);
+            if (el)  el.innerText  = fmt;
+            if (box) box.style.display = "block";
+            logEvent("MASTER OTP DITERIMA → " + fmt);
+        } else {
+            if (box) box.style.display = "none";
         }
-        
-        requestAnimationFrame(animateProgressBar);
+    });
+
+    // Listen System OTP dari Firebase (sebagai fallback verifikasi)
+    window.db.ref("system/otp").on("value", snap => {
+        const data = snap.val();
+        if (data && data.code) {
+            logEvent("SYSTEM OTP SYNC → Firebase aktif");
+        }
+    });
+
+    logEvent("Firebase terhubung");
+} catch(e) {
+    logEvent("Firebase offline — mode lokal aktif");
+    console.warn("[PENGAWAS] Firebase error:", e);
+}
+</script>
+
+<!-- PROGRESS BAR ANIMATION -->
+<script>
+function animateProgressBar() {
+    const now      = Date.now();
+    const interval = 60;
+    const remain   = interval - ((now / 1000) % interval);
+    const pct      = (remain / interval) * 100;
+
+    const bar = document.getElementById("progressBar");
+    const sec = document.getElementById("countdownSec");
+
+    if (bar) {
+        bar.style.width = pct + "%";
+        if (remain > 20)      bar.style.backgroundColor = "var(--success)";
+        else if (remain > 10) bar.style.backgroundColor = "var(--warn)";
+        else                  bar.style.backgroundColor = "var(--danger)";
     }
 
-    // Mulai animasi saat halaman dimuat
+    if (sec) sec.innerText = Math.ceil(remain);
+
     requestAnimationFrame(animateProgressBar);
+}
+requestAnimationFrame(animateProgressBar);
 </script>
+
+<!-- OTP ENGINE -->
+<script src="./js/unlock.js"></script>
 
 </body>
 </html>
