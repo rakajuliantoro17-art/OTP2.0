@@ -67,6 +67,7 @@ function registerViolation(type) {
 
     sendViolation(payload);
     console.warn("[CBTLOCK VIOLATION]", payload);
+    if (typeof trackEvent === "function") trackEvent(type, { violationCount: CBTLOCK.violation });
 }
 
 /* =========================
