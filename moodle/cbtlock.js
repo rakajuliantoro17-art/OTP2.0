@@ -5,28 +5,31 @@
 ===================================================== */
 
 const CBTLOCK = {
-    version: "3.1",
-    mode: "active",
-    studentId: null,
-    sessionId: null,
-    violation: 0,
-    heartbeatInterval: null
+    version:           "3.1",
+    mode:              "active",
+    studentId:         null,
+    sessionId:         null,
+    violation:         0,
+    heartbeatInterval: null,
+    _lastViolation:    0,    // untuk debounce
+    _debounceMs:       800   // jeda minimum antar violation
 };
 
 /* =========================
    CONFIG ENDPOINT
-   (Vercel API / Firebase Gateway)
+   URL absolut ke Vercel —
+   GANTI dengan domain Vercel asli
 ========================= */
-
 const ENDPOINT = {
-    violation: "/api/violation",
-    heartbeat: "/api/heartbeat"
+    violation: "https://otp-2-0.vercel.app/api/violation",
+    heartbeat: "https://otp-2-0.vercel.app/api/heartbeat"
 };
 
 /* =========================
    INIT SESSION
+   Dipanggil dari injeksi Moodle:
+   initCBTLock(USER_ID, SESSION_ID)
 ========================= */
-
 function initCBTLock(studentId, sessionId) {
     CBTLOCK.studentId = studentId;
     CBTLOCK.sessionId = sessionId;
@@ -34,148 +37,167 @@ function initCBTLock(studentId, sessionId) {
     startMonitoring();
     startHeartbeat();
 
-    console.log("[CBTLOCK] INIT SUCCESS", studentId);
+    console.log("[CBTLOCK] INIT", studentId, sessionId);
 }
 
 /* =========================
-   VIOLATION DETECTION
+   DEBOUNCED VIOLATION REGISTER
+   Mencegah satu aksi (ALT+TAB)
+   menghasilkan violation ganda
 ========================= */
-
-/* TAB SWITCH DETECTION */
-document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-        registerViolation("tab_switch");
-    }
-});
-
-/* WINDOW BLUR (ALT TAB) */
-window.addEventListener("blur", () => {
-    registerViolation("window_blur");
-});
-
-/* RIGHT CLICK BLOCK + DETECT */
-document.addEventListener("contextmenu", (e) => {
-    e.preventDefault();
-    registerViolation("right_click");
-});
-
-/* COPY PASTE DETECTION */
-document.addEventListener("copy", () => {
-    registerViolation("copy_action");
-});
-
-/* =========================
-   VIOLATION ENGINE
-========================= */
-
 function registerViolation(type) {
+    const now = Date.now();
 
+    // Skip jika terlalu cepat dari violation sebelumnya
+    if (now - CBTLOCK._lastViolation < CBTLOCK._debounceMs) {
+        console.warn("[CBTLOCK] Debounced:", type);
+        return;
+    }
+
+    CBTLOCK._lastViolation = now;
     CBTLOCK.violation++;
 
     const payload = {
-        studentId: CBTLOCK.studentId,
-        sessionId: CBTLOCK.sessionId,
-        type: type,
+        studentId:      CBTLOCK.studentId,
+        sessionId:      CBTLOCK.sessionId,
+        type:           type,
         violationCount: CBTLOCK.violation,
-        timestamp: Date.now()
+        timestamp:      now
     };
 
     sendViolation(payload);
-
     console.warn("[CBTLOCK VIOLATION]", payload);
 }
 
 /* =========================
-   SEND TO BACKEND
+   VIOLATION DETECTORS
 ========================= */
 
+// Tab switch — visibilitychange adalah yang utama
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) registerViolation("tab_switch");
+});
+
+// Blur hanya untuk deteksi ALT+TAB tanpa tab baru
+// Debounce di registerViolation mencegah double-count
+window.addEventListener("blur", () => {
+    // Delay 200ms — jika visibilitychange juga trigger,
+    // debounce akan block yang kedua
+    setTimeout(() => {
+        if (!document.hidden) registerViolation("window_blur");
+    }, 200);
+});
+
+// Klik kanan
+document.addEventListener("contextmenu", e => {
+    e.preventDefault();
+    registerViolation("right_click");
+});
+
+// Copy
+document.addEventListener("copy", () => {
+    registerViolation("copy_action");
+});
+
+// Keyboard shortcut berbahaya
+document.addEventListener("keydown", e => {
+    const blocked = (
+        (e.ctrlKey && ["c","v","u","s","a","p"].includes(e.key.toLowerCase())) ||
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && e.key === "I")
+    );
+    if (blocked) {
+        e.preventDefault();
+        registerViolation("keyboard_shortcut");
+    }
+});
+
+/* =========================
+   SEND VIOLATION KE VERCEL API
+========================= */
 async function sendViolation(data) {
     try {
         await fetch(ENDPOINT.violation, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify(data)
         });
     } catch (err) {
-        console.error("[CBTLOCK] SEND FAIL", err);
+        console.error("[CBTLOCK] Send violation fail:", err);
+        // Simpan ke localStorage sebagai fallback
+        const queue = JSON.parse(localStorage.getItem("cbt_queue") || "[]");
+        queue.push(data);
+        localStorage.setItem("cbt_queue", JSON.stringify(queue.slice(-20)));
     }
 }
+
+/* =========================
+   FLUSH OFFLINE QUEUE
+   Kirim ulang violation yang
+   gagal saat koneksi kembali
+========================= */
+window.addEventListener("online", async () => {
+    const queue = JSON.parse(localStorage.getItem("cbt_queue") || "[]");
+    if (!queue.length) return;
+
+    console.log("[CBTLOCK] Flushing offline queue:", queue.length);
+    for (const item of queue) {
+        await sendViolation(item);
+    }
+    localStorage.removeItem("cbt_queue");
+});
 
 /* =========================
    HEARTBEAT SYSTEM
 ========================= */
-
 function startHeartbeat() {
-
-    CBTLOCK.heartbeatInterval = setInterval(() => {
-
+    CBTLOCK.heartbeatInterval = setInterval(async () => {
         const payload = {
             studentId: CBTLOCK.studentId,
             sessionId: CBTLOCK.sessionId,
-            status: "active",
+            status:    "active",
             violation: CBTLOCK.violation,
             timestamp: Date.now()
         };
 
-        sendHeartbeat(payload);
-
-    }, 5000); // 5 detik heartbeat
-}
-
-/* =========================
-   HEARTBEAT SENDER
-========================= */
-
-async function sendHeartbeat(data) {
-    try {
-        await fetch(ENDPOINT.heartbeat, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        });
-    } catch (err) {
-        console.warn("[CBTLOCK HEARTBEAT FAIL]", err);
-    }
+        try {
+            await fetch(ENDPOINT.heartbeat, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify(payload)
+            });
+        } catch (err) {
+            console.warn("[CBTLOCK] Heartbeat fail:", err);
+        }
+    }, 5000);
 }
 
 /* =========================
    FULLSCREEN ENFORCER
 ========================= */
-
 function enforceFullscreen() {
     const el = document.documentElement;
-
-    if (el.requestFullscreen) {
-        el.requestFullscreen();
-    }
+    if (el.requestFullscreen)       el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 }
 
 /* =========================
-   AUTO START MONITORING
+   MONITORING START
 ========================= */
-
 function startMonitoring() {
-
     enforceFullscreen();
 
-    setInterval(() => {
-
-        // tambahan monitoring ringan (future AI layer)
-        if (document.hidden) {
-            registerViolation("hidden_state");
+    // Deteksi fullscreen exit sebagai violation
+    document.addEventListener("fullscreenchange", () => {
+        if (!document.fullscreenElement) {
+            registerViolation("fullscreen_exit");
         }
-
-    }, 3000);
+    });
 }
 
 /* =========================
    EMERGENCY STOP
 ========================= */
-
 function stopCBTLock() {
     clearInterval(CBTLOCK.heartbeatInterval);
     console.log("[CBTLOCK] STOPPED");
@@ -184,7 +206,6 @@ function stopCBTLock() {
 /* =========================
    EXPORT GLOBAL
 ========================= */
-
-window.CBTLOCK = CBTLOCK;
-window.initCBTLock = initCBTLock;
-window.stopCBTLock = stopCBTLock;
+window.CBTLOCK       = CBTLOCK;
+window.initCBTLock   = initCBTLock;
+window.stopCBTLock   = stopCBTLock;
