@@ -4,20 +4,7 @@
    POST /api/violation
 ===================================================== */
 
-require { initializeApp, getApps } from "firebase-admin/app";
-require { getDatabase }            from "firebase-admin/database";
-
-/* =========================
-   FIREBASE ADMIN SINGLETON
-========================= */
-if (!getApps().length) {
-    initializeApp({
-        credential:  JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT),
-        databaseURL: process.env.FIREBASE_DATABASE_URL
-    });
-}
-
-const db = getDatabase();
+const { db } = require("./Firebaseadmin");
 
 /* =========================
    CORS HEADERS
@@ -50,55 +37,53 @@ function resolveStatus(count) {
 /* =========================
    MAIN HANDLER
 ========================= */
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
 
     // Preflight CORS
     if (req.method === "OPTIONS") {
-        return res.status(200).set(CORS).end();
+        res.setHeaders(CORS);
+        return res.status(200).end();
     }
 
     if (req.method !== "POST") {
-        return res.status(405).set(CORS)
-            .json({ success: false, message: "Method Not Allowed" });
+        res.setHeaders(CORS);
+        return res.status(405).json({ success: false, message: "Method Not Allowed" });
     }
 
-    // Tolak request kadaluarsa > 30 detik
     const {
         uid,
         nama          = "-",
         kelas         = "-",
         violationType = "unknown",
         timestamp     = Date.now()
-    } = req.body;
+    } = req.body || {};
 
     if (!uid) {
-        return res.status(400).set(CORS)
-            .json({ success: false, message: "uid wajib diisi" });
+        res.setHeaders(CORS);
+        return res.status(400).json({ success: false, message: "uid wajib diisi" });
     }
 
     if (!VALID_TYPES.has(violationType)) {
-        return res.status(400).set(CORS)
-            .json({ success: false, message: "violationType tidak dikenali" });
+        res.setHeaders(CORS);
+        return res.status(400).json({ success: false, message: "violationType tidak dikenali" });
     }
 
     if (Date.now() - timestamp > 30000) {
-        return res.status(400).set(CORS)
-            .json({ success: false, message: "Request kadaluarsa" });
+        res.setHeaders(CORS);
+        return res.status(400).json({ success: false, message: "Request kadaluarsa" });
     }
 
     try {
         const studentRef = db.ref("students/" + uid);
 
-        // Baca data siswa saat ini
         const snap     = await studentRef.once("value");
         const existing = snap.val() || {};
 
-        // Violation count — server increment, tidak bisa turun
+        // Violation count — server-side increment, tidak bisa turun
         const prevCount  = existing.violationCount || 0;
         const newCount   = prevCount + 1;
         const safeStatus = resolveStatus(newCount);
 
-        // Update data siswa
         await studentRef.update({
             uid,
             nama,
@@ -122,7 +107,7 @@ export default async function handler(req, res) {
             serverTime:     Date.now()
         });
 
-        // Auto submit jika baru capai >= 30
+        // Auto submit jika baru pertama kali capai >= 30
         if (newCount >= 30 && !existing.autoSubmit) {
             await studentRef.update({
                 autoSubmit:  true,
@@ -134,15 +119,16 @@ export default async function handler(req, res) {
         const isCritical = ["tab_switch", "fullscreen_exit", "suspicious_pattern"].includes(violationType);
         if (isCritical || newCount >= 26) {
             await db.ref("alerts").push({
-                type:      "violation",
-                msg:       (nama || uid) + " — " + violationType + " (ke-" + newCount + ")",
-                status:    safeStatus,
+                type:   "violation",
+                msg:    (nama || uid) + " — " + violationType + " (ke-" + newCount + ")",
+                status: safeStatus,
                 uid,
-                time:      Date.now()
+                time:   Date.now()
             });
         }
 
-        return res.status(200).set(CORS).json({
+        res.setHeaders(CORS);
+        return res.status(200).json({
             success:        true,
             violationCount: newCount,
             status:         safeStatus,
@@ -151,7 +137,7 @@ export default async function handler(req, res) {
 
     } catch (err) {
         console.error("[/api/violation]", err);
-        return res.status(500).set(CORS)
-            .json({ success: false, message: err.message });
+        res.setHeaders(CORS);
+        return res.status(500).json({ success: false, message: err.message });
     }
-}
+};
