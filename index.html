@@ -36,7 +36,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, rgba(11, 15, 26, 0.75), rgba(20, 27, 45, 0.7)), 
+            background: linear-gradient(135deg, rgba(11, 15, 26, 0.55), rgba(20, 27, 45, 0.45)), 
                         url('assets/img/bg.jpg') center/cover no-repeat fixed;
             overflow: hidden;
             padding: 20px;
@@ -57,6 +57,23 @@
             box-shadow: var(--shadow-preset), inset 0 1px 1px var(--glass-highlight);
             text-align: center;
             animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        .portal-container::before{
+            content:'';
+            position:absolute;
+            inset:0;
+            border-radius:28px;
+            padding:1px;
+            background:linear-gradient(135deg,rgba(255,255,255,.4),rgba(255,255,255,.05));
+            -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+            -webkit-mask-composite:xor;
+            mask-composite:exclude;
+            pointer-events:none;
+        }
+        
+        .portal-container{
+            position:relative;
         }
 
         .portal-wrapper {
@@ -157,6 +174,11 @@
             line-height: 1.5;
             letter-spacing: 0.3px;
         }
+        .build-info{
+            margin-top:15px;
+            font-size:10px;
+            opacity:.5;
+        }
 
         /* ANIMATION TRACER */
         @keyframes fadeIn {
@@ -240,7 +262,7 @@
             
             <nav class="portal-actions">
                 <a href="panitia/index.html" class="role-btn">
-                    <span class="role-icon">🖥️</span> Contol Center (Panitia)
+                    <span class="role-icon">🖥️</span> Control Center (Panitia)
                 </a>
                 <a href="pengawas/index.html" class="role-btn">
                     <span class="role-icon">🎓</span> Supervisor Panel (Pengawas)
@@ -254,6 +276,9 @@
             <br>
             &copy; 2026 Tim IT SMAN 1 Sooko Mojokerto
         </footer>
+    </div>
+    <div class="build-info">
+            Build 2026.08.01
     </div>
 
 </body>
