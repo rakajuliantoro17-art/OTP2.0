@@ -7,7 +7,7 @@
    Tulis data lengkap siswa ke Firebase Realtime DB
 ===================================================== */
 
-const { db } = require("../api/Firebaseadmin");
+const { db } = require("../Firebaseadmin");
 
 /* =========================
    CORS HEADERS
@@ -65,46 +65,39 @@ module.exports = async function handler(req, res) {
 
     // Preflight CORS
     if (req.method === "OPTIONS") {
-        return res.status(200).setHeaders(CORS_HEADERS).end();
+        res.setHeaders(CORS_HEADERS);
+        return res.status(200).end();
     }
 
     // Method guard
     if (req.method !== "POST") {
-        return res.status(405)
-            .setHeaders(CORS_HEADERS)
-            .json({ error: "Method not allowed" });
+        res.setHeaders(CORS_HEADERS);
+        return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const body = req.body;
+    const body = req.body || {};
 
     // Validasi payload
     const errors = validate(body);
     if (errors.length) {
-        return res.status(400)
-            .setHeaders(CORS_HEADERS)
-            .json({ error: "Payload tidak valid", details: errors });
+        res.setHeaders(CORS_HEADERS);
+        return res.status(400).json({ error: "Payload tidak valid", details: errors });
     }
 
     const {
         studentId,
-        sessionId  = "default",
-        status     = null,
-        violation  = 0,
-        progress   = "0/40",
-        timestamp  = Date.now()
+        sessionId = "default",
+        violation = 0,
+        progress  = "0/40",
+        timestamp = Date.now()
     } = body;
-
-    // Resolusi status — pakai yang dikirim client,
-    // tapi override jika violation tidak sesuai
-    const resolvedStatus = status || resolveStatus(violation);
 
     try {
         const ref      = db.ref("students/" + studentId);
         const snapshot = await ref.once("value");
         const existing = snapshot.val() || {};
 
-        // Hanya update jika violation tidak turun
-        // (mencegah manipulasi dari client)
+        // Hanya update jika violation tidak turun (mencegah manipulasi client)
         const safeViolation = Math.max(existing.violation || 0, violation);
         const safeStatus    = resolveStatus(safeViolation);
 
@@ -136,20 +129,17 @@ module.exports = async function handler(req, res) {
             timestamp: Date.now()
         });
 
-        return res.status(200)
-            .setHeaders(CORS_HEADERS)
-            .json({
-                ok:        true,
-                studentId,
-                violation: safeViolation,
-                status:    safeStatus
-            });
+        res.setHeaders(CORS_HEADERS);
+        return res.status(200).json({
+            ok:        true,
+            studentId,
+            violation: safeViolation,
+            status:    safeStatus
+        });
 
     } catch (err) {
         console.error("[/api/status/update] Firebase error:", err);
-
-        return res.status(500)
-            .setHeaders(CORS_HEADERS)
-            .json({ error: "Internal server error", message: err.message });
+        res.setHeaders(CORS_HEADERS);
+        return res.status(500).json({ error: "Internal server error", message: err.message });
     }
 };
