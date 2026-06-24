@@ -4,8 +4,8 @@
    POST /api/violation
 ===================================================== */
 
-import { initializeApp, getApps } from "firebase-admin/app";
-import { getDatabase }            from "firebase-admin/database";
+require { initializeApp, getApps } from "firebase-admin/app";
+require { getDatabase }            from "firebase-admin/database";
 
 /* =========================
    FIREBASE ADMIN SINGLETON
