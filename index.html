@@ -4,126 +4,256 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMANSASOO Security System 2.0</title>
-
-    <link rel="icon" href="/assets/img/favicon.ico">
+    
+    <link rel="icon" href="public/assets/img/logo.png">
     <link rel="stylesheet" href="assets/css/glass.css">
-
+    
     <style>
-        /* Reset & Base Setup */
+        /* =====================================================
+           CORE SYSTEM VARIABLES & RESET
+        ===================================================== */
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-highlight: rgba(255, 255, 255, 0.3);
+            --text-light: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.65);
+            --accent-glow: rgba(0, 122, 255, 0.45);
+            --shadow-preset: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Latar Belakang Portal */
         body {
             height: 100vh;
+            width: 100vw;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.45)),url('assets/img/bg.jpg') center/cover fixed;
-            color: white; /* Text dasar warna putih agar kontras dengan background gelap */
+            background: linear-gradient(135deg, rgba(11, 15, 26, 0.75), rgba(20, 27, 45, 0.7)), 
+                        url('assets/img/bg.jpg') center/cover no-repeat fixed;
+            overflow: hidden;
+            padding: 20px;
         }
 
-        /* Container Kartu Portal */
+        /* =====================================================
+           DESKTOP FHD TARGET LAYOUT (Default Core)
+        ===================================================== */
         .portal-container {
+            width: 100%;
+            max-width: 480px; /* Diperlebar dari 420px agar gagah di monitor 1080p */
+            padding: 50px 40px;
+            background: var(--glass-bg); 
+            backdrop-filter: blur(30px) saturate(190%);
+            -webkit-backdrop-filter: blur(30px) saturate(190%);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            box-shadow: var(--shadow-preset), inset 0 1px 1px var(--glass-highlight);
             text-align: center;
-            padding: 40px;
-            width: 90%;
-            max-width: 420px;
-            /* Menggunakan class .glass dari glass.css, kita tambah sedikit penyesuaian */
-            background: rgba(255, 255, 255, 0.15); 
-            border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Logo SMANSASOO */
-        .logo {
-            width: 100px;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        .portal-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
         }
-        
+
+        .portal-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            width: 110px; /* Skala proporsional desktop */
+            height: auto;
+            margin-bottom: 24px;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.35));
+            transition: transform 0.3s ease;
+        }
+        .logo:hover {
+            transform: scale(1.05) rotate(2deg);
+        }
+
         .title {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 800;
-            margin-bottom: 5px;
-            letter-spacing: 1px;
+            color: var(--text-light);
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
         .subtitle {
-            font-size: 13px;
-            opacity: 0.8;
-            margin-bottom: 35px;
-            letter-spacing: 2px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 3px;
             text-transform: uppercase;
+            margin-bottom: 40px;
         }
 
-        /* Tombol Pilihan Peran */
+        .portal-actions {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        /* ROLE CONTROLLER BUTTONS */
         .role-btn {
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
-            padding: 16px;
-            margin-bottom: 15px;
-            background: rgba(255, 255, 255, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 18px 24px;
+            margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 16px;
             text-decoration: none;
             color: #1c1c1e;
             font-weight: 700;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 15px;
+            letter-spacing: -0.1px;
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .role-btn:last-child {
+            margin-bottom: 0;
         }
 
         .role-btn:hover {
             transform: translateY(-4px);
             background: #ffffff;
-            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4); /* Efek glow biru (accent) */
+            box-shadow: 0 12px 30px var(--accent-glow);
+            color: #007aff;
         }
 
         .role-icon {
             font-size: 22px;
-            margin-right: 12px;
+            margin-right: 14px;
+            transition: transform 0.2s ease;
+        }
+        
+        .role-btn:hover .role-icon {
+            transform: scale(1.15);
         }
 
-        /* Footer Info */
+        /* FOOTER BRANDING */
         .footer {
-            margin-top: 25px;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
+            margin-top: 35px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            line-height: 1.5;
+            letter-spacing: 0.3px;
+        }
+
+        /* ANIMATION TRACER */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.96) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* =====================================================
+           RESPONSIVE LAYER: MOBILE ORIENTED LANDSCAPE
+        ===================================================== */
+        @media (max-height: 560px) and (orientation: landscape) {
+            body {
+                overflow-y: auto;
+                height: auto;
+                min-height: 100vh;
+                padding: 15px;
+            }
+
+            .portal-container {
+                max-width: 820px; /* Melebar horizontal mengambil sisa ruang monitor */
+                padding: 30px 40px;
+                border-radius: 24px;
+            }
+
+            .portal-wrapper {
+                flex-direction: row; /* Berubah menjadi 2 kolom berdampingan */
+                align-items: center;
+                gap: 40px;
+                text-align: left;
+            }
+
+            .portal-header {
+                flex: 1;
+                align-items: flex-start; /* Konten teks merapat ke kiri */
+                text-align: left;
+            }
+
+            .logo {
+                width: 75px; /* Kompresi ukuran logo di handphone landscape */
+                margin-bottom: 12px;
+            }
+
+            .title {
+                font-size: 22px;
+            }
+
+            .subtitle {
+                margin-bottom: 0; /* Menghilangkan margin bawah karena tombol pindah ke kanan */
+            }
+
+            .portal-actions {
+                flex: 1.1;
+                justify-content: center;
+            }
+
+            .role-btn {
+                padding: 14px 20px;
+                margin-bottom: 12px;
+                font-size: 14px;
+            }
+
+            .footer {
+                margin-top: 20px;
+                border-top: 1px solid rgba(255, 255, 255, 0.08);
+                padding-top: 15px;
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="portal-container glass fade-in">
-        
-        <img src="assets/img/logo.png" alt="Logo SMANSASOO" class="logo">
-        
-        <h1 class="title">SMANSASOO Security System</h1>
-        <p class="subtitle">Version 2.0</p>
+    <div class="portal-container glass">
+        <div class="portal-wrapper">
+            
+            <header class="portal-header">
+                <img src="assets/img/logo.png" alt="Logo SMANSASOO" class="logo" onerror="this.style.display='none'; this.parentNode.insertAdjacentHTML('afterbegin', '<span style=\'font-size:60px; margin-bottom:15px; display:block;\'>🛡️</span>');">
+                <h1 class="title">SMANSASOO Security System</h1>
+                <p class="subtitle">Version 2.0</p>
+            </header>
+            
+            <nav class="portal-actions">
+                <a href="panitia/index.html" class="role-btn">
+                    <span class="role-icon">🖥️</span> Contol Center (Panitia)
+                </a>
+                <a href="pengawas/index.html" class="role-btn">
+                    <span class="role-icon">🎓</span> Supervisor Panel (Pengawas)
+                </a>
+            </nav>
 
-        <a href="panitia/index.html" class="role-btn">
-        <span class="role-icon">🖥️</span>
-            Control Center (Panitia)
-        </a>
-
-        <a href="pengawas/index.html" class="role-btn">
-        <span class="role-icon">🎓</span>
-            Supervisor Panel (Pengawas)
-        </a>
-
-        <div class="footer">
-            SMANSASOO Security System 2.0
-        <br>
-            © Tim IT SMAN 1 Sooko Mojokerto
         </div>
 
+        <footer class="footer">
+            SMANSASOO Security System 2.0
+            <br>
+            &copy; 2026 Tim IT SMAN 1 Sooko Mojokerto
+        </footer>
     </div>
 
 </body>
