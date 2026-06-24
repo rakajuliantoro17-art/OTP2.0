@@ -174,10 +174,32 @@
             line-height: 1.5;
             letter-spacing: 0.3px;
         }
+        
         .build-info{
             margin-top:15px;
             font-size:10px;
             opacity:.5;
+        }
+        
+        .system-status{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:8px 14px;
+            border-radius:999px;
+            background:rgba(0,255,120,.12);
+            color:#8cffb3;
+            font-size:12px;
+            font-weight:700;
+        margin-bottom:20px;
+        }
+
+        .dot{
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            background:#00ff66;
+            box-shadow:0 0 10px #00ff66;
         }
 
         /* ANIMATION TRACER */
@@ -275,11 +297,30 @@
             SMANSASOO Security System 2.0
             <br>
             &copy; 2026 Tim IT SMAN 1 Sooko Mojokerto
+            
+            <div class="system-status">
+            <span class="dot"></span>
+            SYSTEM ONLINE
+            </div>
+            
+            <div class="build-info">
+            Build 2026.08.01
+            </div>
+            
+            <div class="info-bar">
+            <div class="info-card">
+                <strong>OTP SYSTEM</strong>
+                <span>READY</span>
+            </div>
+
+            <div class="info-card">
+                <strong>MONITORING</strong>
+                <span>ACTIVE</span>
+            </div>
+        </div>
         </footer>
     </div>
-    <div class="build-info">
-            Build 2026.08.01
-    </div>
+                                                                                                                                                 
 
 </body>
 </html>
