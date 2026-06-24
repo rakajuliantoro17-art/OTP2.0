@@ -7,7 +7,7 @@
    Tulis data lengkap siswa ke Firebase Realtime DB
 ===================================================== */
 
-const { db } = require("../_lib/firebase-admin");
+const { db } = require("../api/Firebaseadmin");
 
 /* =========================
    CORS HEADERS
