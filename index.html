@@ -181,25 +181,46 @@
             opacity:.5;
         }
         
-        .system-status{
-            display:inline-flex;
+        .status-group{
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:center;
+            gap:10px;
+            margin-bottom:25px;
+        }
+
+        .status-badge{
+            display:flex;
             align-items:center;
             gap:8px;
-            padding:8px 14px;
+
+            padding:10px 16px;
+
+            background:rgba(255,255,255,.08);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+
+            border:1px solid rgba(255,255,255,.12);
             border-radius:999px;
-            background:rgba(0,255,120,.12);
+
             color:#8cffb3;
             font-size:12px;
             font-weight:700;
-        margin-bottom:20px;
+            letter-spacing:.8px;
+
+            box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.15),
+            0 4px 15px rgba(0,0,0,.15);
         }
 
-        .dot{
+        .status-badge .dot{
             width:8px;
             height:8px;
             border-radius:50%;
             background:#00ff66;
-            box-shadow:0 0 10px #00ff66;
+            box-shadow:
+            0 0 8px #00ff66,
+            0 0 16px #00ff66;
         }
 
         /* ANIMATION TRACER */
@@ -294,30 +315,33 @@
         </div>
 
         <footer class="footer">
-            SMANSASOO Security System 2.0
-            <br>
-            &copy; 2026 Tim IT SMAN 1 Sooko Mojokerto
-            
-            <div class="system-status">
+            <div class="status-group">
+
+            <div class="status-badge">
             <span class="dot"></span>
             SYSTEM ONLINE
             </div>
+
+            <div class="status-badge">
+            <span class="dot"></span>
+            OTP READY
+            </div>
+
+            <div class="status-badge">
+            <span class="dot"></span>
+            MONITORING ACTIVE
+            </div>
+
+            </div>
             
-            <div class="build-info">
+            SMANSASOO Security System 2.0
+            <br>
+            &copy; 2026 Tim IT SMAN 1 Sooko Mojokerto
+             <div class="build-info">
             Build 2026.08.01
             </div>
             
-            <div class="info-bar">
-            <div class="info-card">
-                <strong>OTP SYSTEM</strong>
-                <span>READY</span>
-            </div>
-
-            <div class="info-card">
-                <strong>MONITORING</strong>
-                <span>ACTIVE</span>
-            </div>
-        </div>
+            
         </footer>
     </div>
                                                                                                                                                  
