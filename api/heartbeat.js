@@ -8,7 +8,7 @@
    Update status online/offline siswa di Firebase
 ===================================================== */
 
-const { db } = require("./_lib/firebase-admin");
+const { db } = require("./Firebaseadmin");
 
 /* =========================
    CORS HEADERS
