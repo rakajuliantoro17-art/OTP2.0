@@ -1,151 +1,151 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMANSASOO CBT LOCK 2.0 — Pengawas</title>
-    <link rel="icon" href="assets/img/favicon.ico">
-    <link rel="stylesheet" href="./css/simple.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMANSASOO CBT LOCK 2.0 — Pengawas</title>
+    <link rel="icon" href="/assets/img/favicon.ico">
+    <link rel="stylesheet" href="./css/simple.css">
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <div class="otp-panel glass">
+    <div class="otp-panel glass">
 
-        <!-- HEADER -->
-        <div class="panel-header">
-            <img class="logo"
-                src="assets/img/logo.png"
-                alt="Logo SMAN 1 Sooko">
-            <div>
-                <div class="title">SMANSASOO CBT LOCK</div>
-                <small class="subtitle">DASHBOARD PENGAWAS</small>
-            </div>
-        </div>
+        <!-- HEADER -->
+        <div class="panel-header">
+            <img class="logo"
+                src="/assets/img/logo.png"
+                alt="Logo SMAN 1 Sooko">
+            <div>
+                <div class="title">SMANSASOO CBT LOCK</div>
+                <small class="subtitle">DASHBOARD PENGAWAS</small>
+            </div>
+        </div>
 
-        <hr class="divider">
+        <hr class="divider">
 
-        <!-- OTP DISPLAY -->
-        <div class="otp-section">
-            <div class="otp-label">OTP AKTIF</div>
-            <div id="otpCode" class="otp-code">--- ---</div>
-            <div class="otp-type" id="otpType">System OTP</div>
-        </div>
+        <!-- OTP DISPLAY -->
+        <div class="otp-section">
+            <div class="otp-label">OTP AKTIF</div>
+            <div id="otpCode" class="otp-code">--- ---</div>
+            <div class="otp-type" id="otpType">System OTP</div>
+        </div>
 
-        <!-- COUNTDOWN BAR -->
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div class="countdown-label">
-            Sisa waktu: <b id="countdownSec">60</b> detik
-        </div>
+        <!-- COUNTDOWN BAR -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="countdown-label">
+            Sisa waktu: <b id="countdownSec">60</b> detik
+        </div>
 
-        <!-- STATUS -->
-        <div class="status-bar">
-            Status: <b id="statusLabel" style="color: var(--success);">TOTP Dinamis Aktif</b>
-            &nbsp;|&nbsp; Siklus 60 detik
-        </div>
+        <!-- STATUS -->
+        <div class="status-bar">
+            Status: <b id="statusLabel" style="color: var(--success);">TOTP Dinamis Aktif</b>
+            &nbsp;|&nbsp; Siklus 60 detik
+        </div>
 
-        <!-- MASTER OTP BOX (tersembunyi, muncul saat ada master OTP dari Firebase) -->
-        <div id="masterBox" class="master-box" style="display:none;">
-            <div class="otp-label">MASTER OTP</div>
-            <div id="masterCode" class="otp-code master">--- ---</div>
-            <div class="otp-label" style="font-size:11px;">Untuk siswa violation ≥ 26 — sekali pakai</div>
-        </div>
+        <!-- MASTER OTP BOX (tersembunyi, muncul saat ada master OTP dari Firebase) -->
+        <div id="masterBox" class="master-box" style="display:none;">
+            <div class="otp-label">MASTER OTP</div>
+            <div id="masterCode" class="otp-code master">--- ---</div>
+            <div class="otp-label" style="font-size:11px;">Untuk siswa violation ≥ 26 — sekali pakai</div>
+        </div>
 
-        <!-- ACTIONS -->
-        <div class="actions">
-            <button class="btn-primary" onclick="copyOTP()">
-                📋 Salin Kode OTP
-            </button>
-            <button class="btn-secondary" onclick="forceGenerateOTP()">
-                🔄 Sinkronisasi Waktu
-            </button>
-            <button class="btn-danger" onclick="resetOTP()">
-                🔒 Bekukan Sesi (Freeze)
-            </button>
-        </div>
+        <!-- ACTIONS -->
+        <div class="actions">
+            <button class="btn-primary" onclick="copyOTP()">
+                📋 Salin Kode OTP
+            </button>
+            <button class="btn-secondary" onclick="forceGenerateOTP()">
+                🔄 Sinkronisasi Waktu
+            </button>
+            <button class="btn-danger" onclick="resetOTP()">
+                🔒 Bekukan Sesi (Freeze)
+            </button>
+        </div>
 
-    </div>
+    </div>
 </div>
 
 <!-- LOG AKTIVITAS -->
 <div class="alert glass">
-    <b class="log-title">📡 LOG AKTIVITAS SERVER</b>
-    <div id="logList"></div>
+    <b class="log-title">📡 LOG AKTIVITAS SERVER</b>
+    <div id="logList"></div>
 </div>
 
 <!-- FIREBASE CONFIG -->
 <script>
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "XXXXXXXX",
-    appId: "XXXXXXXX"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "XXXXXXXX",
+    appId: "XXXXXXXX"
 };
 
 try {
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    window.db = firebase.database();
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    window.db = firebase.database();
 
-    // Listen Master OTP dari Firebase (dikirim panitia)
-    window.db.ref("system/masterOtp").on("value", snap => {
-        const data = snap.val();
-        const box  = document.getElementById("masterBox");
-        const el   = document.getElementById("masterCode");
-        if (data && data.status === "active" && data.code) {
-            const fmt = data.code.substring(0,3) + " " + data.code.substring(3,6);
-            if (el)  el.innerText  = fmt;
-            if (box) box.style.display = "block";
-            logEvent("MASTER OTP DITERIMA → " + fmt);
-        } else {
-            if (box) box.style.display = "none";
-        }
-    });
+    // Listen Master OTP dari Firebase (dikirim panitia)
+    window.db.ref("system/masterOtp").on("value", snap => {
+        const data = snap.val();
+        const box  = document.getElementById("masterBox");
+        const el   = document.getElementById("masterCode");
+        if (data && data.status === "active" && data.code) {
+            const fmt = data.code.substring(0,3) + " " + data.code.substring(3,6);
+            if (el)  el.innerText  = fmt;
+            if (box) box.style.display = "block";
+            logEvent("MASTER OTP DITERIMA → " + fmt);
+        } else {
+            if (box) box.style.display = "none";
+        }
+    });
 
-    // Listen System OTP dari Firebase (sebagai fallback verifikasi)
-    window.db.ref("system/otp").on("value", snap => {
-        const data = snap.val();
-        if (data && data.code) {
-            logEvent("SYSTEM OTP SYNC → Firebase aktif");
-        }
-    });
+    // Listen System OTP dari Firebase (sebagai fallback verifikasi)
+    window.db.ref("system/otp").on("value", snap => {
+        const data = snap.val();
+        if (data && data.code) {
+            logEvent("SYSTEM OTP SYNC → Firebase aktif");
+        }
+    });
 
-    logEvent("Firebase terhubung");
+    logEvent("Firebase terhubung");
 } catch(e) {
-    logEvent("Firebase offline — mode lokal aktif");
-    console.warn("[PENGAWAS] Firebase error:", e);
+    logEvent("Firebase offline — mode lokal aktif");
+    console.warn("[PENGAWAS] Firebase error:", e);
 }
 </script>
 
 <!-- PROGRESS BAR ANIMATION -->
 <script>
 function animateProgressBar() {
-    const now      = Date.now();
-    const interval = 60;
-    const remain   = interval - ((now / 1000) % interval);
-    const pct      = (remain / interval) * 100;
+    const now      = Date.now();
+    const interval = 60;
+    const remain   = interval - ((now / 1000) % interval);
+    const pct      = (remain / interval) * 100;
 
-    const bar = document.getElementById("progressBar");
-    const sec = document.getElementById("countdownSec");
+    const bar = document.getElementById("progressBar");
+    const sec = document.getElementById("countdownSec");
 
-    if (bar) {
-        bar.style.width = pct + "%";
-        if (remain > 20)      bar.style.backgroundColor = "var(--success)";
-        else if (remain > 10) bar.style.backgroundColor = "var(--warn)";
-        else                  bar.style.backgroundColor = "var(--danger)";
-    }
+    if (bar) {
+        bar.style.width = pct + "%";
+        if (remain > 20)      bar.style.backgroundColor = "var(--success)";
+        else if (remain > 10) bar.style.backgroundColor = "var(--warn)";
+        else                  bar.style.backgroundColor = "var(--danger)";
+    }
 
-    if (sec) sec.innerText = Math.ceil(remain);
+    if (sec) sec.innerText = Math.ceil(remain);
 
-    requestAnimationFrame(animateProgressBar);
+    requestAnimationFrame(animateProgressBar);
 }
 requestAnimationFrame(animateProgressBar);
 </script>
@@ -155,6 +155,3 @@ requestAnimationFrame(animateProgressBar);
 
 </body>
 </html>
-
-menggunakan untuk logo assets/img/logo.png
-digunakan untuk icon assets/img/favicon.ico
