@@ -1,287 +1,160 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMANSASOO CBT LOCK 2.0 — Pengawas</title>
-    
-    <link rel="icon" href="assets/img/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMANSASOO CBT LOCK 2.0 — Pengawas</title>
+    <link rel="icon" href="assets/img/favicon.ico">
+    <link rel="stylesheet" href="./css/simple.css">
 
-    <style>
-        /* =====================================================
-           CORE SYSTEM VARIABLES & GLASSMORPHISM
-        ===================================================== */
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.12);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --text-light: #ffffff;
-            --text-muted: rgba(255, 255, 255, 0.65);
-            
-            --accent: #007aff;
-            --success: #34c759;
-            --warn: #ff9500;
-            --danger: #ff3b30;
-            
-            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
-            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0b0f1a, #141b2d, #1a233a);
-            background-attachment: fixed;
-            color: var(--text-light);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            gap: 20px;
-        }
-
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .container {
-            width: 100%;
-            max-width: 480px;
-        }
-
-        /* =====================================================
-           PANEL PENGAWAS
-        ===================================================== */
-        .otp-panel {
-            padding: 30px;
-            text-align: center;
-        }
-
-        .panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .logo {
-            width: 60px;
-            height: auto;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-        }
-
-        .title {
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-align: left;
-        }
-
-        .subtitle {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            display: block;
-            text-align: left;
-            margin-top: 4px;
-        }
-
-        .divider {
-            border: none;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 20px 0;
-        }
-
-        /* OTP SECTION */
-        .otp-section {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .otp-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 1.5px;
-            margin-bottom: 10px;
-        }
-
-        .otp-code {
-            font-size: 48px;
-            font-weight: 800;
-            letter-spacing: 6px;
-            color: var(--success);
-            font-family: "SF Mono", Consolas, monospace;
-            text-shadow: 0 0 20px rgba(52, 199, 89, 0.4);
-            margin-bottom: 8px;
-        }
-
-        .otp-type {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--accent);
-            background: rgba(0, 122, 255, 0.15);
-            padding: 4px 12px;
-            border-radius: 12px;
-            display: inline-block;
-        }
-
-        /* PROGRESS BAR */
-        .progress-container {
-            width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 100%;
-            background: var(--success);
-            transition: width 0.1s linear, background-color 0.3s ease;
-        }
-
-        .countdown-label {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 20px;
-        }
-        .countdown-label b { color: var(--text-light); }
-
-        .status-bar {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-muted);
-            background: rgba(0, 0, 0, 0.15);
-            padding: 10px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        /* MASTER OTP BOX */
-        .master-box {
-            background: rgba(175, 82, 222, 0.15);
-            border: 1px solid rgba(175, 82, 222, 0.3);
-            padding: 16px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-            animation: pulseMaster 2s infinite;
-        }
-        
-        .otp-code.master {
-            font-size: 36px;
-            color: #af52de;
-            text-shadow: 0 0 15px rgba(175, 82, 222, 0.4);
-        }
-
-        @keyframes pulseMaster {
-            0% { box-shadow: 0 0 0 0 rgba(175, 82, 222, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(175, 82, 222, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(175, 82, 222, 0); }
-        }
-
-        /* BUTTONS */
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        button {
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-primary { background: #ffffff; color: #1c1c1e; }
-        .btn-primary:hover { background: #f0f0f0; transform: translateY(-2px); }
-        
-        .btn-secondary { background: rgba(255, 255, 255, 0.1); color: var(--text-light); }
-        .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); }
-        
-        .btn-danger { background: rgba(255, 59, 48, 0.15); color: #ff453a; border: 1px solid rgba(255, 59, 48, 0.3); }
-        .btn-danger:hover { background: rgba(255, 59, 48, 0.25); color: #fff; }
-
-        /* LOG ALERT PANEL */
-        .alert {
-            width: 100%;
-            max-width: 480px;
-            padding: 16px;
-            max-height: 160px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .log-title {
-            font-size: 12px;
-            color: var(--accent);
-            letter-spacing: 1px;
-        }
-
-        #logList {
-            font-size: 11px;
-            color: var(--text-muted);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            font-family: monospace;
-        }
-        
-        /* Custom Scrollbar for Logs */
-        #logList::-webkit-scrollbar { width: 4px; }
-        #logList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-    </style>
-
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <div class="otp-panel glass">
+    <div class="otp-panel glass">
 
-        <div class="panel-header">
-            <img class="logo" src="assets/img/logo.png" alt="Logo SMAN 1 Sooko">
-            <div>
-                <div class="title">SMANSASOO CBT LOCK</div>
-                <small class="subtitle">DASHBOARD PENGAWAS</small>
-            </div>
-        </div>
+        <!-- HEADER -->
+        <div class="panel-header">
+            <img class="logo"
+                src="assets/img/logo.png"
+                alt="Logo SMAN 1 Sooko">
+            <div>
+                <div class="title">SMANSASOO CBT LOCK</div>
+                <small class="subtitle">DASHBOARD PENGAWAS</small>
+            </div>
+        </div>
 
-        <hr class="divider">
+        <hr class="divider">
 
-        <div class="otp-section">
-            <div class="otp-label">OTP AKTIF</div>
-            <div id="otpCode" class="otp-code">--- ---</div>
-            <div class="otp-type" id="otpType">System OTP</div>
+        <!-- OTP DISPLAY -->
+        <div class="otp-section">
+            <div class="otp-label">OTP AKTIF</div>
+            <div id="otpCode" class="otp-code">--- ---</div>
+            <div class="otp-type" id="otpType">System OTP</div>
+        </div>
+
+        <!-- COUNTDOWN BAR -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="countdown-label">
+            Sisa waktu: <b id="countdownSec">60</b> detik
+        </div>
+
+        <!-- STATUS -->
+        <div class="status-bar">
+            Status: <b id="statusLabel" style="color: var(--success);">TOTP Dinamis Aktif</b>
+            &nbsp;|&nbsp; Siklus 60 detik
+        </div>
+
+        <!-- MASTER OTP BOX (tersembunyi, muncul saat ada master OTP dari Firebase) -->
+        <div id="masterBox" class="master-box" style="display:none;">
+            <div class="otp-label">MASTER OTP</div>
+            <div id="masterCode" class="otp-code master">--- ---</div>
+            <div class="otp-label" style="font-size:11px;">Untuk siswa violation ≥ 26 — sekali pakai</div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="actions">
+            <button class="btn-primary" onclick="copyOTP()">
+                📋 Salin Kode OTP
+            </button>
+            <button class="btn-secondary" onclick="forceGenerateOTP()">
+                🔄 Sinkronisasi Waktu
+            </button>
+            <button class="btn-danger" onclick="resetOTP()">
+                🔒 Bekukan Sesi (Freeze)
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- LOG AKTIVITAS -->
+<div class="alert glass">
+    <b class="log-title">📡 LOG AKTIVITAS SERVER</b>
+    <div id="logList"></div>
+</div>
+
+<!-- FIREBASE CONFIG -->
+<script>
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "XXXXXXXX",
+    appId: "XXXXXXXX"
+};
+
+try {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    window.db = firebase.database();
+
+    // Listen Master OTP dari Firebase (dikirim panitia)
+    window.db.ref("system/masterOtp").on("value", snap => {
+        const data = snap.val();
+        const box  = document.getElementById("masterBox");
+        const el   = document.getElementById("masterCode");
+        if (data && data.status === "active" && data.code) {
+            const fmt = data.code.substring(0,3) + " " + data.code.substring(3,6);
+            if (el)  el.innerText  = fmt;
+            if (box) box.style.display = "block";
+            logEvent("MASTER OTP DITERIMA → " + fmt);
+        } else {
+            if (box) box.style.display = "none";
+        }
+    });
+
+    // Listen System OTP dari Firebase (sebagai fallback verifikasi)
+    window.db.ref("system/otp").on("value", snap => {
+        const data = snap.val();
+        if (data && data.code) {
+            logEvent("SYSTEM OTP SYNC → Firebase aktif");
+        }
+    });
+
+    logEvent("Firebase terhubung");
+} catch(e) {
+    logEvent("Firebase offline — mode lokal aktif");
+    console.warn("[PENGAWAS] Firebase error:", e);
+}
+</script>
+
+<!-- PROGRESS BAR ANIMATION -->
+<script>
+function animateProgressBar() {
+    const now      = Date.now();
+    const interval = 60;
+    const remain   = interval - ((now / 1000) % interval);
+    const pct      = (remain / interval) * 100;
+
+    const bar = document.getElementById("progressBar");
+    const sec = document.getElementById("countdownSec");
+
+    if (bar) {
+        bar.style.width = pct + "%";
+        if (remain > 20)      bar.style.backgroundColor = "var(--success)";
+        else if (remain > 10) bar.style.backgroundColor = "var(--warn)";
+        else                  bar.style.backgroundColor = "var(--danger)";
+    }
+
+    if (sec) sec.innerText = Math.ceil(remain);
+
+    requestAnimationFrame(animateProgressBar);
+}
+requestAnimationFrame(animateProgressBar);
+</script>
+
+<!-- OTP ENGINE -->
+<script src="./js/unlock.js"></script>
+
+</body>
+</html>
+
+menggunakan untuk logo assets/img/logo.png
+digunakan untuk icon assets/img/favicon.ico
