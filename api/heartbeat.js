@@ -60,30 +60,28 @@ module.exports = async function handler(req, res) {
 
     // Preflight CORS
     if (req.method === "OPTIONS") {
-        return res.status(200).setHeaders(CORS_HEADERS).end();
+        res.setHeaders(CORS_HEADERS);
+        return res.status(200).end();
     }
 
     // Method guard
     if (req.method !== "POST") {
-        return res.status(405)
-            .setHeaders(CORS_HEADERS)
-            .json({ error: "Method not allowed" });
+        res.setHeaders(CORS_HEADERS);
+        return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const body = req.body;
+    const body = req.body || {};
 
     // Validasi payload
     const errors = validate(body);
     if (errors.length) {
-        return res.status(400)
-            .setHeaders(CORS_HEADERS)
-            .json({ error: "Payload tidak valid", details: errors });
+        res.setHeaders(CORS_HEADERS);
+        return res.status(400).json({ error: "Payload tidak valid", details: errors });
     }
 
     const {
         studentId,
         sessionId = "default",
-        status    = null,
         violation = 0,
         timestamp = Date.now()
     } = body;
@@ -94,23 +92,23 @@ module.exports = async function handler(req, res) {
         const existing = snapshot.val() || {};
 
         // Violation tidak boleh turun dari nilai yang sudah ada
-        const safeViolation = Math.max(existing.violation || 0, violation);
-        const safeStatus    = resolveStatus(safeViolation);
+        const safeViolation  = Math.max(existing.violation || 0, violation);
+        const safeStatus     = resolveStatus(safeViolation);
 
         // Hitung durasi online siswa
-        const onlineSince   = existing.onlineSince || timestamp;
-        const onlineDuration = Math.floor((Date.now() - onlineSince) / 1000); // detik
+        const onlineSince    = existing.onlineSince || timestamp;
+        const onlineDuration = Math.floor((Date.now() - onlineSince) / 1000);
 
         const update = {
             studentId,
             sessionId,
-            violation:       safeViolation,
-            status:          safeStatus,
-            online:          true,
-            lastHeartbeat:   timestamp,
+            violation:     safeViolation,
+            status:        safeStatus,
+            online:        true,
+            lastHeartbeat: timestamp,
             onlineSince,
-            onlineDuration,  // detik — berguna untuk dashboard panitia
-            updatedAt:       Date.now()
+            onlineDuration,
+            updatedAt:     Date.now()
         };
 
         // Auto submit jika violation >= 30
@@ -121,26 +119,18 @@ module.exports = async function handler(req, res) {
 
         await ref.update(update);
 
-        // Tandai offline jika heartbeat terlambat > 15 detik
-        // via scheduled cleanup — simpan lastHeartbeat saja,
-        // dashboard panitia yang evaluasi staleness-nya
-        // (tidak perlu setTimeout di serverless)
-
-        return res.status(200)
-            .setHeaders(CORS_HEADERS)
-            .json({
-                ok:            true,
-                studentId,
-                violation:     safeViolation,
-                status:        safeStatus,
-                onlineDuration
-            });
+        res.setHeaders(CORS_HEADERS);
+        return res.status(200).json({
+            ok: true,
+            studentId,
+            violation:     safeViolation,
+            status:        safeStatus,
+            onlineDuration
+        });
 
     } catch (err) {
         console.error("[/api/heartbeat] Firebase error:", err);
-
-        return res.status(500)
-            .setHeaders(CORS_HEADERS)
-            .json({ error: "Internal server error", message: err.message });
+        res.setHeaders(CORS_HEADERS);
+        return res.status(500).json({ error: "Internal server error", message: err.message });
     }
 };
