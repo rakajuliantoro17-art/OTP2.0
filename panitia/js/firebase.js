@@ -46,10 +46,8 @@ function initFirebase() {
         }
 
         window.db = firebase.database();
-        window.db.ref().database.app.database().settings({ 
-        experimentalForceLongPolling: true, 
-        useFetchStreams: false 
-        });
+        // Force long polling — fallback jika WebSocket diblokir
+        window.db.settings({ experimentalForceLongPolling: true, useFetchStreams: false });
         
         FIREBASE.initialized = true;
 
