@@ -2,116 +2,67 @@
    SMANSASOO CBT LOCK 2.0
    VERCEL SERVERLESS FUNCTION
    POST /api/status/update
-   
-   Terima sync payload dari moodle/sync.js
-   Tulis data lengkap siswa ke Firebase Realtime DB
 ===================================================== */
 
-const { db } = require("../Firebaseadmin");
+import { db } from "../firebaseadmin.js";
 
-/* =========================
-   CORS HEADERS
-   Moodle dan Vercel beda domain —
-   wajib ada CORS agar fetch tidak diblock
-========================= */
-const CORS_HEADERS = {
+const CORS = {
     "Access-Control-Allow-Origin":  "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
 };
 
-/* =========================
-   STATUS RESOLVER
-   Konsisten dengan sync.js dan ui.js
-========================= */
-function resolveStatus(violation) {
-    if (violation >= 30) return "locked";
-    if (violation >= 26) return "critical";
-    if (violation >= 11) return "warning";
+function resolveStatus(count) {
+    if (count >= 30) return "locked";
+    if (count >= 26) return "critical";
+    if (count >= 11) return "warning";
     return "safe";
 }
 
-/* =========================
-   PAYLOAD VALIDATOR
-========================= */
-function validate(body) {
-    const errors = [];
+export default async function handler(req, res) {
 
-    if (!body.studentId || typeof body.studentId !== "string") {
-        errors.push("studentId wajib diisi dan bertipe string");
-    }
+    if (req.method === "OPTIONS")
+        return res.status(200).set(CORS).end();
 
-    if (body.violation !== undefined && typeof body.violation !== "number") {
-        errors.push("violation harus bertipe number");
-    }
-
-    if (body.timestamp && typeof body.timestamp !== "number") {
-        errors.push("timestamp harus bertipe number (Unix ms)");
-    }
-
-    // Tolak request yang terlalu lama (> 30 detik) — mencegah replay attack
-    if (body.timestamp) {
-        const age = Date.now() - body.timestamp;
-        if (age > 30000) errors.push("Request kadaluarsa (> 30 detik)");
-    }
-
-    return errors;
-}
-
-/* =========================
-   MAIN HANDLER
-========================= */
-module.exports = async function handler(req, res) {
-
-    // Preflight CORS
-    if (req.method === "OPTIONS") {
-        res.setHeaders(CORS_HEADERS);
-        return res.status(200).end();
-    }
-
-    // Method guard
-    if (req.method !== "POST") {
-        res.setHeaders(CORS_HEADERS);
-        return res.status(405).json({ error: "Method not allowed" });
-    }
-
-    const body = req.body || {};
-
-    // Validasi payload
-    const errors = validate(body);
-    if (errors.length) {
-        res.setHeaders(CORS_HEADERS);
-        return res.status(400).json({ error: "Payload tidak valid", details: errors });
-    }
+    if (req.method !== "POST")
+        return res.status(405).set(CORS)
+            .json({ success: false, message: "Method Not Allowed" });
 
     const {
-        studentId,
+        uid,
+        nama      = "-",
+        kelas     = "-",
         sessionId = "default",
         violation = 0,
         progress  = "0/40",
         timestamp = Date.now()
-    } = body;
+    } = req.body || {};
+
+    if (!uid)
+        return res.status(400).set(CORS)
+            .json({ success: false, message: "uid wajib diisi" });
+
+    if (Date.now() - timestamp > 30000)
+        return res.status(400).set(CORS)
+            .json({ success: false, message: "Request kadaluarsa" });
 
     try {
-        const ref      = db.ref("students/" + studentId);
-        const snapshot = await ref.once("value");
-        const existing = snapshot.val() || {};
+        const ref      = db.ref("students/" + uid);
+        const snap     = await ref.once("value");
+        const existing = snap.val() || {};
 
-        // Hanya update jika violation tidak turun (mencegah manipulasi client)
-        const safeViolation = Math.max(existing.violation || 0, violation);
+        const safeViolation = Math.max(existing.violationCount || 0, violation);
         const safeStatus    = resolveStatus(safeViolation);
 
         const update = {
-            studentId,
-            sessionId,
-            violation: safeViolation,
-            status:    safeStatus,
+            uid, nama, kelas, sessionId,
+            violationCount: safeViolation,
+            status:         safeStatus,
             progress,
-            lastSync:  timestamp,
-            updatedAt: Date.now()
+            lastSync:       timestamp,
+            updatedAt:      Date.now()
         };
 
-        // Tambah flag autoSubmit jika violation >= 30
         if (safeViolation >= 30 && !existing.autoSubmit) {
             update.autoSubmit  = true;
             update.submittedAt = Date.now();
@@ -119,27 +70,24 @@ module.exports = async function handler(req, res) {
 
         await ref.update(update);
 
-        // Log ke Firebase untuk audit trail
-        await db.ref("logs/" + studentId).push({
-            type:      "status_update",
-            violation: safeViolation,
-            status:    safeStatus,
+        await db.ref("logs/" + uid).push({
+            type:           "status_update",
+            violationCount: safeViolation,
+            status:         safeStatus,
             progress,
             sessionId,
-            timestamp: Date.now()
+            timestamp:      Date.now()
         });
 
-        res.setHeaders(CORS_HEADERS);
-        return res.status(200).json({
-            ok:        true,
-            studentId,
-            violation: safeViolation,
-            status:    safeStatus
+        return res.status(200).set(CORS).json({
+            success:        true,
+            violationCount: safeViolation,
+            status:         safeStatus
         });
 
     } catch (err) {
-        console.error("[/api/status/update] Firebase error:", err);
-        res.setHeaders(CORS_HEADERS);
-        return res.status(500).json({ error: "Internal server error", message: err.message });
+        console.error("[/api/status/update]", err);
+        return res.status(500).set(CORS)
+            .json({ success: false, message: err.message });
     }
-};
+}
