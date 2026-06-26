@@ -10,13 +10,13 @@ GANTI DENGAN CONFIG
 DARI PROJECT FIREBASE ASLI
 ========================= */
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "XXXXXXXX",
-    appId: "XXXXXXXX"
+    apiKey:            "AIza...",
+    authDomain:        "otp-2-70d6e.firebaseapp.com",
+    databaseURL:       "https://otp-2-70d6e-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId:         "otp-2-70d6e",
+    storageBucket:     "otp-2-70d6e.appspot.com",
+    messagingSenderId: "...",
+    appId:             "..."
 };
 
 /* =========================
