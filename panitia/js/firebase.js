@@ -46,6 +46,11 @@ function initFirebase() {
         }
 
         window.db = firebase.database();
+        window.db.ref().database.app.database().settings({ 
+        experimentalForceLongPolling: true, 
+        useFetchStreams: false 
+        });
+        
         FIREBASE.initialized = true;
 
         console.log("Firebase Ready");
