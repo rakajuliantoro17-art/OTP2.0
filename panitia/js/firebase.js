@@ -12,7 +12,7 @@ DARI PROJECT FIREBASE ASLI
 const firebaseConfig = {
     apiKey:            "AIzaSyDQBar_tJy19A2ONu8DkxbZzh0Oa11ygfE",
     authDomain:        "otp-2-70d6e.firebaseapp.com",
-    databaseURL:       "https://otp-2-70d6e-default-rtdb.asia-southeast1.firebasedatabase.app",
+    databaseURL: "https://otp-2-70d6e-default-rtdb.firebaseio.com"
     projectId:         "otp-2-70d6e",
     storageBucket:     "otp-2-70d6e.firebasestorage.app",
     messagingSenderId: "430860703289",
