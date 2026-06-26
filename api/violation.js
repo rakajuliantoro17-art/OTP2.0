@@ -4,29 +4,20 @@
    POST /api/violation
 ===================================================== */
 
-const { db } = require("./Firebaseadmin");
+import { db } from "./firebaseadmin.js";
 
-/* =========================
-   CORS HEADERS
-========================= */
 const CORS = {
     "Access-Control-Allow-Origin":  "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
 };
 
-/* =========================
-   VIOLATION TYPES VALID
-========================= */
 const VALID_TYPES = new Set([
     "tab_switch", "window_blur", "right_click",
     "copy_action", "keyboard_shortcut",
     "fullscreen_exit", "suspicious_pattern", "unknown"
 ]);
 
-/* =========================
-   STATUS RESOLVER
-========================= */
 function resolveStatus(count) {
     if (count >= 30) return "locked";
     if (count >= 26) return "critical";
@@ -34,20 +25,15 @@ function resolveStatus(count) {
     return "safe";
 }
 
-/* =========================
-   MAIN HANDLER
-========================= */
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
 
-    // Preflight CORS
     if (req.method === "OPTIONS") {
-        res.setHeaders(CORS);
-        return res.status(200).end();
+        return res.status(200).set(CORS).end();
     }
 
     if (req.method !== "POST") {
-        res.setHeaders(CORS);
-        return res.status(405).json({ success: false, message: "Method Not Allowed" });
+        return res.status(405).set(CORS)
+            .json({ success: false, message: "Method Not Allowed" });
     }
 
     const {
@@ -58,36 +44,28 @@ module.exports = async function handler(req, res) {
         timestamp     = Date.now()
     } = req.body || {};
 
-    if (!uid) {
-        res.setHeaders(CORS);
-        return res.status(400).json({ success: false, message: "uid wajib diisi" });
-    }
+    if (!uid)
+        return res.status(400).set(CORS)
+            .json({ success: false, message: "uid wajib diisi" });
 
-    if (!VALID_TYPES.has(violationType)) {
-        res.setHeaders(CORS);
-        return res.status(400).json({ success: false, message: "violationType tidak dikenali" });
-    }
+    if (!VALID_TYPES.has(violationType))
+        return res.status(400).set(CORS)
+            .json({ success: false, message: "violationType tidak dikenali" });
 
-    if (Date.now() - timestamp > 30000) {
-        res.setHeaders(CORS);
-        return res.status(400).json({ success: false, message: "Request kadaluarsa" });
-    }
+    if (Date.now() - timestamp > 30000)
+        return res.status(400).set(CORS)
+            .json({ success: false, message: "Request kadaluarsa" });
 
     try {
-        const studentRef = db.ref("students/" + uid);
-
-        const snap     = await studentRef.once("value");
+        const ref      = db.ref("students/" + uid);
+        const snap     = await ref.once("value");
         const existing = snap.val() || {};
 
-        // Violation count — server-side increment, tidak bisa turun
-        const prevCount  = existing.violationCount || 0;
-        const newCount   = prevCount + 1;
+        const newCount   = (existing.violationCount || 0) + 1;
         const safeStatus = resolveStatus(newCount);
 
-        await studentRef.update({
-            uid,
-            nama,
-            kelas,
+        await ref.update({
+            uid, nama, kelas,
             status:          safeStatus,
             violationCount:  newCount,
             lastViolation:   violationType,
@@ -95,28 +73,20 @@ module.exports = async function handler(req, res) {
             updatedAt:       Date.now()
         });
 
-        // Log detail violation — dipakai drawer panitia
         await db.ref("violations/" + uid + "/" + Date.now()).set({
-            uid,
-            nama,
-            kelas,
-            violationType,
+            uid, nama, kelas, violationType,
             violationCount: newCount,
             status:         safeStatus,
             timestamp,
             serverTime:     Date.now()
         });
 
-        // Auto submit jika baru pertama kali capai >= 30
         if (newCount >= 30 && !existing.autoSubmit) {
-            await studentRef.update({
-                autoSubmit:  true,
-                submittedAt: Date.now()
-            });
+            await ref.update({ autoSubmit: true, submittedAt: Date.now() });
         }
 
-        // Push alert ke dashboard — hanya untuk event kritis
-        const isCritical = ["tab_switch", "fullscreen_exit", "suspicious_pattern"].includes(violationType);
+        const isCritical = ["tab_switch", "fullscreen_exit", "suspicious_pattern"]
+            .includes(violationType);
         if (isCritical || newCount >= 26) {
             await db.ref("alerts").push({
                 type:   "violation",
@@ -127,8 +97,7 @@ module.exports = async function handler(req, res) {
             });
         }
 
-        res.setHeaders(CORS);
-        return res.status(200).json({
+        return res.status(200).set(CORS).json({
             success:        true,
             violationCount: newCount,
             status:         safeStatus,
@@ -137,7 +106,7 @@ module.exports = async function handler(req, res) {
 
     } catch (err) {
         console.error("[/api/violation]", err);
-        res.setHeaders(CORS);
-        return res.status(500).json({ success: false, message: err.message });
+        return res.status(500).set(CORS)
+            .json({ success: false, message: err.message });
     }
-};
+}
