@@ -22,10 +22,10 @@ function resolveStatus(count) {
 export default async function handler(req, res) {
 
     if (req.method === "OPTIONS")
-        return res.status(200).set(CORS).end();
+        return res.status(200).setHeaders(CORS).end();
 
     if (req.method !== "POST")
-        return res.status(405).set(CORS)
+        return res.status(405).setHeaders(CORS)
             .json({ success: false, message: "Method Not Allowed" });
 
     const {
@@ -36,11 +36,11 @@ export default async function handler(req, res) {
     } = req.body || {};
 
     if (!uid)
-        return res.status(400).set(CORS)
+        return res.status(400).setHeaders(CORS)
             .json({ success: false, message: "uid wajib diisi" });
 
     if (Date.now() - timestamp > 30000)
-        return res.status(400).set(CORS)
+        return res.status(400).setHeaders(CORS)
             .json({ success: false, message: "Request kadaluarsa" });
 
     try {
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
 
         await ref.update(update);
 
-        return res.status(200).set(CORS).json({
+        return res.status(200).setHeaders(CORS).json({
             success:        true,
             violationCount: safeViolation,
             status:         safeStatus,
@@ -80,7 +80,7 @@ export default async function handler(req, res) {
 
     } catch (err) {
         console.error("[/api/heartbeat]", err);
-        return res.status(500).set(CORS)
+        return res.status(500).setHeaders(CORS)
             .json({ success: false, message: err.message });
     }
 }
