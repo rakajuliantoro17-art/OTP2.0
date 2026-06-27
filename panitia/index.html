@@ -1,13 +1,28 @@
-<!DOCTYPE html>
-<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SMANSASOO CBT LOCK 2.0 — Panitia</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.ico">
+    <link rel="shortcut icon" href="/assets/img/favicon.ico">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/dashboard.css">
     <title>SMANSASOO CBT LOCK 2.0 — Pengawas</title>
     <link rel="icon" href="/assets/img/favicon.ico">
     <link rel="stylesheet" href="./css/simple.css">
 
-    <!-- Firebase SDK -->
+<!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+    <!-- Core JS -->
+    <script src="./js/firebase.js" defer></script>
+    <script src="./js/otp.js" defer></script>
+    <script src="./js/ui.js" defer></script>
+    <script src="./js/realtime.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
@@ -70,9 +85,33 @@
             </button>
         </div>
 
+    <!-- SIDEBAR -->
+    <div id="sidebarMount"></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+        <div id="topbarMount"></div>
+        <div id="statsMount"></div>
+        <div id="tableMount"></div>
+        <div id="alertMount"></div>
+    </main>
+
     </div>
 </div>
 
+<!-- DRAWER (di luar container agar overlay penuh) -->
+<div id="drawerMount"></div>
+
+<!-- OTP MODAL -->
+<div id="otpModal" class="otp-modal">
+    <div class="glass otp-box">
+        <h2>TOKEN OTP DIHASILKAN</h2>
+        <div id="otpValue" class="otp-code">000000</div>
+        <p class="otp-hint">Berikan kode ini kepada siswa yang membutuhkan unlock</p>
+        <button class="btn btn-secondary" onclick="closeOTPModal()" style="width:100%;">
+            Selesai &amp; Tutup
+        </button>
+    </div>
 <!-- LOG AKTIVITAS -->
 <div class="alert glass">
     <b class="log-title">📡 LOG AKTIVITAS SERVER</b>
@@ -81,6 +120,45 @@
 
 <!-- FIREBASE CONFIG -->
 <script>
+/* =====================================================
+   COMPONENT LOADER
+   Load sequential: sidebar → topbar → stats → table
+   → drawer agar script tiap component sudah bisa
+   akses fungsi dari ui.js yang sudah defer-load
+===================================================== */
+
+async function loadComponent(mountId, file) {
+    const mount = document.getElementById(mountId);
+    if (!mount) {
+        console.warn("[LOADER] Mount tidak ditemukan:", mountId);
+        return;
+    }
+
+    try {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(file + " — HTTP " + res.status);
+
+        const html = await res.text();
+        mount.innerHTML = html;
+
+        // Re-execute inline <script> di dalam component
+        mount.querySelectorAll("script").forEach(old => {
+            const s = document.createElement("script");
+            if (old.src) {
+                s.src = old.src;
+            } else {
+                s.textContent = old.textContent;
+            }
+            document.body.appendChild(s);
+            old.remove();
+        });
+
+    } catch (err) {
+        console.error("[LOADER] Gagal memuat:", file, err);
+        mount.innerHTML = `<div style="padding:16px;color:#ff3b30;">
+            ⚠️ Gagal memuat ${file}
+        </div>`;
+    }
 const firebaseConfig = {
     apiKey:            "AIzaSyDQBar_tJy19A2ONu8DkxbZzh0Oa11ygfE",
     authDomain:        "otp-2-70d6e.firebaseapp.com",
@@ -126,6 +204,18 @@ try {
 }
 </script>
 
+async function initializeDashboard() {
+    // Sequential — urutan penting agar script tiap component
+    // tidak error karena fungsi dari component sebelumnya belum ada
+    await loadComponent("sidebarMount", "./components/sidebar.html");
+    await loadComponent("topbarMount",  "./components/topbar.html");
+    await loadComponent("statsMount",   "./components/stats.html");
+    await loadComponent("tableMount",   "./components/table.html");
+    await loadComponent("drawerMount",  "./components/drawer.html");
+    await loadComponent("alertMount",   "./components/alert.html");
+
+    console.log("[DASHBOARD] Semua component berhasil dimuat");
+}
 <!-- PROGRESS BAR ANIMATION -->
 <script>
 function animateProgressBar() {
@@ -144,10 +234,29 @@ function animateProgressBar() {
         else                  bar.style.backgroundColor = "var(--danger)";
     }
 
+/* =====================================================
+   OTP MODAL
+===================================================== */
+function openOTPModal(code) {
+    const val = document.getElementById("otpValue");
+    const modal = document.getElementById("otpModal");
+    if (val)   val.textContent = code;
+    if (modal) modal.classList.add("open");
+}
     if (sec) sec.innerText = Math.ceil(remain);
 
+function closeOTPModal() {
+    document.getElementById("otpModal")?.classList.remove("open");
     requestAnimationFrame(animateProgressBar);
 }
+
+window.openOTPModal  = openOTPModal;
+window.closeOTPModal = closeOTPModal;
+
+/* =====================================================
+   BOOT — tunggu defer scripts selesai lalu mount components
+===================================================== */
+document.addEventListener("DOMContentLoaded", initializeDashboard);
 requestAnimationFrame(animateProgressBar);
 </script>
 
