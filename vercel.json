@@ -5,10 +5,10 @@
         {
             "source": "/api/(.*)",
             "headers": [
-                { "key": "Access-Control-Allow-Origin",  "value": "*" },
-                { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
-                { "key": "Access-Control-Allow-Headers", "value": "Content-Type" },
-                { "key": "Access-Control-Max-Age",       "value": "86400" }
+                { "key": "Access-Control-Allow-Credentials", "value": "true" },
+                { "key": "Access-Control-Allow-Origin",      "value": "*" },
+                { "key": "Access-Control-Allow-Methods",     "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+                { "key": "Access-Control-Allow-Headers",     "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" }
             ]
         },
         {
@@ -22,9 +22,6 @@
         }
     ],
     "rewrites": [
-        { "source": "/api/status/update", "destination": "/api/status/update.js" },
-        { "source": "/api/violation",     "destination": "/api/violation.js" },
-        { "source": "/api/heartbeat",     "destination": "/api/heartbeat.js" },
-        { "source": "/",                  "destination": "/index.html" }
+        { "source": "/", "destination": "/index.html" }
     ]
 }
