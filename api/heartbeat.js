@@ -1,16 +1,4 @@
-/* =====================================================
-   SMANSASOO CBT LOCK 2.0
-   VERCEL SERVERLESS FUNCTION
-   POST /api/heartbeat
-===================================================== */
-
 import { db } from "./firebaseadmin.js";
-
-const CORS = {
-    "Access-Control-Allow-Origin":  "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
-};
 
 function resolveStatus(count) {
     if (count >= 30) return "locked";
@@ -20,28 +8,12 @@ function resolveStatus(count) {
 }
 
 export default async function handler(req, res) {
+    if (req.method === "OPTIONS") return res.status(200).end();
+    if (req.method !== "POST")   return res.status(405).json({ success: false, message: "Method Not Allowed" });
 
-    if (req.method === "OPTIONS")
-        return res.status(200).setHeaders(CORS).end();
+    const { uid, sessionId = "default", violation = 0, timestamp = Date.now() } = req.body || {};
 
-    if (req.method !== "POST")
-        return res.status(405).setHeaders(CORS)
-            .json({ success: false, message: "Method Not Allowed" });
-
-    const {
-        uid,
-        sessionId = "default",
-        violation = 0,
-        timestamp = Date.now()
-    } = req.body || {};
-
-    if (!uid)
-        return res.status(400).setHeaders(CORS)
-            .json({ success: false, message: "uid wajib diisi" });
-
-    if (Date.now() - timestamp > 30000)
-        return res.status(400).setHeaders(CORS)
-            .json({ success: false, message: "Request kadaluarsa" });
+    if (!uid) return res.status(400).json({ success: false, message: "uid wajib diisi" });
 
     try {
         const ref      = db.ref("students/" + uid);
@@ -71,16 +43,10 @@ export default async function handler(req, res) {
 
         await ref.update(update);
 
-        return res.status(200).setHeaders(CORS).json({
-            success:        true,
-            violationCount: safeViolation,
-            status:         safeStatus,
-            onlineDuration
-        });
+        return res.status(200).json({ success: true, violationCount: safeViolation, status: safeStatus, onlineDuration });
 
     } catch (err) {
         console.error("[/api/heartbeat]", err);
-        return res.status(500).setHeaders(CORS)
-            .json({ success: false, message: err.message });
+        return res.status(500).json({ success: false, message: err.message });
     }
 }
