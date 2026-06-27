@@ -12,7 +12,7 @@ DARI PROJECT FIREBASE ASLI
 const firebaseConfig = {
     apiKey:            "AIzaSyDQBar_tJy19A2ONu8DkxbZzh0Oa11ygfE",
     authDomain:        "otp-2-70d6e.firebaseapp.com",
-    databaseURL: "https://otp-2-70d6e-default-rtdb.firebaseio.com",
+    databaseURL:       "https://otp-2-70d6e-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId:         "otp-2-70d6e",
     storageBucket:     "otp-2-70d6e.firebasestorage.app",
     messagingSenderId: "430860703289",
@@ -46,9 +46,6 @@ function initFirebase() {
         }
 
         window.db = firebase.database();
-        // Force long polling — fallback jika WebSocket diblokir
-        window.db.settings({ experimentalForceLongPolling: true, useFetchStreams: false });
-        
         FIREBASE.initialized = true;
 
         console.log("Firebase Ready");
