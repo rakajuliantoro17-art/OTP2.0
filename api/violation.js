@@ -12,6 +12,12 @@ function resolveStatus(count) {
     return "safe";
 }
 
+// Tambah di paling atas setiap handler, sebelum method check
+if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
+}
+
 export default async function handler(req, res) {
     if (req.method === "OPTIONS") return res.status(200).end();
     if (req.method !== "POST")   return res.status(405).json({ success: false, message: "Method Not Allowed" });
