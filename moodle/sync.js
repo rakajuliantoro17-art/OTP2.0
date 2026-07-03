@@ -1,7 +1,7 @@
 /* =====================================================
    SMANSASOO CBT LOCK 2.0
    MOODLE REALTIME SYNC LAYER
-   CONNECTOR: CBT CLIENT → FIREBASE → DASHBOARD
+   CONNECTOR: CBT CLIENT → BRIDGE SERVER → FIREBASE
 ===================================================== */
 
 const CBT_SYNC = {
@@ -14,12 +14,14 @@ const CBT_SYNC = {
 
 /* =========================
    ENDPOINT
-   URL absolut ke Vercel —
-   GANTI dengan domain Vercel asli
+   Mengarah ke Bridge Server
+   di PC Panitia (LAN lokal)
+   Siswa offline — tidak bisa
+   akses Firebase/Vercel langsung
 ========================= */
 const SYNC_ENDPOINT = {
-    status:    "https://otp-2-0.vercel.app/api/status/update",
-    heartbeat: "https://otp-2-0.vercel.app/api/heartbeat"
+    status:    "http://10.9.9.52:3000/api/status/update",
+    heartbeat: "http://10.9.9.52:3000/api/heartbeat"
 };
 
 /* =========================
@@ -30,13 +32,7 @@ function initCBTSync(studentId, sessionId) {
     CBT_SYNC.studentId = studentId;
     CBT_SYNC.sessionId = sessionId;
 
-    listenOTPState();
     startRealtimeSync();
-
-    // Heartbeat ringan — terpisah dari cbtlock.js
-    // cbtlock: violation heartbeat tiap 5 detik
-    // sync.js:  status sync tiap 4 detik (lebih sering, lebih ringan)
-    // Tidak ada duplikasi karena payload berbeda
 
     console.log("[CBT SYNC] INIT OK", studentId);
 }
@@ -61,7 +57,6 @@ function getLocalViolation() {
    Baca dari Moodle DOM
 ========================= */
 function getProgress() {
-    // Coba baca dari Moodle quiz navigator
     const answered = window.MOODLE_PROGRESS
         || document.querySelectorAll(".qnbutton.answersaved, .qnbutton.complete").length
         || 0;
@@ -89,26 +84,11 @@ function buildSyncPayload() {
 
 /* =========================
    SEND SYNC
-   Primary: Firebase window.db
-   Fallback: Vercel API
+   Kirim ke Bridge Server (LAN)
+   Bridge yang forward ke Firebase
 ========================= */
 async function sendSync(data) {
     try {
-        // PRIMARY: Firebase langsung
-        if (window.db && typeof window.db.ref === "function") {
-            await window.db.ref("students/" + data.studentId).update({
-                status:    data.status,
-                violation: data.violation,
-                progress:  data.progress,
-                lastSync:  data.timestamp,
-                sessionId: data.sessionId
-            });
-            CBT_SYNC.connected = true;
-            CBT_SYNC.lastSync  = Date.now();
-            return;
-        }
-
-        // FALLBACK: Vercel API
         const res = await fetch(SYNC_ENDPOINT.status, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
@@ -118,38 +98,69 @@ async function sendSync(data) {
         CBT_SYNC.connected = res.ok;
         CBT_SYNC.lastSync  = Date.now();
 
+        if (!res.ok) {
+            console.warn("[CBT SYNC] Server response:", res.status);
+        }
+
     } catch (err) {
+        // Bridge server tidak bisa diakses — simpan ke queue
         CBT_SYNC.connected = false;
-        console.warn("[CBT SYNC] Send fail:", err);
+        console.warn("[CBT SYNC] Send fail (bridge offline?):", err.message);
+
+        const queue = JSON.parse(localStorage.getItem("cbt_sync_queue") || "[]");
+        queue.push(data);
+        // Simpan max 30 item terakhir
+        localStorage.setItem("cbt_sync_queue", JSON.stringify(queue.slice(-30)));
+    }
+}
+
+/* =========================
+   FLUSH QUEUE
+   Kirim ulang data yang gagal
+   saat bridge kembali online
+========================= */
+async function flushQueue() {
+    const queue = JSON.parse(localStorage.getItem("cbt_sync_queue") || "[]");
+    if (!queue.length) return;
+
+    console.log("[CBT SYNC] Flushing queue:", queue.length, "items");
+    const failed = [];
+
+    for (const item of queue) {
+        try {
+            const res = await fetch(SYNC_ENDPOINT.status, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify(item)
+            });
+            if (!res.ok) failed.push(item);
+        } catch {
+            failed.push(item);
+        }
+    }
+
+    if (failed.length) {
+        localStorage.setItem("cbt_sync_queue", JSON.stringify(failed));
+    } else {
+        localStorage.removeItem("cbt_sync_queue");
+        console.log("[CBT SYNC] Queue flushed OK");
     }
 }
 
 /* =========================
    REALTIME SYNC LOOP
+   Tiap 4 detik kirim status
+   + coba flush queue lama
 ========================= */
 function startRealtimeSync() {
-    CBT_SYNC.interval = setInterval(() => {
-        sendSync(buildSyncPayload());
-    }, 4000);
-}
+    CBT_SYNC.interval = setInterval(async () => {
+        await sendSync(buildSyncPayload());
 
-/* =========================
-   OTP STATE LISTENER
-   Baca System OTP & Master OTP
-   dari Firebase — READ ONLY
-========================= */
-function listenOTPState() {
-    if (!window.db || typeof window.db.ref !== "function") return;
-
-    // System OTP — TOTP, tidak perlu listen
-    // Master OTP — dikirim panitia, perlu listen
-    window.db.ref("system/masterOtp").on("value", snap => {
-        const data = snap.val();
-        if (data && data.status === "active" && data.code) {
-            window.MASTER_OTP = data.code;
-            console.log("[CBT SYNC] Master OTP update:", data.code);
+        // Coba flush queue jika ada & koneksi OK
+        if (CBT_SYNC.connected) {
+            flushQueue();
         }
-    });
+    }, 4000);
 }
 
 /* =========================
