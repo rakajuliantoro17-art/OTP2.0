@@ -1,4 +1,10 @@
-import { db } from "./firebaseadmin.js";
+/* =====================================================
+   SMANSASOO CBT LOCK 2.0
+   VERCEL SERVERLESS FUNCTION
+   POST /api/violation
+===================================================== */
+
+const { db } = require("./Firebaseadmin");
 
 const VALID_TYPES = new Set([
     "tab_switch", "window_blur", "right_click", "copy_action",
@@ -12,20 +18,30 @@ function resolveStatus(count) {
     return "safe";
 }
 
-// Tambah di paling atas setiap handler, sebelum method check
-if (req.method === "OPTIONS") {
-    res.status(200).end();
-    return;
-}
+const CORS = {
+    "Access-Control-Allow-Origin":  "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+};
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+
+    res.setHeaders(CORS);
+
     if (req.method === "OPTIONS") return res.status(200).end();
     if (req.method !== "POST")   return res.status(405).json({ success: false, message: "Method Not Allowed" });
 
-    const { uid, nama = "-", kelas = "-", violationType = "unknown", timestamp = Date.now() } = req.body || {};
+    const {
+        uid,
+        nama          = "-",
+        kelas         = "-",
+        violationType = "unknown",
+        timestamp     = Date.now()
+    } = req.body || {};
 
-    if (!uid)                          return res.status(400).json({ success: false, message: "uid wajib diisi" });
+    if (!uid)                           return res.status(400).json({ success: false, message: "uid wajib diisi" });
     if (!VALID_TYPES.has(violationType)) return res.status(400).json({ success: false, message: "violationType tidak dikenali" });
+    if (Date.now() - timestamp > 30000) return res.status(400).json({ success: false, message: "Request kadaluarsa" });
 
     try {
         const ref      = db.ref("students/" + uid);
@@ -35,8 +51,22 @@ export default async function handler(req, res) {
         const newCount   = (existing.violationCount || 0) + 1;
         const safeStatus = resolveStatus(newCount);
 
-        await ref.update({ uid, nama, kelas, status: safeStatus, violationCount: newCount, lastViolation: violationType, lastViolationAt: timestamp, updatedAt: Date.now() });
-        await db.ref("violations/" + uid + "/" + Date.now()).set({ uid, nama, kelas, violationType, violationCount: newCount, status: safeStatus, timestamp, serverTime: Date.now() });
+        await ref.update({
+            uid, nama, kelas,
+            status:          safeStatus,
+            violationCount:  newCount,
+            lastViolation:   violationType,
+            lastViolationAt: timestamp,
+            updatedAt:       Date.now()
+        });
+
+        await db.ref("violations/" + uid + "/" + Date.now()).set({
+            uid, nama, kelas, violationType,
+            violationCount: newCount,
+            status:         safeStatus,
+            timestamp,
+            serverTime:     Date.now()
+        });
 
         if (newCount >= 30 && !existing.autoSubmit) {
             await ref.update({ autoSubmit: true, submittedAt: Date.now() });
@@ -44,13 +74,24 @@ export default async function handler(req, res) {
 
         const isCritical = ["tab_switch", "fullscreen_exit", "suspicious_pattern"].includes(violationType);
         if (isCritical || newCount >= 26) {
-            await db.ref("alerts").push({ type: "violation", msg: (nama || uid) + " — " + violationType + " (ke-" + newCount + ")", status: safeStatus, uid, time: Date.now() });
+            await db.ref("alerts").push({
+                type:   "violation",
+                msg:    (nama || uid) + " — " + violationType + " (ke-" + newCount + ")",
+                status: safeStatus,
+                uid,
+                time:   Date.now()
+            });
         }
 
-        return res.status(200).json({ success: true, violationCount: newCount, status: safeStatus, autoSubmit: newCount >= 30 });
+        return res.status(200).json({
+            success:        true,
+            violationCount: newCount,
+            status:         safeStatus,
+            autoSubmit:     newCount >= 30
+        });
 
     } catch (err) {
         console.error("[/api/violation]", err);
         return res.status(500).json({ success: false, message: err.message });
     }
-}
+};
