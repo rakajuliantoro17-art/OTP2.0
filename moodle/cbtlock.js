@@ -9,30 +9,34 @@ const CBTLOCK = {
     mode:              "active",
     studentId:         null,
     sessionId:         null,
+    nama:              null,
+    kelas:             null,
     violation:         0,
     heartbeatInterval: null,
-    _lastViolation:    0,    // untuk debounce
-    _debounceMs:       800   // jeda minimum antar violation
+    _lastViolation:    0,
+    _debounceMs:       800
 };
 
 /* =========================
    CONFIG ENDPOINT
-   URL absolut ke Vercel —
-   GANTI dengan domain Vercel asli
+   Mengarah ke Bridge Server
+   di PC Panitia (LAN lokal)
 ========================= */
 const ENDPOINT = {
-    violation: "https://otp-2-0.vercel.app/api/violation",
-    heartbeat: "https://otp-2-0.vercel.app/api/heartbeat"
+    violation: "http://10.9.9.52:3000/api/violation",
+    heartbeat: "http://10.9.9.52:3000/api/heartbeat"
 };
 
 /* =========================
    INIT SESSION
    Dipanggil dari injeksi Moodle:
-   initCBTLock(USER_ID, SESSION_ID)
+   initCBTLock(USER_ID, SESSION_ID, NAMA, KELAS)
 ========================= */
-function initCBTLock(studentId, sessionId) {
+function initCBTLock(studentId, sessionId, nama, kelas) {
     CBTLOCK.studentId = studentId;
     CBTLOCK.sessionId = sessionId;
+    CBTLOCK.nama      = nama  || "-";
+    CBTLOCK.kelas     = kelas || "-";
 
     startMonitoring();
     startHeartbeat();
@@ -42,13 +46,10 @@ function initCBTLock(studentId, sessionId) {
 
 /* =========================
    DEBOUNCED VIOLATION REGISTER
-   Mencegah satu aksi (ALT+TAB)
-   menghasilkan violation ganda
 ========================= */
 function registerViolation(type) {
     const now = Date.now();
 
-    // Skip jika terlalu cepat dari violation sebelumnya
     if (now - CBTLOCK._lastViolation < CBTLOCK._debounceMs) {
         console.warn("[CBTLOCK] Debounced:", type);
         return;
@@ -57,12 +58,13 @@ function registerViolation(type) {
     CBTLOCK._lastViolation = now;
     CBTLOCK.violation++;
 
+    // Field disesuaikan dengan api/violation.js
     const payload = {
-        studentId:      CBTLOCK.studentId,
-        sessionId:      CBTLOCK.sessionId,
-        type:           type,
-        violationCount: CBTLOCK.violation,
-        timestamp:      now
+        uid:           CBTLOCK.studentId,
+        nama:          CBTLOCK.nama,
+        kelas:         CBTLOCK.kelas,
+        violationType: type,
+        timestamp:     now
     };
 
     sendViolation(payload);
@@ -73,34 +75,25 @@ function registerViolation(type) {
 /* =========================
    VIOLATION DETECTORS
 ========================= */
-
-// Tab switch — visibilitychange adalah yang utama
 document.addEventListener("visibilitychange", () => {
     if (document.hidden) registerViolation("tab_switch");
 });
 
-// Blur hanya untuk deteksi ALT+TAB tanpa tab baru
-// Debounce di registerViolation mencegah double-count
 window.addEventListener("blur", () => {
-    // Delay 200ms — jika visibilitychange juga trigger,
-    // debounce akan block yang kedua
     setTimeout(() => {
         if (!document.hidden) registerViolation("window_blur");
     }, 200);
 });
 
-// Klik kanan
 document.addEventListener("contextmenu", e => {
     e.preventDefault();
     registerViolation("right_click");
 });
 
-// Copy
 document.addEventListener("copy", () => {
     registerViolation("copy_action");
 });
 
-// Keyboard shortcut berbahaya
 document.addEventListener("keydown", e => {
     const blocked = (
         (e.ctrlKey && ["c","v","u","s","a","p"].includes(e.key.toLowerCase())) ||
@@ -114,7 +107,7 @@ document.addEventListener("keydown", e => {
 });
 
 /* =========================
-   SEND VIOLATION KE VERCEL API
+   SEND VIOLATION KE BRIDGE SERVER
 ========================= */
 async function sendViolation(data) {
     try {
@@ -134,8 +127,6 @@ async function sendViolation(data) {
 
 /* =========================
    FLUSH OFFLINE QUEUE
-   Kirim ulang violation yang
-   gagal saat koneksi kembali
 ========================= */
 window.addEventListener("online", async () => {
     const queue = JSON.parse(localStorage.getItem("cbt_queue") || "[]");
@@ -150,13 +141,13 @@ window.addEventListener("online", async () => {
 
 /* =========================
    HEARTBEAT SYSTEM
+   Field disesuaikan dengan api/heartbeat.js
 ========================= */
 function startHeartbeat() {
     CBTLOCK.heartbeatInterval = setInterval(async () => {
         const payload = {
             studentId: CBTLOCK.studentId,
             sessionId: CBTLOCK.sessionId,
-            status:    "active",
             violation: CBTLOCK.violation,
             timestamp: Date.now()
         };
@@ -178,7 +169,7 @@ function startHeartbeat() {
 ========================= */
 function enforceFullscreen() {
     const el = document.documentElement;
-    if (el.requestFullscreen)       el.requestFullscreen();
+    if (el.requestFullscreen)            el.requestFullscreen();
     else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 }
 
@@ -188,7 +179,6 @@ function enforceFullscreen() {
 function startMonitoring() {
     enforceFullscreen();
 
-    // Deteksi fullscreen exit sebagai violation
     document.addEventListener("fullscreenchange", () => {
         if (!document.fullscreenElement) {
             registerViolation("fullscreen_exit");
@@ -207,6 +197,6 @@ function stopCBTLock() {
 /* =========================
    EXPORT GLOBAL
 ========================= */
-window.CBTLOCK       = CBTLOCK;
-window.initCBTLock   = initCBTLock;
-window.stopCBTLock   = stopCBTLock;
+window.CBTLOCK     = CBTLOCK;
+window.initCBTLock = initCBTLock;
+window.stopCBTLock = stopCBTLock;
