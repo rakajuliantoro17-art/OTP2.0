@@ -1,0 +1,32 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CBT Monitor — SMANSASOO</title>
+<style>
+:root{--bg:#0b1020;--card:#141b30;--tx:#e8ecf5;--mut:#8a94b0;--safe:#34c759;--warn:#ffb020;--crit:#ff5a4f;--lock:#b04dff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px system-ui,sans-serif}
+header{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid #222b45}
+h1{font-size:17px;margin:0;flex:1}.pill{background:var(--card);padding:6px 12px;border-radius:99px}
+input{background:var(--card);border:1px solid #2a3454;color:var(--tx);padding:8px 12px;border-radius:8px;min-width:200px}
+table{width:100%;border-collapse:collapse}th,td{padding:9px 14px;text-align:left;border-bottom:1px solid #1b2340}
+th{color:var(--mut);font-weight:500;position:sticky;top:0;background:var(--bg)}
+.b{padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;color:#000}
+.safe{background:var(--safe)}.warning{background:var(--warn)}.critical{background:var(--crit)}.locked{background:var(--lock);color:#fff}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:#555}.on{background:var(--safe)}
+.wrap{overflow:auto;max-height:calc(100vh - 70px)}
+</style></head><body>
+<header><h1>CBT Monitor · SMAN 1 Sooko</h1>
+<span class="pill" id="s">memuat…</span><input id="q" placeholder="Cari nama / username / kelas"></header>
+<div class="wrap"><table><thead><tr><th>Siswa</th><th>Username</th><th>Ujian</th><th>Pelanggaran</th><th>Unlock</th><th>Status</th><th>Terakhir</th></tr></thead><tbody id="t"></tbody></table></div>
+<script>
+let data=[];const $=id=>document.getElementById(id);
+const rank={locked:0,critical:1,warning:2,safe:3};
+function render(){const q=$("q").value.toLowerCase();
+const rows=data.filter(s=>(s.nama+s.username+s.kelas).toLowerCase().includes(q))
+.sort((a,b)=>rank[a.status]-rank[b.status]||b.violationCount-a.violationCount);
+$("t").innerHTML=rows.map(s=>`<tr><td><span class="dot ${s.online?"on":""}"></span>${esc(s.nama)}</td><td>${esc(s.username)}</td><td>${esc(s.exam)}</td><td>${s.violationCount}/30</td><td>${s.unlockCount}</td><td><span class="b ${s.status}">${s.status.toUpperCase()}</span></td><td>${ago(s.lastSeen)}</td></tr>`).join("");
+$("s").textContent=`${data.filter(s=>s.online).length} online · ${data.length} total · ${data.filter(s=>s.status!=="safe").length} bermasalah`;}
+const esc=x=>String(x??"-").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ago=t=>{const d=Math.floor((Date.now()-t)/1000);return d<60?d+" dtk lalu":Math.floor(d/60)+" mnt lalu"};
+$("q").oninput=render;
+const es=new EventSource("/events");es.onmessage=e=>{data=JSON.parse(e.data);render()};
+es.onerror=()=>$("s").textContent="terputus dari server…";
+</script></body></html>

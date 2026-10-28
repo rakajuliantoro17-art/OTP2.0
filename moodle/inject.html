@@ -1,0 +1,392 @@
+<!-- =====================================================
+     SMANSASOO CBT LOCK 2.0 — MOODLE INJECTION
+     MODE: PURE OFFLINE (tanpa Firebase/Vercel)
+     
+     Pasang di: Site Admin → Appearance → Additional HTML
+     Tab: Before closing </body> tag
+===================================================== -->
+
+<style>
+#cbtOverlay{position:fixed;inset:0;z-index:999999;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at top left,rgba(255,0,200,.25),transparent 40%),radial-gradient(circle at bottom right,rgba(0,200,255,.25),transparent 40%),linear-gradient(135deg,rgba(10,10,20,.65),rgba(0,0,0,.8));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.cbtCard{width:92%;max-width:420px;padding:28px 24px;border-radius:28px;background:rgba(255,255,255,.10);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.18);box-shadow:0 25px 80px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.2);color:white;text-align:center;animation:cbtPop .25s ease-out}
+@keyframes cbtPop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.cbtHead{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:14px}
+.cbtHead img{height:48px;border-radius:12px;background:rgba(255,255,255,.9);padding:5px}
+.cbtHeadT .t1{font-size:16px;font-weight:700}.cbtHeadT .t2{font-size:11px;opacity:.7;margin-top:2px}
+.cbtInfo{margin:12px 0;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.08);text-align:left}
+.cbtRow{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.cbtRow:last-child{border-bottom:none}.cbtRow span{opacity:.65}.cbtRow b{font-weight:700}
+.cbadge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.bs{background:rgba(52,199,89,.25);color:#34c759}
+.bw{background:rgba(255,149,0,.25);color:#ff9500}
+.bc{background:rgba(255,59,48,.25);color:#ff3b30}
+.bl{background:rgba(255,59,48,.4);color:#ff3b30}
+#cbtTitle{font-size:18px;font-weight:700;margin-bottom:6px}
+#cbtHint{font-size:12px;opacity:.75;line-height:1.5;margin-bottom:14px}
+#cbtInput{width:85%;padding:13px;border:none;border-radius:14px;text-align:center;font-size:22px;font-weight:800;letter-spacing:6px;background:rgba(255,255,255,.12);color:white;outline:none}
+#cbtInput::placeholder{color:rgba(255,255,255,.35);font-size:13px;letter-spacing:0;font-weight:400}
+#cbtBtn{margin-top:12px;padding:13px 0;border:none;border-radius:14px;cursor:pointer;background:rgba(255,255,255,.92);font-weight:700;font-size:14px;width:85%;transition:.2s}
+#cbtBtn:hover:not(:disabled){transform:scale(1.02);background:#fff}
+#cbtBtn:disabled{opacity:.45;cursor:not-allowed}
+.cbtFoot{margin-top:14px;font-size:10px;opacity:.45;letter-spacing:.5px}
+#cbtToast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(16px);padding:10px 22px;border-radius:999px;backdrop-filter:blur(12px);color:white;font-size:13px;font-weight:600;z-index:9999999;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(0.16,1,.3,1);white-space:nowrap}
+#cbtToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#cbtCam{position:fixed;right:16px;bottom:16px;z-index:999998;width:112px;background:rgba(8,8,8,.88);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:7px;display:grid;gap:5px;cursor:move;user-select:none}
+#cbtVideo{width:100%;height:132px;object-fit:cover;background:#000;border-radius:10px;border:2px solid rgba(57,255,20,.5)}
+#cbtCamSt{text-align:center;font-size:10px;font-weight:700;color:white;padding:2px 0}
+.cbtCamBtns{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.cbtCamBtns button{height:28px;border:none;border-radius:7px;background:#1e1e1e;color:white;cursor:pointer;font-size:15px;transition:.15s}
+.cbtCamBtns button:active{transform:scale(.92)}
+</style>
+
+<!-- OVERLAY HTML -->
+<div id="cbtOverlay">
+  <div class="cbtCard">
+
+    <div class="cbtHead">
+      <img src="http://10.10.10.246/pluginfile.php/1/core_admin/logocompact/300x300/logo.png"
+           onerror="this.style.display='none'">
+      <div class="cbtHeadT">
+        <div class="t1">CBT Security System</div>
+        <div class="t2">SMAN 1 Sooko &nbsp;•&nbsp; Tim IT</div>
+      </div>
+    </div>
+
+    <div class="cbtInfo">
+      <div class="cbtRow"><span>Peserta</span>   <b id="cN">—</b></div>
+      <div class="cbtRow"><span>Username</span>  <b id="cU">—</b></div>
+      <div class="cbtRow"><span>Ujian</span>     <b id="cEx">—</b></div>
+      <div class="cbtRow"><span>Pelanggaran</span><b id="cV">0</b></div>
+      <div class="cbtRow"><span>Unlock</span>    <b id="cUl">0</b></div>
+      <div class="cbtRow"><span>Status</span>    <b id="cSt"><span class="cbadge bs">AMAN</span></b></div>
+    </div>
+
+    <div id="cbtTitle">🔒 Akses Terkunci</div>
+    <div id="cbtHint">Masukkan kode OTP dari pengawas untuk melanjutkan ujian</div>
+
+    <input id="cbtInput" type="number" inputmode="numeric"
+           placeholder="Kode OTP 6 digit" maxlength="6">
+    <br>
+    <button id="cbtBtn">✅ Verifikasi &amp; Lanjut</button>
+    <div class="cbtFoot">SMANSASOO CBT LOCK 2.0 &nbsp;•&nbsp; Secure Exam Mode</div>
+
+  </div>
+</div>
+
+<div id="cbtToast"></div>
+
+<!-- FLOATING CAMERA -->
+<div id="cbtCam">
+  <video id="cbtVideo" autoplay muted playsinline></video>
+  <div id="cbtCamSt">🟡 Kamera...</div>
+  <div class="cbtCamBtns">
+    <button id="cbtBtnCam" title="Aktifkan">📷</button>
+    <button id="cbtBtnSw"  title="Ganti">🔄</button>
+  </div>
+</div>
+
+<script>
+(function () {
+"use strict";
+
+/* ================================================
+   FILTER — hanya aktif di halaman quiz attempt
+================================================ */
+const pg = window.location.pathname;
+if (!pg.includes("/mod/quiz/attempt.php") &&
+    !pg.includes("/mod/quiz/review.php")) return;
+
+/* ================================================
+   CONFIG — harus identik dengan pengawas/js/unlock.js
+================================================ */
+const SECRET    = "SOOKO_HEBAT_2026";
+const INTERVAL  = 60;     // detik per siklus OTP
+const MAX_VIO   = 30;     // threshold auto-lock permanen
+const SPAM_MS   = 2000;   // debounce antar violation
+
+// Server monitor lokal (laptop panitia). GANTI IP sesuai hasil `node server.js`
+const MONITOR = "http://10.10.10.XXX:3000/api/report";
+
+/* ================================================
+   IDENTITAS SISWA dari Moodle
+================================================ */
+const uid   = String(window.M?.cfg?.userid   || document.body.dataset.userid   || "guest");
+const nama  = document.body.dataset.fullname  || "Siswa";
+const uname = document.body.dataset.username  || uid;
+const kelas = String(window.M?.cfg?.courseId  || document.body.dataset.courseid || "0");
+
+// Nama ujian dari judul halaman
+const examTitle = document.querySelector(".page-header-headings h1")?.innerText
+               || document.title.replace(" - " + document.querySelector(".site-name")?.innerText, "")
+               || "CBT";
+
+// Isi info panel
+document.getElementById("cN").innerText  = nama;
+document.getElementById("cU").innerText  = uname;
+document.getElementById("cEx").innerText = examTitle.substring(0, 30);
+
+/* ================================================
+   STATE — pakai sessionStorage agar tidak hilang
+   saat Moodle autosave reload halaman
+================================================ */
+let vio    = Number(sessionStorage.getItem("cbt_v")  || 0);
+let ulocks = Number(sessionStorage.getItem("cbt_ul") || 0);
+let locked = sessionStorage.getItem("cbt_lk") === "1";
+let lastEvt = 0;
+
+/* ================================================
+   LAPOR KE SERVER LOKAL (gagal = diam, kunci tetap jalan)
+================================================ */
+function report(event) {
+    try {
+        fetch(MONITOR, {
+            method: "POST", keepalive: true,
+            headers: { "Content-Type": "text/plain" },   // tanpa preflight CORS
+            body: JSON.stringify({ uid, nama, username: uname, kelas, exam: examTitle.substring(0, 40),
+                                   violation: vio, unlocks: ulocks, event })
+        }).catch(() => {});
+    } catch (_) {}
+}
+
+const overlay = document.getElementById("cbtOverlay");
+const inp     = document.getElementById("cbtInput");
+const btn     = document.getElementById("cbtBtn");
+
+/* ================================================
+   UI UPDATE
+================================================ */
+function ui() {
+    document.getElementById("cV").innerText  = vio;
+    document.getElementById("cUl").innerText = ulocks;
+
+    let cls = "bs", lbl = "AMAN";
+    if      (vio >= MAX_VIO) { cls = "bl"; lbl = "DIKUNCI"; }
+    else if (vio >= 26)      { cls = "bc"; lbl = "KRITIS";  }
+    else if (vio >= 11)      { cls = "bw"; lbl = "WASPADA"; }
+
+    document.getElementById("cSt").innerHTML =
+        `<span class="cbadge ${cls}">${lbl}</span>`;
+
+    if (vio >= MAX_VIO) {
+        inp.disabled  = true;
+        btn.disabled  = true;
+        btn.innerText = "🔴 TERKUNCI PERMANEN";
+        document.getElementById("cbtHint").innerText =
+            "Terlalu banyak pelanggaran. Hubungi pengawas ruangan.";
+    }
+}
+
+/* ================================================
+   TOTP ENGINE
+   Identik dengan pengawas/js/unlock.js
+================================================ */
+function totpHash(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) {
+        h = (h << 5) - h + s.charCodeAt(i);
+        h |= 0;
+    }
+    return Math.abs(h);
+}
+
+function getOTP() {
+    const t = Math.floor(Date.now() / 1000 / INTERVAL);
+    return (totpHash(t + SECRET) % 1000000).toString().padStart(6, "0");
+}
+
+/* ================================================
+   TOAST NOTIFICATION
+================================================ */
+function toast(msg, color = "#ff3b30") {
+    const el = document.getElementById("cbtToast");
+    el.innerText         = msg;
+    el.style.background  = color + "cc";
+    el.classList.add("show");
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove("show"), 2500);
+}
+
+/* ================================================
+   LOCK
+================================================ */
+function lock(reason) {
+    const now = Date.now();
+    if (now - lastEvt < SPAM_MS) return;
+    if (locked) return;
+    lastEvt = now;
+
+    vio++;
+    sessionStorage.setItem("cbt_v",  vio);
+    sessionStorage.setItem("cbt_lk", "1");
+    locked = true;
+
+    overlay.style.display = "flex";
+    ui();
+    toast("⚠ " + reason.replace(/_/g, " ").toUpperCase());
+
+    if (navigator.vibrate) navigator.vibrate([200, 80, 200]);
+
+    try {
+        document.body.animate(
+            [{ filter: "brightness(1)" }, { filter: "brightness(1.5)" }, { filter: "brightness(1)" }],
+            { duration: 350 }
+        );
+    } catch(_) {}
+
+    report(reason);
+    console.warn("[CBT LOCK]", reason, "| violation:", vio);
+}
+
+/* ================================================
+   UNLOCK
+================================================ */
+btn.onclick = function () {
+    const input = inp.value.trim().replace(/\s/g, "");
+    if (!input) return;
+
+    if (input === getOTP()) {
+        // OTP benar
+        overlay.style.display = "none";
+        sessionStorage.removeItem("cbt_lk");
+        locked    = false;
+        inp.value = "";
+        ulocks++;
+        sessionStorage.setItem("cbt_ul", ulocks);
+        ui();
+        report("unlock");
+        toast("✅ Akses dibuka kembali", "#34c759");
+    } else {
+        // OTP salah
+        toast("❌ Kode salah — pelanggaran dicatat");
+        try {
+            inp.animate(
+                [{ transform: "translateX(-6px)" }, { transform: "translateX(6px)" },
+                 { transform: "translateX(-6px)" }, { transform: "translateX(0)" }],
+                { duration: 280 }
+            );
+        } catch(_) {}
+        lock("wrong_otp");
+    }
+};
+
+/* ================================================
+   ENTER KEY di input
+================================================ */
+inp.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
+
+/* ================================================
+   RESTORE STATE saat Moodle autosave reload
+================================================ */
+ui();
+if (locked) setTimeout(() => overlay.style.display = "flex", 350);
+
+/* ================================================
+   DETEKSI PELANGGARAN
+================================================ */
+
+// Tab switch
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        setTimeout(() => { if (document.hidden) lock("tab_switch"); }, 800);
+    }
+});
+
+// Window blur (ALT+TAB tanpa buka tab baru)
+window.addEventListener("blur", () => {
+    setTimeout(() => { if (!document.hidden) lock("window_blur"); }, 800);
+});
+
+// Keyboard shortcut berbahaya
+document.addEventListener("keydown", e => {
+    const blk =
+        e.key === "F12" ||
+        (e.ctrlKey && ["u","s","p","i","a"].includes(e.key.toLowerCase())) ||
+        (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(e.key.toLowerCase()));
+    if (blk) { e.preventDefault(); lock("keyboard_shortcut"); }
+});
+
+// Copy & klik kanan
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("copy",        e => e.preventDefault());
+
+// Fullscreen exit
+document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement) lock("fullscreen_exit");
+});
+
+/* ================================================
+   KAMERA FLOATING
+================================================ */
+let camStream = null;
+let useFront  = true;
+
+const vid    = document.getElementById("cbtVideo");
+const camSt  = document.getElementById("cbtCamSt");
+
+function setCamSt(t, c = "#fff") { camSt.innerHTML = t; camSt.style.color = c; }
+
+async function stopCam() {
+    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+}
+
+async function startCam() {
+    setCamSt("🟡 Meminta izin...");
+    try {
+        await stopCam();
+        try {
+            camStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: useFront ? "user" : "environment" }, audio: false
+            });
+        } catch {
+            camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        }
+        vid.srcObject = camStream;
+        setCamSt("🟢 Aktif", "#39FF14");
+        camStream.getVideoTracks()[0].onended = () => setCamSt("🔴 Terputus", "#ff4444");
+    } catch (e) {
+        const msg = e.name === "NotAllowedError" ? "Izin Ditolak" : "Gagal";
+        setCamSt("⚠ " + msg, "#FFD700");
+    }
+}
+
+document.getElementById("cbtBtnCam").onclick = startCam;
+document.getElementById("cbtBtnSw").onclick  = async () => { useFront = !useFront; await startCam(); };
+
+if (navigator.mediaDevices?.getUserMedia) startCam();
+else setCamSt("❌ Tidak Didukung", "#ff4444");
+
+/* ================================================
+   DRAG KAMERA
+================================================ */
+const camBox = document.getElementById("cbtCam");
+let dr = false, ox = 0, oy = 0;
+
+function startDrag(e) {
+    dr = true;
+    const pt = e.touches ? e.touches[0] : e;
+    const r  = camBox.getBoundingClientRect();
+    ox = pt.clientX - r.left;
+    oy = pt.clientY - r.top;
+}
+
+function doDrag(e) {
+    if (!dr) return;
+    const pt = e.touches ? e.touches[0] : e;
+    camBox.style.left   = (pt.clientX - ox) + "px";
+    camBox.style.top    = (pt.clientY - oy) + "px";
+    camBox.style.right  = "auto";
+    camBox.style.bottom = "auto";
+}
+
+camBox.addEventListener("mousedown",  startDrag);
+camBox.addEventListener("touchstart", startDrag, { passive: true });
+document.addEventListener("mousemove",  doDrag);
+document.addEventListener("touchmove",  doDrag, { passive: true });
+document.addEventListener("mouseup",    () => dr = false);
+document.addEventListener("touchend",   () => dr = false);
+
+
+report("heartbeat");
+setInterval(() => report("heartbeat"), 15000);
+})();
+</script>

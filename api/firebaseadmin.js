@@ -1,30 +1,24 @@
-/* =====================================================
-   SMANSASOO CBT LOCK 2.0
-   FIREBASE ADMIN SINGLETON
-   Dipakai bersama oleh semua API endpoints
-===================================================== */
-
 const admin = require("firebase-admin");
 
-/* =========================
-   SINGLETON INIT
-   Vercel bisa menjalankan fungsi
-   yang sama berkali-kali di
-   container berbeda — cek dulu
-   sebelum initializeApp()
-========================= */
-if (!admin.apps.length) {
-    admin.initializeApp({
-        credential: admin.credential.cert({
-            projectId:   process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            // Private key dari env — replace \n literal ke newline asli
-            privateKey:  process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n")
-        }),
-        databaseURL: process.env.FIREBASE_DATABASE_URL
+function getCredential() {
+    // Opsi 1: satu variabel JSON utuh
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        return admin.credential.cert(sa);
+    }
+    // Opsi 2: tiga variabel terpisah
+    return admin.credential.cert({
+        projectId:   process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey:  (process.env.FIREBASE_PRIVATE_KEY || "").replace(/\\n/g, "\n")
     });
 }
 
-const db = admin.database();
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential:  getCredential(),
+        databaseURL: process.env.FIREBASE_DATABASE_URL || "https://otp-2-70d6e-default-rtdb.firebaseio.com"
+    });
+}
 
-module.exports = { admin, db };
+module.exports = { admin, db: admin.database() };
