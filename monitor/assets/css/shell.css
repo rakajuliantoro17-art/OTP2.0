@@ -74,6 +74,11 @@ html, body { transition: background-color .25s, color .25s; }
 }
 .app-hamburger:active { transform: scale(.94); }
 
+.mobile-only { display: none !important; }
+.sb-clock { font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .5px; font-size: 13px; }
+@media (max-width: 1023px) { .mobile-only { display: flex !important; } }
+body.sidebar-collapsed .sidebar .sb-clock { display: none; }
+
 /* ---------- FOOTER ---------- */
 .shell-footer {
     text-align: center; padding: 14px 12px 18px; font-size: 12px; line-height: 1.6;
@@ -161,6 +166,10 @@ body.settings-open .settings-drawer { transform: translateX(0); }
     .table-actions input { flex: 1; min-width: 0; width: auto; }
     thead th, td { padding: 12px 12px !important; }
 }
+
+/* Bar atas panitia hanya untuk HP/tablet (tombol menu); di desktop semua info ada di sidebar */
+@media (min-width: 1024px) { .mobile-only-bar { display: none !important; } }
+.sb-status { margin-top: 0; }
 
 /* ---------- TATA LETAK RESPONSIF PANITIA ---------- */
 body .container { min-width: 0 !important; }

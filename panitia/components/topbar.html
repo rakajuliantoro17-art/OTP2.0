@@ -1,4 +1,4 @@
-<div class="topbar glass app-navbar">
+<div class="topbar glass app-navbar mobile-only-bar">
 
     <div class="left app-navbar-left">
         <button type="button" class="app-hamburger" id="appSidebarToggle" aria-label="Buka menu">&#9776;</button>
@@ -8,50 +8,11 @@
         </div>
     </div>
 
-    <div class="right">
-        <div class="status-indicator">
-            <div class="dot" id="serverDot"></div>
-            <span id="serverLabel">ONLINE</span>
-        </div>
-
-        <div class="mini-stat">
-            <span>👥</span>
-            <span id="topbarActive">0</span>
-        </div>
-        <div class="mini-stat">
-            <span>⚠️</span>
-            <span id="topbarWarn">0</span>
-        </div>
-        <div class="mini-stat">
-            <span>🚨</span>
-            <span id="topbarCritical">0</span>
-        </div>
-
-        <div class="clock" id="topbarClock">00:00:00</div>
-
-        <button class="btn-danger" onclick="triggerGlobalOTP()">🔑 Global OTP</button>
-    </div>
-
 </div>
 
 <script>
-(function startClock() {
-    function tick() {
-        const el = document.getElementById('topbarClock');
-        if (el) el.innerText = new Date().toLocaleTimeString('id-ID');
-    }
-    tick();
-    setInterval(tick, 1000);
-})();
-
-function syncTopbarStats(data) {
-    const warn     = data.filter(s => s.status === 'warn').length;
-    const danger   = data.filter(s => s.status === 'danger').length;
-    const active   = data.length;
-    const el = id => document.getElementById(id);
-    if (el('topbarActive'))   el('topbarActive').innerText   = active;
-    if (el('topbarWarn'))     el('topbarWarn').innerText     = warn;
-    if (el('topbarCritical')) el('topbarCritical').innerText = danger;
-}
+/* Status server, jam, dan ringkasan jumlah kini hanya ada di sidebar.
+   Fungsi ini dipertahankan agar realtime.js tidak error. */
+function syncTopbarStats() {}
 window.syncTopbarStats = syncTopbarStats;
 </script>

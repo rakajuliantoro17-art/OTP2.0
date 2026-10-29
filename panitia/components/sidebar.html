@@ -12,17 +12,27 @@
         <button type="button" class="sb-collapse" id="appSidebarCollapseBtn" title="Perkecil / perbesar (Ctrl+B)" aria-label="Perkecil panel">&#10094;</button>
     </div>
 
-    <div class="statusItem">
-        <span>OTP ACTIVE</span>
-        <span class="badge safe" id="otpCounter">0</span>
-    </div>
-    <div class="statusItem">
-        <span>UNLOCK REQ</span>
-        <span class="badge warn" id="unlockCounter">0</span>
-    </div>
-    <div class="statusItem">
-        <span>CRITICAL</span>
-        <span class="badge danger" id="criticalCounter">0</span>
+    <div class="statusBox sb-status">
+        <div class="statusItem">
+            <span>SERVER</span>
+            <span class="badge safe" id="serverStatus">ONLINE</span>
+        </div>
+        <div class="statusItem">
+            <span>JAM</span>
+            <span class="badge safe" id="sidebarClock">00:00:00</span>
+        </div>
+        <div class="statusItem">
+            <span>ACTIVE</span>
+            <span class="badge safe" id="sActive">0</span>
+        </div>
+        <div class="statusItem">
+            <span>WARNING</span>
+            <span class="badge warn" id="sWarn">0</span>
+        </div>
+        <div class="statusItem">
+            <span>CRITICAL</span>
+            <span class="badge danger" id="sDanger">0</span>
+        </div>
     </div>
 
     <div class="menu active" onclick="navigate(this, 'dashboard')">
@@ -44,26 +54,6 @@
     <div class="spacer"></div>
     <div class="divider"></div>
 
-    <div class="statusItem">
-        <span>SERVER</span>
-        <span class="badge safe" id="serverStatus">ONLINE</span>
-    </div>
-
-    <div class="statusBox">
-        <div class="statusItem">
-            <span>ACTIVE</span>
-            <span class="badge safe" id="sActive">0</span>
-        </div>
-        <div class="statusItem">
-            <span>WARNING</span>
-            <span class="badge warn" id="sWarn">0</span>
-        </div>
-        <div class="statusItem">
-            <span>CRITICAL</span>
-            <span class="badge danger" id="sDanger">0</span>
-        </div>
-    </div>
-
     <div class="quickActions">
         <button onclick="triggerGlobalOTP()">🔑 Global OTP</button>
         <button onclick="generateSystemOTP()">♻ Refresh OTP</button>
@@ -74,6 +64,11 @@
 </aside>
 
 <script>
+(function startClock() {
+    const tick = () => { const el = document.getElementById('sidebarClock'); if (el) el.innerText = new Date().toLocaleTimeString('id-ID'); };
+    tick(); setInterval(tick, 1000);
+})();
+
 function navigate(element, page) {
     document.querySelectorAll('.menu').forEach(m => m.classList.remove('active'));
     element.classList.add('active');
@@ -88,7 +83,6 @@ function syncSidebarStats(data) {
     if (el('sActive'))        el('sActive').innerText        = active;
     if (el('sWarn'))          el('sWarn').innerText          = warn;
     if (el('sDanger'))        el('sDanger').innerText        = danger;
-    if (el('criticalCounter'))el('criticalCounter').innerText= danger;
 }
 window.syncSidebarStats = syncSidebarStats;
 </script>

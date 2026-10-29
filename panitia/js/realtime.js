@@ -88,7 +88,11 @@ function listenStudents() {
             JSON.parse(e.data).forEach(st => { obj[st.uid] = st; });
             applyStudents(obj);
         };
-        es.onerror = () => console.warn("[REALTIME] Server lokal terputus, mencoba lagi...");
+        es.onopen  = () => { if (typeof setFirebaseStatus === "function") setFirebaseStatus(true); };
+        es.onerror = () => {
+            console.warn("[REALTIME] Server lokal terputus, mencoba lagi...");
+            if (typeof setFirebaseStatus === "function") setFirebaseStatus(false);
+        };
         console.log("[REALTIME] Mode LOKAL (server monitor)");
         return;
     }
