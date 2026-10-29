@@ -22,7 +22,7 @@ const rank={locked:0,critical:1,warning:2,safe:3};
 function render(){const q=$("q").value.toLowerCase();
 const rows=data.filter(s=>(s.nama+s.username+s.kelas).toLowerCase().includes(q))
 .sort((a,b)=>rank[a.status]-rank[b.status]||b.violationCount-a.violationCount);
-$("t").innerHTML=rows.map(s=>`<tr><td><span class="dot ${s.online?"on":""}"></span>${esc(s.nama)}</td><td>${esc(s.username)}</td><td>${esc(s.exam)}</td><td>${s.violationCount}/30</td><td>${s.unlockCount}</td><td><span class="b ${s.status}">${s.status.toUpperCase()}</span></td><td>${ago(s.lastSeen)}</td></tr>`).join("");
+$("t").innerHTML=rows.map(s=>`<tr><td><span class="dot ${s.online?"on":""}"></span>${esc(s.nama)}</td><td>${esc(s.username)}</td><td>${esc(s.exam)}</td><td>${Math.min(s.violationCount,30)}/30</td><td>${s.unlockCount}</td><td><span class="b ${s.status}">${s.status.toUpperCase()}</span></td><td>${ago(s.lastSeen)}</td></tr>`).join("");
 $("s").textContent=`${data.filter(s=>s.online).length} online · ${data.length} total · ${data.filter(s=>s.status!=="safe").length} bermasalah`;}
 const esc=x=>String(x??"-").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const ago=t=>{const d=Math.floor((Date.now()-t)/1000);return d<60?d+" dtk lalu":Math.floor(d/60)+" mnt lalu"};

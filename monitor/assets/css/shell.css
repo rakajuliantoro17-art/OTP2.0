@@ -1,0 +1,205 @@
+/* =====================================================
+   SMANSASOO CBT LOCK 2.0 — SHELL BERSAMA
+   Konsisten dengan SMANSASOO Academic Portal:
+   navbar navy, sidebar bisa di-minimize, gear mengambang,
+   footer "© Tim IT SMAN 1 Sooko Mojokerto", mode terang/gelap.
+   Dipakai panitia + pengawas (Vercel & server lokal).
+===================================================== */
+
+:root {
+    --primary:        #0F4C81;
+    --primary-light:  #3B82C4;
+    --primary-dark:   #0A355B;
+    --secondary:      #F4B400;
+    --shell-navbar-h: 64px;
+    --shell-sidebar-w: 280px;
+    --shell-sidebar-w-collapsed: 76px;
+    --shell-ease: .25s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ---------- Mode gelap (override token halaman) ---------- */
+html[data-theme="dark"] {
+    --primary:        #4FA3FF;
+    --primary-dark:   #1E6FBF;
+    --glass-bg:       rgba(24, 28, 38, .72);
+    --glass:          rgba(24, 28, 38, .72);
+    --glass-soft:     rgba(24, 28, 38, .55);
+    --glass-border:   rgba(255, 255, 255, .12);
+    --border:         rgba(255, 255, 255, .12);
+    --glass-highlight: rgba(255, 255, 255, .10);
+    --text:           #f2f2f7;
+    --text-secondary: #a8a8b3;
+    color-scheme: dark;
+}
+html[data-theme="dark"] body::before { background: linear-gradient(rgba(5,8,14,.55), rgba(5,8,14,.65)) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html[data-theme="dark"] .menu:hover  { background: rgba(255,255,255,.10) !important; }
+html[data-theme="dark"] .menu.active { background: rgba(79,163,255,.20) !important; color: #fff !important; }
+html[data-theme="dark"] .statusItem,
+html[data-theme="dark"] .statusBox  { background: rgba(255,255,255,.06) !important; }
+html[data-theme="dark"] table tr    { background: transparent !important; }
+html[data-theme="dark"] table tr:hover { background: rgba(255,255,255,.07) !important; }
+html[data-theme="dark"] table th    { background: rgba(255,255,255,.07) !important; color: var(--text-secondary) !important; }
+html[data-theme="dark"] input, html[data-theme="dark"] select { background: rgba(255,255,255,.08) !important; color: var(--text) !important; border-color: var(--border) !important; }
+html[data-theme="dark"] .stu input { background: rgba(255,255,255,.08); }
+html[data-theme="dark"] .pin-gate  { background: rgba(8,10,16,.9) !important; }
+html[data-theme="dark"] .row       { border-color: rgba(255,255,255,.08) !important; }
+
+html, body { transition: background-color .25s, color .25s; }
+
+/* ---------- NAVBAR (pengawas + topbar panitia) ---------- */
+.app-navbar,
+.topbar.app-navbar {
+    height: var(--shell-navbar-h);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 0 clamp(12px, 3vw, 24px);
+    color: #fff;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 85%, transparent), color-mix(in srgb, var(--primary-dark) 90%, transparent)) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255,255,255,.18) !important;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(10,53,91,.25);
+}
+.app-navbar .app-navbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.app-navbar .app-navbar-brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; min-width: 0; }
+.app-navbar .app-navbar-brand img { height: 38px; width: 38px; border-radius: 10px; background: #fff; padding: 3px; object-fit: contain; }
+.app-navbar .app-navbar-brand b { font-size: 15px; letter-spacing: .5px; display: block; line-height: 1.15; }
+.app-navbar .app-navbar-brand small { font-size: 10px; letter-spacing: 1px; opacity: .8; text-transform: uppercase; display: block; }
+.app-navbar .title, .app-navbar .subtitle { color: #fff !important; }
+.app-navbar .subtitle { opacity: .8; }
+.app-navbar .clock, .app-navbar .mini-stat, .app-navbar .status-indicator { color: #fff !important; background: rgba(255,255,255,.14) !important; border-color: rgba(255,255,255,.2) !important; }
+
+.app-hamburger {
+    display: none; width: 44px; height: 44px; border: 0; border-radius: 12px; cursor: pointer;
+    background: rgba(255,255,255,.16); color: #fff; font-size: 22px; line-height: 1; flex-shrink: 0;
+}
+.app-hamburger:active { transform: scale(.94); }
+
+/* ---------- FOOTER ---------- */
+.shell-footer {
+    text-align: center; padding: 14px 12px 18px; font-size: 12px; line-height: 1.6;
+    color: var(--text-secondary); flex-shrink: 0;
+}
+.shell-footer b { color: var(--text); font-weight: 700; }
+.shell-footer small { display: block; opacity: .75; }
+
+/* ---------- GEAR MENGAMBANG ---------- */
+.settings-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 9000;
+    width: 52px; height: 52px; border: 0; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    box-shadow: 0 8px 24px rgba(10,53,91,.4), inset 0 1px 0 rgba(255,255,255,.25);
+    transition: transform var(--shell-ease), opacity var(--shell-ease);
+}
+.settings-trigger:hover  { transform: rotate(45deg) scale(1.06); }
+.settings-trigger:active { transform: scale(.94); }
+body.settings-open .settings-trigger { opacity: 0; pointer-events: none; }
+
+.settings-overlay { position: fixed; inset: 0; z-index: 9400; background: rgba(0,0,0,.35); opacity: 0; pointer-events: none; transition: opacity var(--shell-ease); }
+body.settings-open .settings-overlay { opacity: 1; pointer-events: auto; }
+
+.settings-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 9500; width: min(340px, 92vw);
+    transform: translateX(105%); transition: transform var(--shell-ease);
+    display: flex; flex-direction: column;
+    background: var(--glass-bg, rgba(255,255,255,.85)); color: var(--text, #1c1c1e);
+    -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
+    border-left: 1px solid var(--glass-border, rgba(0,0,0,.08)); box-shadow: -12px 0 40px rgba(0,0,0,.25);
+}
+body.settings-open .settings-drawer { transform: translateX(0); }
+.settings-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; }
+.settings-head strong { font-size: 15px; }
+.settings-close { width: 36px; height: 36px; border: 0; border-radius: 10px; background: rgba(255,255,255,.18); color: #fff; font-size: 18px; cursor: pointer; }
+.settings-body { padding: 8px 18px 24px; overflow-y: auto; flex: 1; }
+.settings-row { padding: 14px 0; border-bottom: 1px solid rgba(128,128,128,.18); }
+.settings-title { font-size: 14px; font-weight: 700; }
+.settings-desc  { font-size: 12px; opacity: .7; margin: 3px 0 10px; line-height: 1.4; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(128,128,128,.16); }
+.seg button { border: 0; border-radius: 9px; padding: 11px 6px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; color: inherit; min-height: 44px; }
+.seg button.on { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+.settings-act { width: 100%; min-height: 46px; border: 0; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; background: var(--primary); color: #fff; }
+.settings-foot { padding: 12px 18px; font-size: 11px; opacity: .6; text-align: center; }
+
+/* ---------- SIDEBAR PANITIA: minimize + drawer HP ---------- */
+.sidebar { transition: width var(--shell-ease), min-width var(--shell-ease), transform var(--shell-ease); position: relative; }
+.sb-collapse {
+    margin-left: auto; width: 34px; height: 34px; border: 0; border-radius: 10px; cursor: pointer; flex-shrink: 0;
+    background: rgba(128,128,128,.18); color: var(--text); font-size: 14px; transition: transform var(--shell-ease);
+}
+.sb-collapse:hover { background: var(--primary); color: #fff; }
+.sidebar .menu .label { white-space: nowrap; }
+.sidebar-overlay { display: none; }
+
+@media (min-width: 1024px) {
+    body.sidebar-collapsed .sidebar { width: var(--shell-sidebar-w-collapsed); min-width: var(--shell-sidebar-w-collapsed); padding: 16px 10px; align-items: center; }
+    body.sidebar-collapsed .sidebar .brand { flex-direction: column; gap: 10px; padding-bottom: 12px; }
+    body.sidebar-collapsed .sidebar .brand-text,
+    body.sidebar-collapsed .sidebar .menu .label,
+    body.sidebar-collapsed .sidebar > .statusItem,
+    body.sidebar-collapsed .sidebar .statusBox,
+    body.sidebar-collapsed .sidebar .quickActions,
+    body.sidebar-collapsed .sidebar .divider { display: none; }
+    body.sidebar-collapsed .sidebar .menu { justify-content: center; padding: 12px 0; width: 100%; }
+    body.sidebar-collapsed .sidebar .menu:hover { transform: none; }
+    body.sidebar-collapsed .sb-collapse { transform: rotate(180deg); margin-left: 0; }
+}
+
+.sidebar { overflow-y: auto; }
+.shell-footer > div, .shell-footer > small { }
+#shellFooter { display: flex; justify-content: center; margin-top: auto; flex-shrink: 0; }
+#shellFooter .shell-footer {
+    width: auto; margin: 4px auto 0; padding: 8px 18px; border-radius: 999px;
+    background: var(--glass-bg, rgba(255,255,255,.7)); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border, rgba(255,255,255,.4));
+}
+/* tabel: gulir horizontal di layar sempit */
+.tableBox { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tableBox table { min-width: 560px; }
+@media (max-width: 560px) {
+    .table-toolbar { flex-direction: column; align-items: stretch !important; gap: 10px; }
+    .table-actions { width: 100%; }
+    .table-actions input { flex: 1; min-width: 0; width: auto; }
+    thead th, td { padding: 12px 12px !important; }
+}
+
+/* ---------- TATA LETAK RESPONSIF PANITIA ---------- */
+body .container { min-width: 0 !important; }
+.main { min-width: 0; }
+.main > .shell-footer { margin-top: auto; }
+
+@media (max-width: 1023px) {
+    .app-hamburger { display: inline-flex; align-items: center; justify-content: center; }
+    body .container { flex-direction: column !important; height: auto !important; min-height: 100vh; padding: 8px !important; gap: 8px !important; }
+    .main { overflow: visible !important; }
+    .sidebar { position: fixed !important; top: 0; left: 0; bottom: 0; z-index: 9300; width: min(300px, 86vw) !important; min-width: 0 !important; border-radius: 0 18px 18px 0 !important; overflow-y: auto; transform: translateX(-105%); }
+    body.sidebar-open .sidebar { transform: translateX(0); }
+    .sidebar-overlay { display: block; position: fixed; inset: 0; z-index: 9200; background: rgba(0,0,0,.4); opacity: 0; pointer-events: none; transition: opacity var(--shell-ease); }
+    body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: auto; }
+    .sb-collapse { display: none; }
+    .topbar.app-navbar { height: auto; min-height: var(--shell-navbar-h); flex-wrap: wrap; padding-top: 8px; padding-bottom: 8px; }
+    .topbar .right { flex-wrap: wrap; gap: 8px; }
+    .cards { grid-template-columns: repeat(2, 1fr) !important; }
+    .table-panel { overflow: visible !important; }
+    .table-panel table, .table-panel .table-wrap { min-width: 0; }
+    .table-panel > div[style*="overflow"], .table-scroll { overflow-x: auto !important; }
+}
+@media (max-width: 560px) {
+    .cards { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+    .card { padding: 12px 14px !important; }
+    .card h2 { font-size: 24px !important; }
+    .topbar .clock { display: none; }
+    .topbar .mini-stat { padding: 4px 8px; }
+}
+
+/* ---------- PENGAWAS ---------- */
+body.pengawas-shell { height: auto !important; min-height: 100vh; overflow-y: auto !important; display: flex; flex-direction: column; padding: 10px; gap: 10px; }
+body.pengawas-shell > .app-navbar { width: 100%; max-width: 760px; margin: 0 auto; flex-shrink: 0; }
+body.pengawas-shell > .container { flex: 1; display: flex; align-items: flex-start; justify-content: center; min-height: 0; padding: 0; }
+body.pengawas-shell { padding-bottom: 84px; }
+body.pengawas-shell .otp-panel { max-width: 560px; width: 100%; height: auto !important; transform: none !important; justify-content: flex-start !important;
+    background: var(--glass-bg, rgba(255,255,255,.65)) !important; border: 1px solid var(--glass-border, rgba(255,255,255,.5)) !important;
+    border-radius: 22px !important; -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); box-shadow: 0 8px 32px rgba(0,0,0,.14) !important; }
+body.pengawas-shell .alert { bottom: 84px; }
+body.pengawas-shell .shell-footer { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

@@ -6,6 +6,15 @@
     <title>SMANSASOO CBT LOCK 2.0 — Panitia</title>
     <link rel="icon" href="/assets/img/favicon.ico">
     <link rel="stylesheet" href="./css/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/shell.css">
+    <script src="/assets/js/shell.js"></script>
+    <script>
+        window.SHELL_HAS_SIDEBAR = true;
+        window.SHELL_SETTINGS_EXTRA = [
+            { title: "PIN Pengawas", desc: "Buat PIN harian baru untuk pengawas. PIN lama otomatis batal.", label: "🔐 Buat PIN Pengawas", run: () => window.generatePengawasPIN && generatePengawasPIN() },
+            { title: "Global OTP", desc: "Tampilkan OTP sistem saat ini.", label: "🔑 Tampilkan Global OTP", run: () => window.triggerGlobalOTP && triggerGlobalOTP() }
+        ];
+    </script>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -29,6 +38,7 @@
         <div id="statsMount"></div>
         <div id="tableMount"></div>
         <div id="alertMount"></div>
+        <div id="shellFooter"></div>
     </main>
 </div>
 

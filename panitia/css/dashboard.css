@@ -560,22 +560,4 @@ tr:hover        { background: rgba(255,255,255,.6); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* =====================================================
-   RESPONSIVE GUARD
-===================================================== */
-@media (max-width: 1024px) {
-    .container {
-        flex-direction: column;
-        min-width: 100%;
-        padding: 0;
-    }
-
-    .sidebar {
-        width: 100%;
-        flex-direction: row;
-        overflow-x: auto;
-        border-radius: 0;
-    }
-
-    .cards { grid-template-columns: repeat(3, 1fr); }
-}
+/* Responsif ditangani oleh /assets/css/shell.css */

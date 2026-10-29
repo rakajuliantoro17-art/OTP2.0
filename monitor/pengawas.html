@@ -1,5 +1,7 @@
 <!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pengawas — SMANSASOO CBT</title><link rel="icon" href="/assets/img/favicon.ico"><link rel="stylesheet" href="/assets/simple.css">
+<link rel="stylesheet" href="/assets/css/shell.css">
+<script src="/assets/js/shell.js"></script>
 <style>
 .pin-gate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(240,243,250,.95)}
 .pin-box{width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:28px 22px;text-align:center}
@@ -11,15 +13,22 @@
 .row small{opacity:.6}.bd{padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;color:#000}
 .warning{background:#ffb020}.critical{background:#ff5a4f}.locked{background:#b04dff;color:#fff}.safe{background:#34c759}
 .off{opacity:.45}
-</style></head><body>
+</style></head><body class="pengawas-shell">
 <div id="gate" class="pin-gate"><div class="pin-box glass"><img class="logo" src="/assets/img/logo.png" alt=""><div class="title">PIN Pengawas</div>
 <small class="subtitle">Minta PIN hari ini ke panitia</small>
 <input id="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••••">
 <button class="btn-primary" id="go">Masuk</button><div id="msg" class="pin-msg"></div></div></div>
 
+<nav class="app-navbar">
+    <div class="app-navbar-left">
+        <a class="app-navbar-brand" href="#">
+            <img src="/assets/img/logo.png" alt="Logo SMAN 1 Sooko">
+            <span><b>SMANSASOO CBT LOCK</b><small>Pengawas · Mode Lokal</small></span>
+        </a>
+    </div>
+</nav>
 <div class="container"><div class="otp-panel glass">
-<div class="panel-header"><img class="logo" src="/assets/img/logo.png" alt=""><div><div class="title">SMANSASOO CBT LOCK</div><small class="subtitle">PENGAWAS · MODE LOKAL</small></div></div>
-<hr class="divider">
+
 <div class="otp-section"><div class="otp-label">OTP AKTIF</div><div id="otp" class="otp-code">--- ---</div></div>
 <div class="progress-container"><div class="progress-bar" id="bar"></div></div>
 <div class="countdown-label">Sisa waktu: <b id="sec">60</b> detik</div>
@@ -30,6 +39,8 @@
 
 <div class="alert glass stu"><b>⚠ SISWA BERMASALAH</b><input id="q" placeholder="Cari nama / username / kelas">
 <div id="list"><small>Memuat…</small></div></div>
+
+<div id="shellFooter"></div>
 
 <script>
 const SECRET="SOOKO_HEBAT_2026",INTERVAL=60; let token=sessionStorage.getItem("tk")||"",ok=false,cur="",data=[];
@@ -49,7 +60,7 @@ const esc=x=>String(x??"-").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const rank={locked:0,critical:1,warning:2};
 function render(){const q=$("q").value.toLowerCase();
  const rows=data.filter(s=>s.status!=="safe"&&(s.nama+s.username+s.kelas).toLowerCase().includes(q)).sort((a,b)=>rank[a.status]-rank[b.status]||b.violationCount-a.violationCount);
- $("list").innerHTML=rows.length?rows.map(s=>`<div class="row ${s.online?"":"off"}"><div><b>${esc(s.nama)}</b><br><small>${esc(s.username)} · ${s.violationCount}/30 · ${s.online?"online":"offline"}</small></div><span class="bd ${s.status}">${s.status.toUpperCase()}</span></div>`).join(""):"<small>Tidak ada siswa bermasalah.</small>"}
+ $("list").innerHTML=rows.length?rows.map(s=>`<div class="row ${s.online?"":"off"}"><div><b>${esc(s.nama)}</b><br><small>${esc(s.username)} · ${Math.min(s.violationCount,30)}/30 · ${s.online?"online":"offline"}</small></div><span class="bd ${s.status}">${s.status.toUpperCase()}</span></div>`).join(""):"<small>Tidak ada siswa bermasalah.</small>"}
 $("q").oninput=render;
 async function pollMaster(){try{const m=await(await fetch("/api/master?token="+token)).json();
  if(m.status==="active"&&m.code){$("mcode").textContent=m.code.slice(0,3)+" "+m.code.slice(3);$("mbox").style.display="block"}else $("mbox").style.display="none"}catch(_){}}

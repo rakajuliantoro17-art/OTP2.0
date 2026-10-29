@@ -6,12 +6,22 @@
     <title>SMANSASOO CBT LOCK 2.0 — Pengawas</title>
     <link rel="icon" href="/assets/img/favicon.ico">
     <link rel="stylesheet" href="./css/simple.css">
+<link rel="stylesheet" href="/assets/css/shell.css">
+<script src="/assets/js/shell.js"></script>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 </head>
-<body>
+<body class="pengawas-shell">
+<nav class="app-navbar">
+    <div class="app-navbar-left">
+        <a class="app-navbar-brand" href="#">
+            <img src="/assets/img/logo.png" alt="Logo SMAN 1 Sooko">
+            <span><b>SMANSASOO CBT LOCK</b><small>Dashboard Pengawas</small></span>
+        </a>
+    </div>
+</nav>
 
 <!-- GERBANG PIN PENGAWAS -->
 <div id="pinGate" class="pin-gate">
@@ -28,19 +38,6 @@
 
 <div class="container">
     <div class="otp-panel glass">
-
-        <!-- HEADER -->
-        <div class="panel-header">
-            <img class="logo"
-                src="/assets/img/logo.png"
-                alt="Logo SMAN 1 Sooko">
-            <div>
-                <div class="title">SMANSASOO CBT LOCK</div>
-                <small class="subtitle">DASHBOARD PENGAWAS</small>
-            </div>
-        </div>
-
-        <hr class="divider">
 
         <!-- OTP DISPLAY -->
         <div class="otp-section">
@@ -91,6 +88,8 @@
     <b class="log-title">📡 LOG AKTIVITAS SERVER</b>
     <div id="logList"></div>
 </div>
+
+<div id="shellFooter"></div>
 
 <!-- FIREBASE CONFIG -->
 <script>
