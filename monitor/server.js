@@ -9,7 +9,7 @@ const OFFLINE_AFTER = 40000;          // ms tanpa heartbeat = offline
 const MIRROR_EVERY  = 10000;          // salin ke Firebase tiap 10 dtk jika ada internet
 const MIRROR_NAMA   = process.env.MIRROR_NAMA || "short";   // "full" | "short" (nama depan + inisial)
 
-const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
+const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Allow-Private-Network": "true" };
 
 /* ---------- data siswa ---------- */
 let students = {}; try { students = JSON.parse(fs.readFileSync(FILE, "utf8")); } catch (_) {}

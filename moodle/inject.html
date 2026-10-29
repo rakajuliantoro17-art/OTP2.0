@@ -1,7 +1,5 @@
 <!-- =====================================================
      SMANSASOO CBT LOCK 2.0 — MOODLE INJECTION
-     MODE: PURE OFFLINE (tanpa Firebase/Vercel)
-     
      Pasang di: Site Admin → Appearance → Additional HTML
      Tab: Before closing </body> tag
 ===================================================== -->
@@ -37,12 +35,16 @@
 .cbtCamBtns{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 .cbtCamBtns button{height:28px;border:none;border-radius:7px;background:#1e1e1e;color:white;cursor:pointer;font-size:15px;transition:.15s}
 .cbtCamBtns button:active{transform:scale(.92)}
+
+/* Blokir select & copy visual */
+#cbtShield{position:fixed;inset:0;z-index:999990;pointer-events:none}
 </style>
 
-<!-- OVERLAY HTML -->
+<!-- CSS anti-select global -->
+<style id="cbtAntiSelect"></style>
+
 <div id="cbtOverlay">
   <div class="cbtCard">
-
     <div class="cbtHead">
       <img src="http://10.10.10.246/pluginfile.php/1/core_admin/logocompact/300x300/logo.png"
            onerror="this.style.display='none'">
@@ -51,31 +53,26 @@
         <div class="t2">SMAN 1 Sooko &nbsp;•&nbsp; Tim IT</div>
       </div>
     </div>
-
     <div class="cbtInfo">
-      <div class="cbtRow"><span>Peserta</span>   <b id="cN">—</b></div>
-      <div class="cbtRow"><span>Username</span>  <b id="cU">—</b></div>
-      <div class="cbtRow"><span>Ujian</span>     <b id="cEx">—</b></div>
+      <div class="cbtRow"><span>Peserta</span>    <b id="cN">—</b></div>
+      <div class="cbtRow"><span>Username</span>   <b id="cU">—</b></div>
+      <div class="cbtRow"><span>Ujian</span>      <b id="cEx">—</b></div>
       <div class="cbtRow"><span>Pelanggaran</span><b id="cV">0</b></div>
-      <div class="cbtRow"><span>Unlock</span>    <b id="cUl">0</b></div>
-      <div class="cbtRow"><span>Status</span>    <b id="cSt"><span class="cbadge bs">AMAN</span></b></div>
+      <div class="cbtRow"><span>Unlock</span>     <b id="cUl">0</b></div>
+      <div class="cbtRow"><span>Status</span>     <b id="cSt"><span class="cbadge bs">AMAN</span></b></div>
     </div>
-
     <div id="cbtTitle">🔒 Akses Terkunci</div>
     <div id="cbtHint">Masukkan kode OTP dari pengawas untuk melanjutkan ujian</div>
-
     <input id="cbtInput" type="number" inputmode="numeric"
            placeholder="Kode OTP 6 digit" maxlength="6">
     <br>
     <button id="cbtBtn">✅ Verifikasi &amp; Lanjut</button>
     <div class="cbtFoot">SMANSASOO CBT LOCK 2.0 &nbsp;•&nbsp; Secure Exam Mode</div>
-
   </div>
 </div>
 
 <div id="cbtToast"></div>
 
-<!-- FLOATING CAMERA -->
 <div id="cbtCam">
   <video id="cbtVideo" autoplay muted playsinline></video>
   <div id="cbtCamSt">🟡 Kamera...</div>
@@ -97,60 +94,95 @@ if (!pg.includes("/mod/quiz/attempt.php") &&
     !pg.includes("/mod/quiz/review.php")) return;
 
 /* ================================================
-   CONFIG — harus identik dengan pengawas/js/unlock.js
+   CONFIG
 ================================================ */
-const SECRET    = "SOOKO_HEBAT_2026";
-const INTERVAL  = 60;     // detik per siklus OTP
-const MAX_VIO   = 30;     // threshold auto-lock permanen
-const SPAM_MS   = 2000;   // debounce antar violation
-
-// Server monitor lokal (laptop panitia). GANTI IP sesuai hasil `node server.js`
-const MONITOR = "http://10.10.10.XXX:3000/api/report";
+const SECRET   = "SOOKO_HEBAT_2026";
+const INTERVAL = 60;
+const MAX_VIO  = 30;
+const SPAM_MS  = 2000;
+// Server monitor lokal (laptop panitia). Pastikan IP ini = IP laptop (lihat jendela start.bat)
+const MONITOR  = "http://10.9.9.52:3000/api/report";
 
 /* ================================================
-   IDENTITAS SISWA dari Moodle
+   IDENTITAS SISWA
 ================================================ */
 const uid   = String(window.M?.cfg?.userid   || document.body.dataset.userid   || "guest");
-const nama  = document.body.dataset.fullname  || "Siswa";
+const nama  = (document.querySelector(".usermenu .usertext, .userbutton .usertext, #user-menu-toggle .usertext")?.textContent
+              || document.body.dataset.fullname || "Siswa").trim();
 const uname = document.body.dataset.username  || uid;
 const kelas = String(window.M?.cfg?.courseId  || document.body.dataset.courseid || "0");
-
-// Nama ujian dari judul halaman
 const examTitle = document.querySelector(".page-header-headings h1")?.innerText
-               || document.title.replace(" - " + document.querySelector(".site-name")?.innerText, "")
-               || "CBT";
+               || document.title || "CBT";
 
-// Isi info panel
 document.getElementById("cN").innerText  = nama;
 document.getElementById("cU").innerText  = uname;
 document.getElementById("cEx").innerText = examTitle.substring(0, 30);
 
 /* ================================================
-   STATE — pakai sessionStorage agar tidak hilang
-   saat Moodle autosave reload halaman
+   STATE
 ================================================ */
-let vio    = Number(sessionStorage.getItem("cbt_v")  || 0);
-let ulocks = Number(sessionStorage.getItem("cbt_ul") || 0);
-let locked = sessionStorage.getItem("cbt_lk") === "1";
+let vio     = Number(sessionStorage.getItem("cbt_v")  || 0);
+let ulocks  = Number(sessionStorage.getItem("cbt_ul") || 0);
+let locked  = sessionStorage.getItem("cbt_lk") === "1";
 let lastEvt = 0;
+let lastW   = window.innerWidth;
+let lastH   = window.innerHeight;
+
+const overlay = document.getElementById("cbtOverlay");
+const inp     = document.getElementById("cbtInput");
+const btn     = document.getElementById("cbtBtn");
+
+/* ================================================
+   ANTI COPY / SELECT — mobile & desktop
+================================================ */
+document.getElementById("cbtAntiSelect").textContent = `
+    body, * {
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        user-select: none !important;
+        -webkit-touch-callout: none !important;
+    }
+    input, textarea, [contenteditable] {
+        -webkit-user-select: text !important;
+        user-select: text !important;
+    }
+`;
+
+// Blokir context menu (long press mobile)
+document.addEventListener("contextmenu", e => {
+    e.preventDefault();
+    lock("right_click");
+});
+
+// Blokir copy semua cara
+document.addEventListener("copy",       e => { e.preventDefault(); lock("copy_action"); });
+document.addEventListener("cut",        e => { e.preventDefault(); lock("copy_action"); });
+document.addEventListener("selectstart",e => {
+    // Izinkan select di dalam input/textarea
+    if (!["INPUT","TEXTAREA"].includes(e.target.tagName)) e.preventDefault();
+});
+
+// Blokir share mobile (Web Share API abuse)
+document.addEventListener("touchstart", e => {
+    if (e.touches.length > 2) { e.preventDefault(); lock("suspicious_pattern"); }
+}, { passive: false });
 
 /* ================================================
    LAPOR KE SERVER LOKAL (gagal = diam, kunci tetap jalan)
+   text/plain agar tidak memicu preflight CORS.
+   Server menjaga hitungan pelanggaran tidak pernah turun.
 ================================================ */
 function report(event) {
     try {
         fetch(MONITOR, {
             method: "POST", keepalive: true,
-            headers: { "Content-Type": "text/plain" },   // tanpa preflight CORS
+            headers: { "Content-Type": "text/plain" },
             body: JSON.stringify({ uid, nama, username: uname, kelas, exam: examTitle.substring(0, 40),
                                    violation: vio, unlocks: ulocks, event })
         }).catch(() => {});
     } catch (_) {}
 }
-
-const overlay = document.getElementById("cbtOverlay");
-const inp     = document.getElementById("cbtInput");
-const btn     = document.getElementById("cbtBtn");
+setInterval(() => report("heartbeat"), 15000);
 
 /* ================================================
    UI UPDATE
@@ -158,15 +190,11 @@ const btn     = document.getElementById("cbtBtn");
 function ui() {
     document.getElementById("cV").innerText  = vio;
     document.getElementById("cUl").innerText = ulocks;
-
     let cls = "bs", lbl = "AMAN";
     if      (vio >= MAX_VIO) { cls = "bl"; lbl = "DIKUNCI"; }
     else if (vio >= 26)      { cls = "bc"; lbl = "KRITIS";  }
     else if (vio >= 11)      { cls = "bw"; lbl = "WASPADA"; }
-
-    document.getElementById("cSt").innerHTML =
-        `<span class="cbadge ${cls}">${lbl}</span>`;
-
+    document.getElementById("cSt").innerHTML = `<span class="cbadge ${cls}">${lbl}</span>`;
     if (vio >= MAX_VIO) {
         inp.disabled  = true;
         btn.disabled  = true;
@@ -178,17 +206,12 @@ function ui() {
 
 /* ================================================
    TOTP ENGINE
-   Identik dengan pengawas/js/unlock.js
 ================================================ */
 function totpHash(s) {
     let h = 0;
-    for (let i = 0; i < s.length; i++) {
-        h = (h << 5) - h + s.charCodeAt(i);
-        h |= 0;
-    }
+    for (let i = 0; i < s.length; i++) { h = (h << 5) - h + s.charCodeAt(i); h |= 0; }
     return Math.abs(h);
 }
-
 function getOTP() {
     const t = Math.floor(Date.now() / 1000 / INTERVAL);
     return (totpHash(t + SECRET) % 1000000).toString().padStart(6, "0");
@@ -201,12 +224,11 @@ function getMasterOTP() {
 }
 
 /* ================================================
-   TOAST NOTIFICATION
+   TOAST
 ================================================ */
 function toast(msg, color = "#ff3b30") {
     const el = document.getElementById("cbtToast");
-    el.innerText         = msg;
-    el.style.background  = color + "cc";
+    el.innerText = msg; el.style.background = color + "cc";
     el.classList.add("show");
     clearTimeout(el._t);
     el._t = setTimeout(() => el.classList.remove("show"), 2500);
@@ -229,18 +251,15 @@ function lock(reason) {
     overlay.style.display = "flex";
     ui();
     toast("⚠ " + reason.replace(/_/g, " ").toUpperCase());
+    report(reason);
 
     if (navigator.vibrate) navigator.vibrate([200, 80, 200]);
-
     try {
         document.body.animate(
-            [{ filter: "brightness(1)" }, { filter: "brightness(1.5)" }, { filter: "brightness(1)" }],
+            [{ filter:"brightness(1)" },{ filter:"brightness(1.5)" },{ filter:"brightness(1)" }],
             { duration: 350 }
         );
     } catch(_) {}
-
-    report(reason);
-    console.warn("[CBT LOCK]", reason, "| violation:", vio);
 }
 
 /* ================================================
@@ -260,94 +279,122 @@ btn.onclick = function () {
     }
 
     if (input === (needMaster ? getMasterOTP() : getOTP())) {
-        // OTP benar
         overlay.style.display = "none";
         sessionStorage.removeItem("cbt_lk");
-        locked    = false;
-        inp.value = "";
-        ulocks++;
+        locked = false; inp.value = ""; ulocks++;
         sessionStorage.setItem("cbt_ul", ulocks);
-        ui();
-        report("unlock");
-        toast("✅ Akses dibuka kembali", "#34c759");
+        ui(); report("unlock"); toast("✅ Akses dibuka kembali", "#34c759");
     } else {
-        // OTP salah
+        // Kode salah: dihitung langsung (lock() tidak bisa dipakai karena sudah terkunci)
         toast("❌ Kode salah — pelanggaran dicatat");
         try {
             inp.animate(
-                [{ transform: "translateX(-6px)" }, { transform: "translateX(6px)" },
-                 { transform: "translateX(-6px)" }, { transform: "translateX(0)" }],
+                [{transform:"translateX(-6px)"},{transform:"translateX(6px)"},
+                 {transform:"translateX(-6px)"},{transform:"translateX(0)"}],
                 { duration: 280 }
             );
         } catch(_) {}
-        lock("wrong_otp");
+        inp.value = "";
+        const now = Date.now();
+        if (now - lastEvt >= SPAM_MS && vio < MAX_VIO) {
+            lastEvt = now;
+            vio++;
+            sessionStorage.setItem("cbt_v", vio);
+            ui(); report("wrong_otp");
+        }
     }
 };
-
-/* ================================================
-   ENTER KEY di input
-================================================ */
 inp.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
 
 /* ================================================
-   RESTORE STATE saat Moodle autosave reload
+   RESTORE STATE
 ================================================ */
 ui();
 if (locked) setTimeout(() => overlay.style.display = "flex", 350);
 
 /* ================================================
-   DETEKSI PELANGGARAN
+   DETEKSI PELANGGARAN — DESKTOP
 ================================================ */
-
-// Tab switch
-document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-        setTimeout(() => { if (document.hidden) lock("tab_switch"); }, 800);
-    }
-});
-
-// Window blur (ALT+TAB tanpa buka tab baru)
-window.addEventListener("blur", () => {
-    setTimeout(() => { if (!document.hidden) lock("window_blur"); }, 800);
-});
-
-// Keyboard shortcut berbahaya
 document.addEventListener("keydown", e => {
     const blk =
         e.key === "F12" ||
-        (e.ctrlKey && ["u","s","p","i","a"].includes(e.key.toLowerCase())) ||
+        (e.ctrlKey && ["u","s","p","i","a","c","x"].includes(e.key.toLowerCase())) ||
         (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(e.key.toLowerCase()));
     if (blk) { e.preventDefault(); lock("keyboard_shortcut"); }
 });
 
-// Copy & klik kanan
-document.addEventListener("contextmenu", e => e.preventDefault());
-document.addEventListener("copy",        e => e.preventDefault());
+/* ================================================
+   DETEKSI PELANGGARAN — MOBILE & DESKTOP
+================================================ */
+
+// Minimize / ganti app / swipe notif bar (turunkan notif = blur + visibility hidden)
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        setTimeout(() => { if (document.hidden) lock("tab_switch"); }, 500);
+    }
+});
+
+// ALT+TAB desktop / swipe app switcher mobile
+window.addEventListener("blur", () => {
+    setTimeout(() => { if (!document.hidden) lock("window_blur"); }, 500);
+});
+
+// Split screen & dual window — deteksi via resize
+// Saat split screen: lebar window mengecil drastis (< 60% lebar awal)
+window.addEventListener("resize", () => {
+    const newW = window.innerWidth;
+    const newH = window.innerHeight;
+
+    const shrinkW = newW < lastW * 0.75; // lebar berkurang > 25%
+    const shrinkH = newH < lastH * 0.60; // tinggi berkurang > 40% (notif bar besar)
+
+    if (shrinkW) {
+        lock("split_screen");
+    } else if (shrinkH) {
+        lock("suspicious_pattern");
+    }
+
+    // Update referensi ukuran saat tidak locked
+    if (!locked) { lastW = newW; lastH = newH; }
+});
+
+// Screenshot — visibilitychange singkat di beberapa Android
+// Tidak 100% reliable tapi tetap dicatat
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) return; // sudah dihandle di atas
+    // Jika kembali visible sangat cepat (< 300ms) = kemungkinan screenshot
+    // Tidak dikunci karena false positive tinggi, hanya log
+    console.warn("[CBT] Possible screenshot detected");
+});
 
 // Fullscreen exit
 document.addEventListener("fullscreenchange", () => {
     if (!document.fullscreenElement) lock("fullscreen_exit");
 });
 
+// Paksa fullscreen saat pertama load (memerlukan interaksi user di mobile)
+document.addEventListener("click", function tryFS() {
+    const el = document.documentElement;
+    if (!document.fullscreenElement) {
+        (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen
+            || (() => {})).call(el);
+    }
+    document.removeEventListener("click", tryFS);
+}, { once: true });
+
 /* ================================================
    KAMERA FLOATING
 ================================================ */
-let camStream = null;
-let useFront  = true;
+let camStream = null, useFront = true;
+const vid   = document.getElementById("cbtVideo");
+const camSt = document.getElementById("cbtCamSt");
 
-const vid    = document.getElementById("cbtVideo");
-const camSt  = document.getElementById("cbtCamSt");
-
-function setCamSt(t, c = "#fff") { camSt.innerHTML = t; camSt.style.color = c; }
-
-async function stopCam() {
-    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-}
+function setCamSt(t, c="#fff") { camSt.innerHTML = t; camSt.style.color = c; }
 
 async function startCam() {
     setCamSt("🟡 Meminta izin...");
     try {
-        await stopCam();
+        if (camStream) camStream.getTracks().forEach(t => t.stop());
         try {
             camStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: useFront ? "user" : "environment" }, audio: false
@@ -358,15 +405,13 @@ async function startCam() {
         vid.srcObject = camStream;
         setCamSt("🟢 Aktif", "#39FF14");
         camStream.getVideoTracks()[0].onended = () => setCamSt("🔴 Terputus", "#ff4444");
-    } catch (e) {
-        const msg = e.name === "NotAllowedError" ? "Izin Ditolak" : "Gagal";
-        setCamSt("⚠ " + msg, "#FFD700");
+    } catch(e) {
+        setCamSt("⚠ " + (e.name === "NotAllowedError" ? "Izin Ditolak" : "Gagal"), "#FFD700");
     }
 }
 
 document.getElementById("cbtBtnCam").onclick = startCam;
-document.getElementById("cbtBtnSw").onclick  = async () => { useFront = !useFront; await startCam(); };
-
+document.getElementById("cbtBtnSw").onclick  = () => { useFront = !useFront; startCam(); };
 if (navigator.mediaDevices?.getUserMedia) startCam();
 else setCamSt("❌ Tidak Didukung", "#ff4444");
 
@@ -375,33 +420,24 @@ else setCamSt("❌ Tidak Didukung", "#ff4444");
 ================================================ */
 const camBox = document.getElementById("cbtCam");
 let dr = false, ox = 0, oy = 0;
-
-function startDrag(e) {
+const startDrag = e => {
     dr = true;
-    const pt = e.touches ? e.touches[0] : e;
+    const pt = e.touches?.[0] || e;
     const r  = camBox.getBoundingClientRect();
-    ox = pt.clientX - r.left;
-    oy = pt.clientY - r.top;
-}
-
-function doDrag(e) {
+    ox = pt.clientX - r.left; oy = pt.clientY - r.top;
+};
+const doDrag = e => {
     if (!dr) return;
-    const pt = e.touches ? e.touches[0] : e;
-    camBox.style.left   = (pt.clientX - ox) + "px";
-    camBox.style.top    = (pt.clientY - oy) + "px";
-    camBox.style.right  = "auto";
-    camBox.style.bottom = "auto";
-}
-
+    const pt = e.touches?.[0] || e;
+    camBox.style.left = (pt.clientX-ox)+"px"; camBox.style.top = (pt.clientY-oy)+"px";
+    camBox.style.right = "auto"; camBox.style.bottom = "auto";
+};
 camBox.addEventListener("mousedown",  startDrag);
 camBox.addEventListener("touchstart", startDrag, { passive: true });
-document.addEventListener("mousemove",  doDrag);
-document.addEventListener("touchmove",  doDrag, { passive: true });
-document.addEventListener("mouseup",    () => dr = false);
-document.addEventListener("touchend",   () => dr = false);
+document.addEventListener("mousemove", doDrag);
+document.addEventListener("touchmove", doDrag, { passive: true });
+document.addEventListener("mouseup",   () => dr = false);
+document.addEventListener("touchend",  () => dr = false);
 
-
-report("heartbeat");
-setInterval(() => report("heartbeat"), 15000);
 })();
 </script>
