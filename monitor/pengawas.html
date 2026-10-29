@@ -23,6 +23,8 @@
 <div class="otp-section"><div class="otp-label">OTP AKTIF</div><div id="otp" class="otp-code">--- ---</div></div>
 <div class="progress-container"><div class="progress-bar" id="bar"></div></div>
 <div class="countdown-label">Sisa waktu: <b id="sec">60</b> detik</div>
+<div id="mbox" class="master-box" style="display:none"><div class="otp-label">MASTER OTP</div><div id="mcode" class="otp-code master">--- ---</div>
+<div class="otp-label" style="font-size:11px">Untuk siswa pelanggaran ≥ 26</div></div>
 <div class="actions"><button class="btn-primary" id="cp">📋 Salin Kode OTP</button></div>
 </div></div>
 
@@ -49,7 +51,9 @@ function render(){const q=$("q").value.toLowerCase();
  const rows=data.filter(s=>s.status!=="safe"&&(s.nama+s.username+s.kelas).toLowerCase().includes(q)).sort((a,b)=>rank[a.status]-rank[b.status]||b.violationCount-a.violationCount);
  $("list").innerHTML=rows.length?rows.map(s=>`<div class="row ${s.online?"":"off"}"><div><b>${esc(s.nama)}</b><br><small>${esc(s.username)} · ${s.violationCount}/30 · ${s.online?"online":"offline"}</small></div><span class="bd ${s.status}">${s.status.toUpperCase()}</span></div>`).join(""):"<small>Tidak ada siswa bermasalah.</small>"}
 $("q").oninput=render;
-function enter(){ok=true;$("gate").style.display="none";tick();
+async function pollMaster(){try{const m=await(await fetch("/api/master?token="+token)).json();
+ if(m.status==="active"&&m.code){$("mcode").textContent=m.code.slice(0,3)+" "+m.code.slice(3);$("mbox").style.display="block"}else $("mbox").style.display="none"}catch(_){}}
+function enter(){ok=true;pollMaster();setInterval(pollMaster,4000);$("gate").style.display="none";tick();
  const es=new EventSource("/events?token="+token);es.onmessage=e=>{data=JSON.parse(e.data);render()};
  es.onerror=()=>{es.close();ok=false;sessionStorage.removeItem("tk");$("gate").style.display="flex";$("msg").textContent="Sesi berakhir / server terputus. Masukkan PIN lagi."}}
 if(token)fetch("/api/students?token="+token).then(r=>r.ok?enter():sessionStorage.removeItem("tk")).catch(()=>{});

@@ -125,7 +125,9 @@ function generateMasterOTP() {
     OTP_STATE.unlockOTP = code;
     OTP_STATS.master++;
 
-    if (window.db && typeof window.db.ref === "function") {
+    if (window.CBT_LOCAL) {
+        fetch("/api/master", { method: "POST", body: JSON.stringify({ status: "active", code }) }).catch(() => {});
+    } else if (window.db && typeof window.db.ref === "function") {
         window.db.ref("system/masterOtp").set({
             code:    code,
             created: Date.now(),
@@ -169,7 +171,9 @@ function generateSelectedStudentOTP() {
    REVOKE MASTER OTP
 ========================= */
 function revokeMasterOTP() {
-    if (window.db && typeof window.db.ref === "function") {
+    if (window.CBT_LOCAL) {
+        fetch("/api/master", { method: "POST", body: JSON.stringify({ status: "revoked" }) }).catch(() => {});
+    } else if (window.db && typeof window.db.ref === "function") {
         window.db.ref("system/masterOtp").update({ status: "revoked" });
     }
     OTP_STATE.unlockOTP = null;
@@ -239,6 +243,13 @@ window.getOTPInfo                 = getOTPInfo;
    hanya menyimpan hash (system/pengawasPin).
 ========================= */
 async function generatePengawasPIN() {
+    if (window.CBT_LOCAL) {
+        const r = await (await fetch("/api/pin", { method: "POST" })).json();
+        if (!r.ok) { alert("Gagal membuat PIN"); return; }
+        try { navigator.clipboard.writeText(r.pin); } catch (_) {}
+        alert("PIN Pengawas " + r.date + ": " + r.pin + "\n\n" + (r.firebase ? "Juga terkirim ke Firebase (pengawas via data seluler bisa memakai PIN ini)." : "Firebase tidak terjangkau — PIN hanya berlaku untuk halaman pengawas lokal.") + "\nPIN lama otomatis batal.");
+        return r.pin;
+    }
     if (!window.db) { alert("Firebase belum terhubung."); return; }
     const pin  = String(Math.floor(100000 + Math.random() * 900000));
     const date = new Date().toLocaleDateString("sv-SE");

@@ -194,6 +194,12 @@ function getOTP() {
     return (totpHash(t + SECRET) % 1000000).toString().padStart(6, "0");
 }
 
+// Master OTP — identik dengan panitia/js/otp.js (generateMasterOTP)
+function getMasterOTP() {
+    const t = Math.floor(Date.now() / 1000 / INTERVAL);
+    return (totpHash(t + SECRET + "_MASTER") % 1000000).toString().padStart(6, "0");
+}
+
 /* ================================================
    TOAST NOTIFICATION
 ================================================ */
@@ -244,7 +250,16 @@ btn.onclick = function () {
     const input = inp.value.trim().replace(/\s/g, "");
     if (!input) return;
 
-    if (input === getOTP()) {
+    // Pelanggaran >= 26: hanya Master OTP (dari panitia) yang diterima.
+    // OTP biasa ditolak tanpa menambah pelanggaran.
+    const needMaster = vio >= 26;
+    if (needMaster && input === getOTP()) {
+        toast("🔒 Pelanggaran ≥ 26 — minta MASTER OTP ke panitia");
+        inp.value = "";
+        return;
+    }
+
+    if (input === (needMaster ? getMasterOTP() : getOTP())) {
         // OTP benar
         overlay.style.display = "none";
         sessionStorage.removeItem("cbt_lk");

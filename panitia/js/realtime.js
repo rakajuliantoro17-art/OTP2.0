@@ -45,28 +45,60 @@ function getDB() {
 /* =========================
    STUDENTS LISTENER
 ========================= */
+/* Normalisasi: data API/Firebase memakai nama/violationCount/status(warning|critical|locked),
+   sedangkan UI panitia memakai name/violation/status(safe|warn|danger). */
+function normalizeStudent(id, s) {
+    const violation = Number(s.violation ?? s.violationCount ?? 0);
+    const map = { warning: "warn", critical: "danger", locked: "danger", submitted: "danger" };
+    return {
+        ...s,
+        id,
+        name:      s.name || s.nama || s.username || id,
+        violation,
+        status:    map[s.status] || s.status || (violation >= 26 ? "danger" : violation >= 11 ? "warn" : "safe"),
+        progress:  s.progress || "0/40"
+    };
+}
+
+function applyStudents(data, _try = 0) {
+    CBT_STATE.students = data;
+
+    // Komponen HTML dimuat async: tunggu sampai tabel ada agar data pertama tidak hilang
+    if (!document.getElementById("studentsTableBody") && _try < 40) {
+        setTimeout(() => applyStudents(CBT_STATE.students, _try + 1), 250);
+        return;
+    }
+
+    const studentsArray = Object.keys(data).map(key => normalizeStudent(key, data[key]));
+
+    EventBus.emit("students:update", studentsArray);
+
+    if (typeof renderStudentsTable  === "function") renderStudentsTable(studentsArray);
+    if (typeof updateDashboardStats === "function") updateDashboardStats(studentsArray);
+
+    console.log("[REALTIME] Students Sync:", studentsArray.length);
+}
+
 function listenStudents() {
+    // Mode lokal: halaman dibuka dari server monitor di laptop panitia
+    if (window.CBT_LOCAL) {
+        const es = new EventSource("/events");
+        es.onmessage = e => {
+            const obj = {};
+            JSON.parse(e.data).forEach(st => { obj[st.uid] = st; });
+            applyStudents(obj);
+        };
+        es.onerror = () => console.warn("[REALTIME] Server lokal terputus, mencoba lagi...");
+        console.log("[REALTIME] Mode LOKAL (server monitor)");
+        return;
+    }
+
     if (!getDB()) {
         console.warn("[REALTIME] Offline Mode — Firebase tidak tersedia");
         return;
     }
 
-    getDB().ref("students").on("value", snap => {
-        const data = snap.val() || {};
-        CBT_STATE.students = data;
-
-        const studentsArray = Object.keys(data).map(key => ({
-            id: key,
-            ...data[key]
-        }));
-
-        EventBus.emit("students:update", studentsArray);
-
-        if (typeof renderStudentsTable  === "function") renderStudentsTable(studentsArray);
-        if (typeof updateDashboardStats === "function") updateDashboardStats(studentsArray);
-
-        console.log("[REALTIME] Students Sync:", studentsArray.length);
-    });
+    getDB().ref("students").on("value", snap => applyStudents(snap.val() || {}));
 }
 
 /* =========================
