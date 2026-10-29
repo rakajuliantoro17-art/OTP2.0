@@ -1,0 +1,58 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pengawas — SMANSASOO CBT</title><link rel="icon" href="/assets/img/favicon.ico"><link rel="stylesheet" href="/assets/simple.css">
+<style>
+.pin-gate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(240,243,250,.95)}
+.pin-box{width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:28px 22px;text-align:center}
+.pin-box input{width:100%;font-size:28px;letter-spacing:10px;text-align:center;padding:12px;border-radius:14px;border:1px solid rgba(0,0,0,.15)}
+.pin-msg{min-height:20px;font-size:13px;color:#d70015}
+.stu{margin:12px;padding:12px;max-height:none;position:static;width:auto}
+.stu input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(0,0,0,.15);font-size:16px;margin:8px 0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.07)}
+.row small{opacity:.6}.bd{padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;color:#000}
+.warning{background:#ffb020}.critical{background:#ff5a4f}.locked{background:#b04dff;color:#fff}.safe{background:#34c759}
+.off{opacity:.45}
+</style></head><body>
+<div id="gate" class="pin-gate"><div class="pin-box glass"><img class="logo" src="/assets/img/logo.png" alt=""><div class="title">PIN Pengawas</div>
+<small class="subtitle">Minta PIN hari ini ke panitia</small>
+<input id="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••••">
+<button class="btn-primary" id="go">Masuk</button><div id="msg" class="pin-msg"></div></div></div>
+
+<div class="container"><div class="otp-panel glass">
+<div class="panel-header"><img class="logo" src="/assets/img/logo.png" alt=""><div><div class="title">SMANSASOO CBT LOCK</div><small class="subtitle">PENGAWAS · MODE LOKAL</small></div></div>
+<hr class="divider">
+<div class="otp-section"><div class="otp-label">OTP AKTIF</div><div id="otp" class="otp-code">--- ---</div></div>
+<div class="progress-container"><div class="progress-bar" id="bar"></div></div>
+<div class="countdown-label">Sisa waktu: <b id="sec">60</b> detik</div>
+<div class="actions"><button class="btn-primary" id="cp">📋 Salin Kode OTP</button></div>
+</div></div>
+
+<div class="alert glass stu"><b>⚠ SISWA BERMASALAH</b><input id="q" placeholder="Cari nama / username / kelas">
+<div id="list"><small>Memuat…</small></div></div>
+
+<script>
+const SECRET="SOOKO_HEBAT_2026",INTERVAL=60; let token=sessionStorage.getItem("tk")||"",ok=false,cur="",data=[];
+const $=id=>document.getElementById(id);
+function hash(s){let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0}return Math.abs(h)}
+function otp(){const t=Math.floor(Date.now()/1000/INTERVAL);const r=(hash(t+SECRET)%1000000).toString().padStart(6,"0");return r.slice(0,3)+" "+r.slice(3)}
+function tick(){const n=Date.now()/1000,rem=INTERVAL-(n%INTERVAL);$("bar").style.width=(rem/INTERVAL*100)+"%";$("sec").textContent=Math.ceil(rem);
+ if(ok){cur=otp();$("otp").textContent=cur}}
+setInterval(tick,1000);tick();
+async function submit(){const pin=$("pin").value.trim();if(!pin)return;$("msg").textContent="Memeriksa…";
+ try{const r=await(await fetch("/api/pin/verify",{method:"POST",body:JSON.stringify({pin})})).json();
+  if(r.ok){token=r.token;sessionStorage.setItem("tk",token);enter()}else $("msg").textContent=r.msg||"PIN salah."}
+ catch(e){$("msg").textContent="Tidak bisa menghubungi server lokal."}}
+$("go").onclick=submit;$("pin").onkeydown=e=>{if(e.key==="Enter")submit()};
+$("cp").onclick=()=>{if(!ok)return;navigator.clipboard?.writeText(cur.replace(/\s/g,""));$("cp").textContent="✅ Tersalin";setTimeout(()=>$("cp").textContent="📋 Salin Kode OTP",1500)};
+const esc=x=>String(x??"-").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const rank={locked:0,critical:1,warning:2};
+function render(){const q=$("q").value.toLowerCase();
+ const rows=data.filter(s=>s.status!=="safe"&&(s.nama+s.username+s.kelas).toLowerCase().includes(q)).sort((a,b)=>rank[a.status]-rank[b.status]||b.violationCount-a.violationCount);
+ $("list").innerHTML=rows.length?rows.map(s=>`<div class="row ${s.online?"":"off"}"><div><b>${esc(s.nama)}</b><br><small>${esc(s.username)} · ${s.violationCount}/30 · ${s.online?"online":"offline"}</small></div><span class="bd ${s.status}">${s.status.toUpperCase()}</span></div>`).join(""):"<small>Tidak ada siswa bermasalah.</small>"}
+$("q").oninput=render;
+function enter(){ok=true;$("gate").style.display="none";tick();
+ const es=new EventSource("/events?token="+token);es.onmessage=e=>{data=JSON.parse(e.data);render()};
+ es.onerror=()=>{es.close();ok=false;sessionStorage.removeItem("tk");$("gate").style.display="flex";$("msg").textContent="Sesi berakhir / server terputus. Masukkan PIN lagi."}}
+if(token)fetch("/api/students?token="+token).then(r=>r.ok?enter():sessionStorage.removeItem("tk")).catch(()=>{});
+let wl;async function ka(){try{if("wakeLock"in navigator)wl=await navigator.wakeLock.request("screen")}catch(_){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")ka()});ka();
+</script></body></html>

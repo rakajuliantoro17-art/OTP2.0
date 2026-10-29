@@ -14,7 +14,7 @@ th{color:var(--mut);font-weight:500;position:sticky;top:0;background:var(--bg)}
 .wrap{overflow:auto;max-height:calc(100vh - 70px)}
 </style></head><body>
 <header><h1>CBT Monitor · SMAN 1 Sooko</h1>
-<span class="pill" id="s">memuat…</span><input id="q" placeholder="Cari nama / username / kelas"></header>
+<span class="pill" id="s">memuat…</span><button id="pinb" style="padding:8px 14px;border-radius:8px;border:0;background:#0a84ff;color:#fff;font-weight:600;cursor:pointer">🔐 PIN Pengawas</button><input id="q" placeholder="Cari nama / username / kelas"></header>
 <div class="wrap"><table><thead><tr><th>Siswa</th><th>Username</th><th>Ujian</th><th>Pelanggaran</th><th>Unlock</th><th>Status</th><th>Terakhir</th></tr></thead><tbody id="t"></tbody></table></div>
 <script>
 let data=[];const $=id=>document.getElementById(id);
@@ -27,6 +27,8 @@ $("s").textContent=`${data.filter(s=>s.online).length} online · ${data.length} 
 const esc=x=>String(x??"-").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const ago=t=>{const d=Math.floor((Date.now()-t)/1000);return d<60?d+" dtk lalu":Math.floor(d/60)+" mnt lalu"};
 $("q").oninput=render;
+$("pinb").onclick=async()=>{const r=await(await fetch("/api/pin",{method:"POST"})).json();
+ if(r.ok)alert("PIN Pengawas "+r.date+": "+r.pin+"\n\n"+(r.firebase?"Juga terkirim ke Firebase (pengawas via data seluler bisa pakai PIN ini).":"Firebase tidak terjangkau (offline). PIN ini hanya berlaku untuk halaman pengawas lokal /pengawas.")+"\nPIN lama otomatis batal.");else alert("Gagal membuat PIN");};
 const es=new EventSource("/events");es.onmessage=e=>{data=JSON.parse(e.data);render()};
 es.onerror=()=>$("s").textContent="terputus dari server…";
 </script></body></html>
