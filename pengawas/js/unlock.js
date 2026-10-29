@@ -10,6 +10,7 @@ const SECRET = "SOOKO_HEBAT_2026";
 const OTP_INTERVAL = 60; // Siklus 60 Detik
 
 let CURRENT_OTP = null;
+window.PENGAWAS_OK = false;
 let OTP_HISTORY = [];
 
 /* =========================
@@ -67,6 +68,7 @@ function syncOTP() {
 function renderOTP(otp) {
     const el = document.getElementById("otpCode");
     if (!el) return;
+    if (!window.PENGAWAS_OK && otp !== "--- ---") return;   // belum lolos PIN
 
     el.innerText = otp;
 
@@ -83,7 +85,7 @@ function renderOTP(otp) {
    COPY OTP (UNTUK PENGAWAS)
 ========================= */
 function copyOTP() {
-    if (!CURRENT_OTP) return;
+    if (!CURRENT_OTP || !window.PENGAWAS_OK) return;
 
     // Menghapus spasi sebelum di-copy ke clipboard jika formatnya "123 456"
     const cleanOTP = CURRENT_OTP.replace(/\s/g, '');
@@ -208,3 +210,56 @@ window.CBT_UNLOCK = {
     resetOTP: resetOTP,
     copyOTP: copyOTP
 };
+
+
+/* =========================
+   GERBANG PIN HARIAN
+   Firebase: system/pengawasPin = { hash, date }
+   Catatan: ini pembatas akses, bukan enkripsi — secret TOTP
+   tetap ada di file ini.
+========================= */
+const PIN_SALT = "SMANSASOO_PENGAWAS_";
+const todayStr = () => new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD lokal
+async function sha256(t) {
+    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+    return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, "0")).join("");
+}
+function pinMsg(t) { const e = document.getElementById("pinMsg"); if (e) e.textContent = t; }
+function openGate() {
+    window.PENGAWAS_OK = true;
+    document.getElementById("pinGate").style.display = "none";
+    CURRENT_OTP = null; syncOTP();
+}
+async function submitPIN() {
+    const lockUntil = Number(localStorage.getItem("pin_lock") || 0);
+    if (Date.now() < lockUntil) return pinMsg("Terlalu banyak percobaan. Tunggu " + Math.ceil((lockUntil - Date.now())/1000) + " detik.");
+    const pin = document.getElementById("pinInput").value.trim();
+    if (!pin) return;
+    if (!window.db) return pinMsg("Tidak terhubung ke server. Periksa internet HP.");
+    pinMsg("Memeriksa…");
+    try {
+        const data = (await window.db.ref("system/pengawasPin").once("value")).val();
+        if (!data) return pinMsg("PIN belum dibuat panitia.");
+        if (data.date !== todayStr()) return pinMsg("PIN kedaluwarsa. Minta PIN baru ke panitia.");
+        if (await sha256(PIN_SALT + pin + data.date) === data.hash) {
+            localStorage.removeItem("pin_fail");
+            sessionStorage.setItem("pin_ok", data.hash);
+            return openGate();
+        }
+        const f = Number(localStorage.getItem("pin_fail") || 0) + 1;
+        localStorage.setItem("pin_fail", f);
+        if (f >= 5) { localStorage.setItem("pin_lock", Date.now() + 60000); localStorage.setItem("pin_fail", 0); pinMsg("5x salah. Dikunci 60 detik."); }
+        else pinMsg("PIN salah (" + f + "/5).");
+    } catch (e) { pinMsg("Gagal memeriksa PIN: " + e.message); }
+}
+document.addEventListener("DOMContentLoaded", () => {
+    const inp = document.getElementById("pinInput");
+    if (inp) inp.addEventListener("keydown", e => { if (e.key === "Enter") submitPIN(); });
+    // sesi tab yang sama tidak perlu PIN ulang selama PIN masih berlaku
+    const saved = sessionStorage.getItem("pin_ok");
+    if (saved && window.db) {
+        window.db.ref("system/pengawasPin").once("value").then(s => {
+            const d = s.val(); if (d && d.date === todayStr() && d.hash === saved) openGate();
+        }).catch(() => {});
+    }
+});

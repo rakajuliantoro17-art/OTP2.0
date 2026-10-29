@@ -231,3 +231,23 @@ window.getSystemOTP               = getSystemOTP;
 window.getUnlockOTP               = getUnlockOTP;
 window.getOTPCountdown            = getOTPCountdown;
 window.getOTPInfo                 = getOTPInfo;
+
+
+/* =========================
+   PIN PENGAWAS HARIAN
+   Plain PIN hanya ditampilkan ke panitia; Firebase
+   hanya menyimpan hash (system/pengawasPin).
+========================= */
+async function generatePengawasPIN() {
+    if (!window.db) { alert("Firebase belum terhubung."); return; }
+    const pin  = String(Math.floor(100000 + Math.random() * 900000));
+    const date = new Date().toLocaleDateString("sv-SE");
+    const buf  = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("SMANSASOO_PENGAWAS_" + pin + date));
+    const hash = Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2, "0")).join("");
+    await window.db.ref("system/pengawasPin").set({ hash, date, created: Date.now() });
+    try { navigator.clipboard.writeText(pin); } catch (_) {}
+    if (typeof addAlert === "function") addAlert("PIN Pengawas " + date + ": " + pin, "info");
+    alert("PIN Pengawas hari ini: " + pin + "\n\nBerlaku sampai pergantian hari. Membuat PIN baru membatalkan PIN lama.");
+    return pin;
+}
+window.generatePengawasPIN = generatePengawasPIN;

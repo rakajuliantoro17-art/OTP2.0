@@ -13,6 +13,19 @@
 </head>
 <body>
 
+<!-- GERBANG PIN PENGAWAS -->
+<div id="pinGate" class="pin-gate">
+    <div class="pin-box glass">
+        <img class="logo" src="/assets/img/logo.png" alt="Logo">
+        <div class="title">PIN Pengawas</div>
+        <small class="subtitle">Minta PIN hari ini ke panitia</small>
+        <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••••">
+        <button class="btn-primary" id="pinBtn" onclick="submitPIN()">Masuk</button>
+        <div id="pinMsg" class="pin-msg"></div>
+    </div>
+</div>
+<div id="clockWarn" class="clock-warn" style="display:none"></div>
+
 <div class="container">
     <div class="otp-panel glass">
 
@@ -65,7 +78,7 @@
             <button class="btn-secondary" onclick="forceGenerateOTP()">
                 🔄 Sinkronisasi Waktu
             </button>
-            <button class="btn-danger" onclick="resetOTP()">
+            <button class="btn-danger" onclick="if(confirm('Bekukan sesi OTP? Pengawas tidak akan melihat kode sampai dimuat ulang.')) resetOTP()">
                 🔒 Bekukan Sesi (Freeze)
             </button>
         </div>
@@ -84,7 +97,7 @@
 const firebaseConfig = {
     apiKey:            "AIzaSyDQBar_tJy19A2ONu8DkxbZzh0Oa11ygfE",
     authDomain:        "otp-2-70d6e.firebaseapp.com",
-    databaseURL: "https://otp-2-70d6e-default-rtdb.firebaseio.com"
+    databaseURL:       "https://otp-2-70d6e-default-rtdb.firebaseio.com",
     projectId:         "otp-2-70d6e",
     storageBucket:     "otp-2-70d6e.firebasestorage.app",
     messagingSenderId: "430860703289",
@@ -154,5 +167,22 @@ requestAnimationFrame(animateProgressBar);
 <!-- OTP ENGINE -->
 <script src="./js/unlock.js"></script>
 
+<script>
+/* Peringatan selisih jam HP vs server (TOTP bergantung pada jam perangkat) */
+try {
+    firebase.database().ref(".info/serverTimeOffset").on("value", snap => {
+        const off = snap.val() || 0, w = document.getElementById("clockWarn");
+        if (Math.abs(off) > 2000) {
+            w.style.display = "block";
+            w.textContent = "⚠ Jam HP ini selisih " + Math.round(Math.abs(off)/1000) + " detik dari jam server. Aktifkan 'Waktu otomatis' di Pengaturan HP.";
+        } else w.style.display = "none";
+    });
+} catch(_) {}
+/* Layar tidak mati selama halaman terbuka */
+let _wl = null;
+async function keepAwake(){ try { if ("wakeLock" in navigator) _wl = await navigator.wakeLock.request("screen"); } catch(_) {} }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") keepAwake(); });
+keepAwake();
+</script>
 </body>
 </html>
