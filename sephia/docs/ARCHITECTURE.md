@@ -1,8 +1,8 @@
 # SEPHIA Module Architecture
 
-**Status:** modular notification reader and isolated speech-controller foundation in development  
+**Status:** Stage 7 Panitia host bridge integrated on feature branch; Stage 8 static checks and browser-ESM build pipeline added  
 **Scope:** OTP 2.0 Panitia browser only  
-**Runtime activation:** manual only; not connected to the host dashboard
+**Runtime activation:** bridge loads after dashboard components; reader remains OFF until manual activation
 
 ## 1. Design principles
 
@@ -55,7 +55,7 @@ Explicit activation/deactivation and session-local duplicate prevention. Runtime
 
 ### Visualizer and controls — `src/visual/`
 
-`visual-state.js` owns a small, non-persistent state model. `mount-sephia-controls.js` mounts controls only into an explicitly supplied container, uses DOM APIs/text nodes, and never searches the host document. The visualizer can be disabled independently without stopping the reader. Reduced-motion and visible keyboard focus are supported. The host remains responsible for trusted header placement and session-expiry/logout deactivation.
+`visual-state.js` owns a small, non-persistent state model. `mount-sephia-controls.js` mounts controls only into an explicitly supplied container, uses DOM APIs/text nodes, and never searches the host document. The visualizer can be disabled independently without stopping the reader. Reduced-motion and visible keyboard focus are supported. The host supplies the explicit header mount. The Panitia dashboard has no account login; do not invent user-session or logout semantics.
 
 ### Avatar renderer — `src/visual/mount-sephia-avatar.js`\n\nMounts only into an explicitly supplied container. It remains hidden unless the service is active and the visual state is listening or speaking, and is also hidden when the visualizer is disabled. Optional artwork must use a same-origin relative path; absent or failed artwork falls back to a CSS placeholder. The placeholder is not the final approved digital-human asset. Mouth activity requires both the speaking visual state and an injected speech controller reporting `isSpeaking === true`; this is a simple activity cue, not phoneme-aligned lip-sync.\n\n### Audio controller — `src/audio/announcement.js`
 
@@ -83,7 +83,7 @@ The host metadata path is implemented on the isolated `feature/sephia-module` br
 - Duplicate: ignore an event ID already handled in the current active session.
 - Deactivation: disconnect observer and clear in-memory duplicate IDs.
 - Refresh/reopen: inactive; no replay of existing alerts.
-- Panitia session expiry/logout: host must call runtime deactivation; do not infer authentication from URL or DOM visibility.
+- Page exit: lifecycle binding stops the runtime and clears in-memory event IDs. There is no account login or authenticated session expiry hook in this dashboard.
 - Fatal reader failure: stop SEPHIA only; never block host alert rendering.
 
 There is no Panitia account-login or authenticated session hook in the inspected host. SEPHIA therefore does not pretend to bind to a user identity. The page lifecycle helper stops the runtime on page exit; URL secrecy is not authentication. See [Host Integration](./HOST-INTEGRATION.md).
@@ -103,6 +103,7 @@ No errors should be thrown into the OTP event listener or prevent alert renderin
 ## 6. Compatibility and versioning
 
 - Keep the public runtime API small: `activate()`, `deactivate()`, `dispose()`, `isActive`.
+- Stage 8 build validates relative imports, emits browser ES modules to `dist/`, and records SHA-256 hashes in `manifest.json`.
 - Keep the notification contract versioned in documentation before changing attributes or qualification rules.
 - Preserve `src/notification-reader.js` as a compatibility entry point until imports are migrated.
 - Do not couple module version numbers to OTP application version numbers.
