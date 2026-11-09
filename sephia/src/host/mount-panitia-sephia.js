@@ -13,6 +13,7 @@ export function mountPanitiaSephia({
   documentImpl = globalThis.document,
   windowImpl = globalThis.window,
   onError = () => {},
+  onNotification = () => {},
   createRuntime = createSephiaRuntime,
   createState = createVisualState,
   mountControls = mountSephiaControls,
@@ -44,9 +45,10 @@ export function mountPanitiaSephia({
     visualState = createState();
     runtime = createRuntime({
       root: alertRoot,
-      onNotification() {
-        // Notification remains visible in the host dashboard. No student
-        // identity/count is copied to another surface or persisted.
+      onNotification(event) {
+        // Optional integration seam. Production defaults to a no-op; no
+        // notification detail is copied, persisted, or spoken by this bridge.
+        try { onNotification(event); } catch (error) { report(error); }
       },
       onNotificationError: report,
     });
