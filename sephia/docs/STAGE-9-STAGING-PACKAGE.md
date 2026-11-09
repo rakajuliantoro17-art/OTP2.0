@@ -23,6 +23,7 @@ Use Node.js 22 from the `sephia/` directory:
 npm test
 npm run check
 npm run build
+npm run verify:staging
 python -m http.server 4173 --bind 127.0.0.1
 ```
 
