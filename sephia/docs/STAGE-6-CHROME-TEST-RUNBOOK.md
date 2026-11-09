@@ -18,21 +18,29 @@ Stage 6 therefore tests a **document/page lifecycle boundary**, not a login sess
 - Page visibility changes alone do not stop SEPHIA; background-tab behavior must be measured.
 - No user identity, role, or login state is created or inferred.
 
-The fixture contains only synthetic data, local module imports, and a mock speech adapter. It does not call remote APIs, Firebase, OTP actions, or request microphone/camera/location permissions.
+The fixture imports the packaged `dist/` modules and contains only synthetic data plus a mock speech adapter. It does not call remote APIs, Firebase, OTP actions, or request microphone/camera/location permissions.
 
 ## Prepare the fixture on the Panitia PC
 
 1. Obtain branch `feature/sephia-module`; do not use `main` or the production dashboard.
 2. Open a terminal in the repository's `sephia` directory.
-3. Start a loopback-only static server:
+3. Build the browser package first. The fixture imports `dist/`, not source modules:
+
+```bash
+npm test
+npm run check
+npm run build
+```
+
+4. Start a loopback-only static server:
 
 ```bash
 python -m http.server 4173 --bind 127.0.0.1
 ```
 
-4. In Chrome on the same PC, open `http://127.0.0.1:4173/staging/`.
-5. Confirm the title **SEPHIA — Staging Acceptance Fixture** and the synthetic-data warning.
-6. Confirm SEPHIA is OFF. Do not open OTP 2.0 or a production Panitia URL during fixture tests.
+5. In Chrome on the same PC, open `http://127.0.0.1:4173/staging/`.
+6. Confirm the title **SEPHIA — Staging Acceptance Fixture** and the synthetic-data warning.
+7. Confirm SEPHIA is OFF. Do not open OTP 2.0 or a production Panitia URL during fixture tests.
 
 If Python is unavailable, use an approved local static server bound to loopback only. Do not expose the fixture server to the LAN.
 
