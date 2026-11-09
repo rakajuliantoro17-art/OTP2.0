@@ -115,7 +115,7 @@ function listenStudents() {
  */
 function attachSephiaMetadata(eventElement, eventId, alert) {
     try {
-        if (!eventElement || !eventId || alert?.type !== "violation") return;
+        if (!eventElement?.classList?.contains("alert-item") || !eventId || alert?.type !== "violation") return;
 
         const count = alert.violationCount;
         if (!Number.isSafeInteger(count) || count < 27 || count > 30) return;
