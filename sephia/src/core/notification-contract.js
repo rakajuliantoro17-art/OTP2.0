@@ -19,6 +19,7 @@ export const NOTIFICATION_ATTRIBUTES = Object.freeze({
  */
 export function normalizeNotification({ eventId, eventType = null, violationCount, message }) {
   if (typeof eventId !== "string" || !eventId.trim()) return null;
+  if (eventType !== "violation") return null;
   if (typeof violationCount !== "string" && typeof violationCount !== "number") return null;
 
   const rawCount = String(violationCount);
