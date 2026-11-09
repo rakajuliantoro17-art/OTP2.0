@@ -43,10 +43,11 @@ sephia/
 
 - **Core:** pure contract validation and qualification.
 - **Adapter:** passive observation of the exact `#alertList` element.
+- **Host bridge:** OTP host now forwards stable Firebase event IDs and server-originated violation counts into eligible rendered alerts on this feature branch.
 - **Runtime:** explicit activation/deactivation and session lifecycle.
 - **Optional future modules:** TTS, voice input, avatar, and visualizer remain separate and are not implemented.
 
-## Expected host contract (not yet implemented in OTP 2.0)
+## Host contract (implemented on this feature branch only)
 
 A host-rendered `.alert-item` may expose:
 
@@ -73,6 +74,6 @@ npm test
 3. Test the reader against a staging/local Panitia page.
 4. Only then consider audio and visual layers as separately gated modules.
 
-See [Architecture](./docs/ARCHITECTURE.md) and [Maintenance Guide](./docs/MAINTENANCE.md).
+See [Architecture](./docs/ARCHITECTURE.md), [Host Integration](./docs/HOST-INTEGRATION.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
 
 Nothing in this folder self-activates or changes the production application.
