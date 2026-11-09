@@ -4,10 +4,11 @@
 ## Read order for every new session
 
 1. Read this file first: `docs/SEPHIA-CONTINUATION.md`.
-2. Read `docs/SEPHIA-BLUEPRINT.md` for the approved product decisions.
-3. Read `docs/SEPHIA-TECHNICAL-SPEC.md` for the integration boundary and technical requirements.
-4. Inspect the current repository branch and source files before making any claim about implementation status.
-5. Compare the current code against the documents; code may have changed since this snapshot.
+2. Read `docs/SEPHIA-DECISION-REGISTER.md` to recover all approved choices without asking the user again.
+3. Read `docs/SEPHIA-BLUEPRINT.md` for the product scope, architecture, and delivery roadmap.
+4. Read `docs/SEPHIA-TECHNICAL-SPEC.md` for the integration boundary and technical requirements.
+5. Inspect the current repository branch and source files before making any claim about implementation status.
+6. Compare the current code against the documents; code may have changed since this snapshot.
 
 Canonical repository: https://github.com/rakajuliantoro17-art/OTP2.0  
 Canonical documentation branch: `docs/sephia-blueprint`  
