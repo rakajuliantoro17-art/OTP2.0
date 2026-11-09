@@ -69,7 +69,7 @@ Each rendered `.alert-item` may expose:
 
 The message must be visible as text within the item. The host must populate these attributes from the authoritative alert payload. Client-provided or inferred values are not trusted.
 
-Current OTP 2.0 source does not yet satisfy this contract. Until the host-side contract is separately approved and implemented, the module intentionally emits nothing for current alerts.
+The host metadata path is now implemented on the isolated `feature/sephia-module` branch: server-originated alert payloads carry the numeric count, and the Panitia listener adds the Firebase child key to the newly rendered alert. Only counts 27–30 receive SEPHIA attributes. This is not deployed. Runtime activation remains blocked until the Panitia session lifecycle is verified.
 
 ## 4. Lifecycle
 
@@ -82,7 +82,7 @@ Current OTP 2.0 source does not yet satisfy this contract. Until the host-side c
 - Panitia session expiry/logout: host must call runtime deactivation; do not infer authentication from URL or DOM visibility.
 - Fatal reader failure: stop SEPHIA only; never block host alert rendering.
 
-The repository audit did not find a verified Panitia authentication/session lifecycle hook. Session binding is therefore an integration blocker, not something the module should guess.
+The repository audit did not find a verified Panitia authentication/session lifecycle hook. Session binding remains an integration blocker, not something the module should guess. See [Host Integration](./HOST-INTEGRATION.md) for the current data path and verification checklist.
 
 ## 5. Error isolation
 
