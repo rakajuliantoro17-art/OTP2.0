@@ -28,7 +28,9 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 sephia/
 ├── docs/
 │   ├── ARCHITECTURE.md
-│   └── MAINTENANCE.md
+│   ├── HOST-INTEGRATION.md
+│   ├── MAINTENANCE.md
+│   └── STAGE-2-CLOSEOUT.md
 ├── src/
 │   ├── core/
 │   │   └── notification-contract.js
@@ -78,6 +80,6 @@ A GitHub Actions workflow at `.github/workflows/sephia-tests.yml` runs this suit
 3. Connect runtime only after a trusted session provider and expiry/logout hook are verified.
 4. Only then consider audio and visual layers as separately gated modules.
 
-See [Architecture](./docs/ARCHITECTURE.md), [Host Integration](./docs/HOST-INTEGRATION.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
+See [Architecture](./docs/ARCHITECTURE.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 2 Closeout](./docs/STAGE-2-CLOSEOUT.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
 
 Nothing in this folder self-activates or changes the production application.
