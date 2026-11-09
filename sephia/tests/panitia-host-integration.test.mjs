@@ -106,7 +106,7 @@ test("construction failure disposes already-created pieces and reports error", (
 });
 
 
-test("optional host notification callback receives normalized events without becoming required", () => {
+test("optional host notification callback forwards runtime events without becoming required", () => {
   const alertRoot = { id: "alertList" };
   const controlsMount = { id: "sephiaControlMount" };
   const documentImpl = { getElementById(id) { return id === "alertList" ? alertRoot : controlsMount; } };
