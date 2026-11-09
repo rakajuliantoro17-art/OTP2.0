@@ -1,6 +1,6 @@
 # SEPHIA Module Architecture
 
-**Status:** modular foundation in development  
+**Status:** modular notification reader and isolated speech-controller foundation in development  
 **Scope:** OTP 2.0 Panitia browser only  
 **Runtime activation:** manual only; not connected to the host dashboard
 
@@ -36,7 +36,7 @@ Core contract
 SEPHIA runtime lifecycle
   src/runtime/create-sephia-runtime.js
       |
-      +--> future announcement service (optional)
+      +--> audio announcement controller (optional)
       +--> future visualizer (optional)
       +--> future avatar renderer (optional)
 ```
@@ -53,9 +53,9 @@ Narrow integration with the host DOM. An adapter may observe only the explicitly
 
 Explicit activation/deactivation and session-local duplicate prevention. Runtime must not self-start and must clear its in-memory event IDs when stopped.
 
-### Optional presentation modules — future
+### Audio controller — `src/audio/announcement.js`
 
-TTS, voice input, digital-human avatar, and holographic visualizer are not part of the current reader. They must consume normalized events through a narrow interface and must never own notification qualification or OTP state.
+Uses a fixed approved announcement, accepts only normalized violation events, cancels the prior utterance when a newer event arrives, and contains provider failures. A concrete provider is intentionally not bundled until local-only processing is verified on the target browser/OS. Microphone and wake-word remain future gated capabilities.
 
 ## 3. Host notification contract
 
@@ -64,7 +64,7 @@ Each rendered `.alert-item` may expose:
 | Attribute | Requirement | Purpose |
 |---|---|---|
 | `data-sephia-event-id` | Required, stable, non-empty | Duplicate prevention |
-| `data-sephia-event-type` | Optional | Context only |
+| `data-sephia-event-type` | Required, exact `violation` | Event qualification |
 | `data-sephia-violation-count` | Required integer >= 27 | Qualification |
 
 The message must be visible as text within the item. The host must populate these attributes from the authoritative alert payload. Client-provided or inferred values are not trusted.
