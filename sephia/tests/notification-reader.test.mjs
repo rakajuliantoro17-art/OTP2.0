@@ -190,3 +190,33 @@ test("runtime starts only on explicit activation and clears session dedupe on st
   assert.equal(received.length, 2);
   runtime.dispose();
 });
+
+test("runtime contains notification callback failures and routes events to the speech controller", async () => {
+  const root = new FakeElement({ id: "alertList" });
+  const item = alertItem();
+  item.parentElement = root;
+  const delivered = [];
+  const errors = [];
+  const spoken = [];
+  const speechController = {
+    announce: async (event) => { spoken.push(event.eventId); },
+    stop() {},
+    dispose() {},
+  };
+  const runtime = createSephiaRuntime({
+    root,
+    onNotification: () => { throw new Error("observer consumer failed"); },
+    onNotificationError: (error) => errors.push(error.message),
+    speechController,
+    MutationObserverImpl: FakeMutationObserver,
+  });
+
+  runtime.activate();
+  FakeMutationObserver.instances.at(-1).emit([{ addedNodes: [item], target: root }]);
+  await Promise.resolve();
+
+  assert.deepEqual(errors, ["observer consumer failed"]);
+  assert.deepEqual(spoken, ["evt-001"]);
+  runtime.deactivate();
+  runtime.dispose();
+});
