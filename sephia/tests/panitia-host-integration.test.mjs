@@ -104,3 +104,39 @@ test("construction failure disposes already-created pieces and reports error", (
   assert.equal(stateDisposed, true);
   assert.deepEqual(errors, ["runtime construction failed"]);
 });
+
+
+test("optional host notification callback receives normalized events without becoming required", () => {
+  const alertRoot = { id: "alertList" };
+  const controlsMount = { id: "sephiaControlMount" };
+  const documentImpl = { getElementById(id) { return id === "alertList" ? alertRoot : controlsMount; } };
+  const windowImpl = new FakeWindow();
+  let runtimeOptions;
+  const received = [];
+  const runtime = {
+    isActive: false,
+    activate() { this.isActive = true; },
+    deactivate() { this.isActive = false; },
+    dispose() { this.isActive = false; },
+  };
+
+  const bridge = mountPanitiaSephia({
+    documentImpl,
+    windowImpl,
+    onNotification: (event) => received.push(event),
+    createState: () => ({ snapshot: { active: false }, dispose() {} }),
+    createRuntime: (options) => { runtimeOptions = options; return runtime; },
+    mountControls: () => ({ dispose() {} }),
+    bindLifecycle: () => ({ dispose() {} }),
+  });
+
+  const event = Object.freeze({
+    eventId: "synthetic-27",
+    eventType: "violation",
+    violationCount: 27,
+    message: "SIMULASI",
+  });
+  runtimeOptions.onNotification(event);
+  assert.deepEqual(received, [event]);
+  bridge.dispose();
+});
