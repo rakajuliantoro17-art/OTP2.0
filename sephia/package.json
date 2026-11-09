@@ -1,8 +1,11 @@
 {
   "name": "otp2-sephia",
+  "version": "0.8.0-stage.8",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "check": "node ./scripts/check.mjs",
+    "build": "node ./scripts/build.mjs"
   }
 }
