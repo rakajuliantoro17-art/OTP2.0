@@ -65,7 +65,7 @@ const alertItem = (attrs = {}, textContent = "Pemberitahuan OTP") =>
     className: "alert-item",
     attrs: {
       "data-sephia-event-id": "evt-001",
-      "data-sephia-event-type": "critical",
+      "data-sephia-event-type": "violation",
       "data-sephia-violation-count": "27",
       ...attrs,
     },
@@ -74,20 +74,20 @@ const alertItem = (attrs = {}, textContent = "Pemberitahuan OTP") =>
 
 test("contract accepts count >= 27 and rejects malformed or incomplete events", () => {
   assert.equal(normalizeNotification({
-    eventId: "evt", violationCount: "27", message: "Alert",
+    eventId: "evt", eventType: "violation", violationCount: "27", message: "Alert",
   }).violationCount, 27);
 
   for (const value of ["", "26", "31", "27x", "27.5", "-27", " 27", "999999999999999999999"]) {
     assert.equal(normalizeNotification({
-      eventId: "evt", violationCount: value, message: "Alert",
+      eventId: "evt", eventType: "violation", violationCount: value, message: "Alert",
     }), null);
   }
 
   assert.equal(normalizeNotification({
-    eventId: "", violationCount: "30", message: "Alert",
+    eventId: "", eventType: "violation", violationCount: "30", message: "Alert",
   }), null);
   assert.equal(normalizeNotification({
-    eventId: "evt", violationCount: "30", message: " ",
+    eventId: "evt", eventType: "violation", violationCount: "30", message: " ",
   }), null);
 });
 
