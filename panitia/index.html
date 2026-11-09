@@ -29,10 +29,7 @@
 <body>
 
 <div class="container">
-    <!-- SIDEBAR -->
     <div id="sidebarMount"></div>
-
-    <!-- MAIN CONTENT -->
     <main class="main">
         <div id="topbarMount"></div>
         <div id="statsMount"></div>
@@ -42,10 +39,8 @@
     </main>
 </div>
 
-<!-- DRAWER (di luar container agar overlay penuh) -->
 <div id="drawerMount"></div>
 
-<!-- OTP MODAL -->
 <div id="otpModal" class="otp-modal">
     <div class="glass otp-box">
         <h2>TOKEN OTP DIHASILKAN</h2>
@@ -58,9 +53,6 @@
 </div>
 
 <script>
-/* =====================================================
-   COMPONENT LOADER — Sequential
-===================================================== */
 async function loadComponent(mountId, file) {
     const mount = document.getElementById(mountId);
     if (!mount) {
@@ -70,10 +62,8 @@ async function loadComponent(mountId, file) {
     try {
         const res = await fetch(file);
         if (!res.ok) throw new Error(file + " — HTTP " + res.status);
-
         const html = await res.text();
         mount.innerHTML = html;
-
         mount.querySelectorAll("script").forEach(old => {
             const s = document.createElement("script");
             if (old.src) s.src = old.src;
@@ -81,30 +71,39 @@ async function loadComponent(mountId, file) {
             document.body.appendChild(s);
             old.remove();
         });
-
     } catch (err) {
         console.error("[LOADER] Gagal memuat:", file, err);
-        mount.innerHTML = `<div style="padding:16px;color:#ff3b30;">⚠️ Gagal memuat ${file}</div>`;
+        mount.textContent = "Komponen dashboard gagal dimuat.";
     }
 }
 
 async function initializeDashboard() {
     await loadComponent("sidebarMount", "./components/sidebar.html");
-    await loadComponent("topbarMount",  "./components/topbar.html");
-    await loadComponent("statsMount",   "./components/stats.html");
-    await loadComponent("tableMount",   "./components/table.html");
-    await loadComponent("drawerMount",  "./components/drawer.html");
-    await loadComponent("alertMount",   "./components/alert.html");
+    await loadComponent("topbarMount", "./components/topbar.html");
+    await loadComponent("statsMount", "./components/stats.html");
+    await loadComponent("tableMount", "./components/table.html");
+    await loadComponent("drawerMount", "./components/drawer.html");
+    await loadComponent("alertMount", "./components/alert.html");
     console.log("[DASHBOARD] Semua component berhasil dimuat");
+
+    // SEPHIA is optional: its failure must never block the Panitia dashboard.
+    try {
+        const { mountPanitiaSephia } = await import("../sephia/src/host/mount-panitia-sephia.js");
+        window.SEPhIA = mountPanitiaSephia({
+            onError(error) {
+                console.warn("[SEPHIA] Modul tidak aktif; dashboard tetap berjalan.", error);
+            }
+        });
+        console.log("[SEPHIA] Bridge tersedia; status awal OFF.");
+    } catch (error) {
+        console.warn("[SEPHIA] Gagal dimuat; dashboard tetap berjalan.", error);
+    }
 }
 
-/* =====================================================
-   OTP MODAL
-===================================================== */
 function openOTPModal(code) {
-    const val   = document.getElementById("otpValue");
+    const val = document.getElementById("otpValue");
     const modal = document.getElementById("otpModal");
-    if (val)   val.textContent = code;
+    if (val) val.textContent = code;
     if (modal) modal.classList.add("open");
 }
 
@@ -112,12 +111,8 @@ function closeOTPModal() {
     document.getElementById("otpModal")?.classList.remove("open");
 }
 
-window.openOTPModal  = openOTPModal;
+window.openOTPModal = openOTPModal;
 window.closeOTPModal = closeOTPModal;
-
-/* =====================================================
-   BOOT
-===================================================== */
 document.addEventListener("DOMContentLoaded", initializeDashboard);
 </script>
 
