@@ -38,7 +38,7 @@ SEPHIA runtime lifecycle
       |
       +--> audio announcement controller (optional)
       +--> visualizer and controls (optional)
-      +--> future avatar renderer (optional)
+      +--> avatar presentation renderer (optional)
 ```
 
 ### Core — `src/core/`
@@ -57,7 +57,7 @@ Explicit activation/deactivation and session-local duplicate prevention. Runtime
 
 `visual-state.js` owns a small, non-persistent state model. `mount-sephia-controls.js` mounts controls only into an explicitly supplied container, uses DOM APIs/text nodes, and never searches the host document. The visualizer can be disabled independently without stopping the reader. Reduced-motion and visible keyboard focus are supported. The host remains responsible for trusted header placement and session-expiry/logout deactivation.
 
-### Audio controller — `src/audio/announcement.js`
+### Avatar renderer — `src/visual/mount-sephia-avatar.js`\n\nMounts only into an explicitly supplied container. It remains hidden unless the service is active and the visual state is listening or speaking, and is also hidden when the visualizer is disabled. Optional artwork must use a same-origin relative path; absent or failed artwork falls back to a CSS placeholder. The placeholder is not the final approved digital-human asset. Mouth activity requires both the speaking visual state and an injected speech controller reporting `isSpeaking === true`; this is a simple activity cue, not phoneme-aligned lip-sync.\n\n### Audio controller — `src/audio/announcement.js`
 
 Uses a fixed approved announcement, accepts only normalized violation events, cancels the prior utterance when a newer event arrives, and contains provider failures. A concrete provider is intentionally not bundled until local-only processing is verified on the target browser/OS. Microphone and wake-word remain future gated capabilities.
 
@@ -110,4 +110,4 @@ No errors should be thrown into the OTP event listener or prevent alert renderin
 
 ## 7. Security notes
 
-DOM attributes are not inherently secure. Their trustworthiness depends on the host renderer sourcing them from the authoritative server payload and preventing untrusted client input from setting them. Do not add Firebase credentials, TOTP secrets, API keys, or authentication tokens to this module.
+DOM attributes are not inherently secure. Their trustworthiness depends on the host renderer sourcing them from the authoritative server payload and preventing untrusted client input from setting them. Avatar assets must remain same-origin; do not load remote avatar or animation services. Do not add Firebase credentials, TOTP secrets, API keys, or authentication tokens to this module.
