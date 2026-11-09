@@ -30,6 +30,7 @@ The fixture imports the packaged `dist/` modules and contains only synthetic dat
 npm test
 npm run check
 npm run build
+npm run verify:staging
 ```
 
 4. Start a loopback-only static server:
