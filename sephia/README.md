@@ -4,7 +4,7 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 
 ## Status
 
-- Stage 2 notification metadata bridge, Stage 3 speech-controller foundation, Stage 4 visualizer/control modules, Stage 5 avatar-renderer foundation, Stage 6 page-lifecycle helper, and Stage 7 opt-in Panitia host integration are implemented on this feature branch.
+- Stages 2–7 are implemented on this feature branch. Stage 7 mounts the optional SEPHIA control bridge in the Panitia dashboard source. Stage 8 adds static security checks and a dependency-free browser ES module build.
 - The dashboard has no account login; access is through a dedicated URL known to Panitia. This is not authentication and does not establish viewer identity.
 - SEPHIA remains disconnected from the host dashboard and is not active in any deployment.
 - Development branch: `feature/sephia-module`; no merge to `main` or production deployment is authorized.
@@ -46,7 +46,7 @@ sephia/
 
 ## Runtime and host boundary
 
-The feature branch contains the notification metadata bridge and isolated SEPHIA modules. It is not merged into `main`, and the reader is not mounted in the Panitia page. The page lifecycle helper is a small opt-in integration primitive; it must not be wired into production without explicit approval.
+The feature branch contains the notification metadata bridge and isolated SEPHIA modules. The optional bridge is mounted in the Panitia page source on this branch only; it is not deployed. It starts OFF and requires a manual activation click. `npm run build` creates a dependency-free browser ES module package in `dist/`.
 
 The dedicated URL is not a security credential. Review server/network access restrictions separately before production use. Do not add a login system or alter host access controls as part of this Stage 6 scope.
 
@@ -62,4 +62,4 @@ Then follow [the Chrome staging runbook](./docs/STAGE-6-CHROME-TEST-RUNBOOK.md).
 
 See [Access Boundary](./docs/STAGE-6-ACCESS-BOUNDARY.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 6 Acceptance Report](./docs/STAGE-6-ACCEPTANCE-REPORT.md), [Audio Adapter](./docs/AUDIO-ADAPTER.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
 
-Nothing in this folder self-activates or changes the production application.
+The build output is uploaded as a 14-day GitHub Actions artifact. It is not a production deployment. Nothing in this folder self-activates or changes production OTP behavior.
