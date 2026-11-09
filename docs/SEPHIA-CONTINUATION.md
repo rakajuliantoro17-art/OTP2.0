@@ -6,9 +6,9 @@
 1. Read this file first: `docs/SEPHIA-CONTINUATION.md`.
 2. Read `docs/SEPHIA-DECISION-REGISTER.md` to recover all approved choices without asking the user again.
 3. Read `docs/SEPHIA-BLUEPRINT.md` for the product scope, architecture, and delivery roadmap.
-4. Read `docs/SEPHIA-TECHNICAL-SPEC.md` for the integration boundary and technical requirements.
-5. Inspect the current repository branch and source files before making any claim about implementation status.
-6. Compare the current code against the documents; code may have changed since this snapshot.
+5. Read `docs/SEPHIA-TECHNICAL-SPEC.md` for the integration boundary and technical requirements.
+6. Inspect the current repository branch and source files before making any claim about implementation status.
+7. Compare the current code against the documents; code may have changed since this snapshot.
 
 Canonical repository: https://github.com/rakajuliantoro17-art/OTP2.0  
 Canonical documentation branch: `docs/sephia-blueprint`  
@@ -79,20 +79,18 @@ Repository audit findings that must be remembered:
 - The active production path and session/logout lifecycle are not yet fully verified.
 - Browser background/locked-device audio operation is not guaranteed and must be tested.
 
+## Current audit status
+
+The repository-level Phase 0 read-only audit is documented in `docs/SEPHIA-PHASE0-AUDIT.md`. It found a Firebase-backed Panitia alert path, missing DOM event ID/count metadata, no visible Panitia auth/session hook in inspected source, Vercel microphone denial, local HTTP secure-context constraints, unknown deployed Firebase rules, alert HTML injection risk, and a client-side TOTP secret exposure. No source code was changed.
+
 ## Next autonomous task
 
-The next task is **Phase 0: complete read-only audit**, not implementation.
-
-Audit only the minimum required files and report:
-1. What creates the visible Panitia notification.
-2. Which runtime path is actually active (Firebase or local monitor).
-3. Exact DOM selector and how it behaves on page/component changes.
-4. Whether each alert has a stable ID available to the rendered node.
-5. How violation count and event type can be verified from the visible notification.
-6. Where Panitia login/session expiry/logout is enforced.
-7. Which browser/OS/device constraints affect background operation, microphone, and TTS.
-8. Security issue remediation plan for the client-side secret, without changing it.
-9. The smallest future code changes needed to expose metadata on the existing rendered notification, without granting SEPHIA wider access.
+The next task is **external runtime verification (Gate 0)**, still read-only, not implementation. Verify actual Vercel deployment protection, live Firebase rules, actual Panitia login/session model, and the exact Panitia workstation URL/browser/OS. Do not ask the user to repeat product choices.
+1. Confirm Vercel deployment protection or local-only access.
+2. Inspect deployed Firebase Realtime Database rules read-only.
+3. Confirm the real Panitia login/session/logout model (or document absence).
+4. Confirm exact production URL, browser, OS, and microphone/TTS feasibility.
+5. Keep the findings and smallest safe implementation plan in the audit document.
 
 Output:
 - audit findings;
