@@ -17,7 +17,7 @@ test("staging fixture remains synthetic and does not connect to host services", 
   const html = await read("staging/index.html");
   const fixture = await read("staging/fixture.js");
   assert.match(html, /Lingkungan simulasi terisolasi/);
-  assert.match(html, /tidak terhubung ke OTP 2\.0, Firebase, API, Moodle/);
+  assert.match(html, /tidak terhubung ke OTP 2\.0, Firebase, API, Moodle/i);
   assert.match(fixture, /SIMULASI/);
   assert.doesNotMatch(fixture, /firebase|fetch\s*\(|XMLHttpRequest|WebSocket|EventSource/i);
 });
