@@ -10,7 +10,7 @@
 - [x] Added a small SEPHIA activation control suitable for an explicitly provided Panitia header/container mount point.
 - [x] Activation is manual; the control reflects active/inactive state and exposes accessible button labels and pressed state.
 - [x] Added state indicator colors for standby, speaking, error, and inactive states.
-- [x] Added a restrained cyan/violet holographic bar visualizer.
+- [x] Added a restrained cyan/violet holographic activity indicator that animates during the speaking state; it is not an audio waveform and does not analyze microphone/audio samples.
 - [x] Added a disclosure/settings control containing the visualizer enable/disable action.
 - [x] Disabling the visualizer does not deactivate the notification reader/runtime.
 - [x] Added reduced-motion support and keyboard-visible focus styles.
@@ -23,6 +23,7 @@
 - [ ] No automatic insertion into `panitia/index.html` or the production header.
 - [ ] No authentication/session-expiry/logout wiring.
 - [ ] No avatar/digital-human renderer or lip-sync.
+- [ ] The activity indicator is state-driven decoration, not a real-time audio waveform.
 - [ ] No real local TTS provider or wake-word/microphone.
 - [ ] No browser/device acceptance test has been run.
 
