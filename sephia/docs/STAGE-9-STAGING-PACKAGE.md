@@ -95,3 +95,9 @@ GitHub Actions [run #106](https://github.com/rakajuliantoro17-art/OTP2.0/actions
 - Stage 9 artifact uploaded successfully: `sephia-stage9-staging-build-76f09828bc58e070640685a87c01f8ed60cd6cd8` (12,867 bytes).
 
 This confirms repository/CI assembly only. It does not replace the manual Chrome/PC acceptance matrix or host-integrated staging.
+
+## 10. Repository integrity note
+
+During Stage 9, one staging-verifier script was inadvertently committed to `main` because a write call omitted the explicit branch. It was immediately deleted in a subsequent `main` commit. A read-back confirmed that the file is absent from the current `main` tree. No deployment occurred.
+
+The two commits remain in `main` history, so the feature branch now reports two commits behind `main` even though the unintended file is absent from the current main tree. No force-push or history rewrite was attempted. Keep this branch isolated; review the divergence explicitly before any future merge/rebase decision.
