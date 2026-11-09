@@ -4,22 +4,23 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 
 ## Status
 
-- Stage 2 host metadata bridge, Stage 3 speech-controller foundation, Stage 4 visualizer/control modules, and Stage 5 avatar-renderer foundation are implemented on this feature branch.
-- Stage 2 remains isolated: session-bound runtime activation and production deployment are not authorized or verified.
-- Development branch: `feature/sephia-module`.
-- Not imported by the OTP 2.0 application and not active in any deployment.
-- Vercel may remain paused while repository-level development and local tests continue.
+- Stage 2 notification metadata bridge, Stage 3 speech-controller foundation, Stage 4 visualizer/control modules, Stage 5 avatar-renderer foundation, and Stage 6 page-lifecycle helper are implemented on this feature branch.
+- The dashboard has no account login; access is through a dedicated URL known to Panitia. This is not authentication and does not establish viewer identity.
+- SEPHIA remains disconnected from the host dashboard and is not active in any deployment.
+- Development branch: `feature/sephia-module`; no merge to `main` or production deployment is authorized.
+- Vercel may remain paused while repository work and local tests continue.
 
 ## Approved operating boundary
 
 - Observe only the designated host notification element: `#alertList`.
-- Accept only visible alert items with a stable event ID and trusted integer violation count from 27 through 30.
+- Accept only visible alert items with stable event ID, event type `violation`, and trusted integer count 27–30.
 - Read visible message text through `textContent`; never infer missing data.
 - Do not call Firebase, APIs, server endpoints, Moodle, or OTP actions.
 - Do not issue, validate, revoke, unlock, reset, or auto-submit OTPs.
 - Do not persist event history, audio, transcripts, or session memory.
-- Start inactive; require explicit manual activation.
-- On deactivation, disconnect the observer and clear session-local duplicate IDs.
+- Start inactive and require explicit manual activation after every page load.
+- Manual OFF, `pagehide`, and `beforeunload` stop the observer and speech. BFCache restoration does not auto-activate.
+- This page-lifecycle boundary is not authentication. Never infer identity or role from the secret URL.
 - Never allow SEPHIA failures to affect OTP monitoring or host alert rendering.
 
 ## Module layout
@@ -27,70 +28,38 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 ```text
 sephia/
 ├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── AUDIO-ADAPTER.md
 │   ├── HOST-INTEGRATION.md
-│   ├── MAINTENANCE.md
-│   ├── STAGE-2-CLOSEOUT.md
-│   └── STAGE-3-CLOSEOUT.md
+│   ├── STAGE-6-ACCESS-BOUNDARY.md
+│   ├── STAGE-6-CHROME-TEST-RUNBOOK.md
+│   └── STAGE-6-ACCEPTANCE-REPORT.md
 ├── src/
-│   ├── core/
-│   │   └── notification-contract.js
 │   ├── adapters/
-│   │   └── dom-alert-observer.js
-│   ├── runtime/
-│   │   └── create-sephia-runtime.js
 │   ├── audio/
-│   │   └── announcement.js
-│   ├── visual/
-│   │   ├── visual-state.js
-│   │   └── mount-sephia-controls.js
-│   └── notification-reader.js
-├── tests/
-│   ├── notification-reader.test.mjs
-│   ├── host-contract.test.mjs
-│   ├── audio-controller.test.mjs
-│   ├── visual-state.test.mjs
-│   └── visual-controls.test.mjs
-└── package.json
+│   ├── core/
+│   ├── runtime/
+│   │   ├── bind-page-lifecycle.js
+│   │   └── create-sephia-runtime.js
+│   └── visual/
+├── staging/
+└── tests/
 ```
 
-- **Core:** pure contract validation and qualification.
-- **Adapter:** passive observation of the exact `#alertList` element.
-- **Host bridge:** OTP host now forwards stable Firebase event IDs and server-originated violation counts into eligible rendered alerts on this feature branch.
-- **Runtime:** explicit activation/deactivation; routes normalized notifications to optional speech controller without allowing callback errors to escape.
-- **Audio controller:** fixed generic announcement, newest-event interruption, cancellation, and contained provider failures. Concrete audio provider and microphone/wake-word remain gated pending local-processing verification.
-- **Visualizer & controls:** explicit mount-point UI, manual activation/deactivation, state indicator, holographic state-driven activity indicator (not an audio waveform), and independent visualizer toggle. Runtime cleanup is hardened against observer/speech failures. Host mounting and session wiring are not connected.\n- **Avatar renderer:** isolated presentation component with hidden-by-default behavior, optional same-origin asset slot, CSS fallback placeholder, and speech-state-gated mouth activity. It is not the final digital-human artwork and does not provide phoneme lip-sync.
+## Runtime and host boundary
 
-## Host contract (implemented on this feature branch only)
+The feature branch contains the notification metadata bridge and isolated SEPHIA modules. It is not merged into `main`, and the reader is not mounted in the Panitia page. The page lifecycle helper is a small opt-in integration primitive; it must not be wired into production without explicit approval.
 
-A host-rendered `.alert-item` may expose:
+The dedicated URL is not a security credential. Review server/network access restrictions separately before production use. Do not add a login system or alter host access controls as part of this Stage 6 scope.
 
-- `data-sephia-event-id`: stable event identifier (required)
-- `data-sephia-event-type`: exact event type `violation` (required)
-- `data-sephia-violation-count`: trusted integer from 27 through 30 (required)
+## Testing
 
-The host must populate metadata from the authoritative server-originated alert payload. DOM attributes are not inherently trustworthy. The message must remain visible text.
-
-**Important:** the host metadata bridge exists only on `feature/sephia-module`. It is not present in `main` or a production deployment. The browser reader remains disconnected until Panitia session validity and logout/expiry hooks are verified.
-
-## Test
-
-From this folder, using Node.js 22 with built-in `node:test` support. The suite includes unit tests plus source-level regression checks for the server payload, Firebase event key propagation, count/type qualification, and safe alert text rendering:
+From `sephia/`, run with Node.js 22:
 
 ```bash
 npm test
 ```
 
-A GitHub Actions workflow at `.github/workflows/sephia-tests.yml` runs this suite when SEPHIA files change. A successful run must be confirmed before calling the test gate passed.
+Then follow [the Chrome staging runbook](./docs/STAGE-6-CHROME-TEST-RUNBOOK.md). The fixture uses synthetic alerts and mock speech only; it is not connected to OTP/Firebase or a live Panitia page.
 
-## Integration gates
-
-1. Verify Panitia authentication/session boundary and deployed Firebase rules.
-2. Test the metadata bridge against a staging/local Panitia page, including counts 26–30 and malformed/missing values.
-3. Connect runtime only after a trusted session provider and expiry/logout hook are verified.
-4. Only then consider audio and visual layers as separately gated modules.
-
-See [Architecture](./docs/ARCHITECTURE.md), [Audio Adapter](./docs/AUDIO-ADAPTER.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 2 Closeout](./docs/STAGE-2-CLOSEOUT.md), [Stage 3 Closeout](./docs/STAGE-3-CLOSEOUT.md), [Stage 4 Closeout](./docs/STAGE-4-CLOSEOUT.md), [Stage 5 Avatar Specification](./docs/STAGE-5-AVATAR-SPEC.md), [Stage 4–5 Verification Plan](./docs/STAGE-4-5-VERIFICATION-PLAN.md), [Stage 6 Chrome Runbook](./docs/STAGE-6-CHROME-TEST-RUNBOOK.md), [Stage 6 Acceptance Report](./docs/STAGE-6-ACCEPTANCE-REPORT.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
+See [Access Boundary](./docs/STAGE-6-ACCESS-BOUNDARY.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 6 Acceptance Report](./docs/STAGE-6-ACCEPTANCE-REPORT.md), [Audio Adapter](./docs/AUDIO-ADAPTER.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
 
 Nothing in this folder self-activates or changes the production application.
