@@ -1,6 +1,6 @@
 # SEPHIA Stage 10 — Host Integration Trial Readiness
 
-**Status:** browser host-bridge fixture assembled; automated verification pending CI  
+**Status:** repository and CI verification complete; human Chrome/PC acceptance pending  
 **Branch:** `feature/sephia-module`  
 **Production:** no merge, no deployment, no Firebase/Moodle/OTP configuration changes
 
@@ -88,3 +88,17 @@ The new fixture is isolated under `sephia/staging/`. Stop the loopback server wi
 ## 8. Release gate
 
 Stage 10 is complete at repository/CI level only after the latest branch CI passes. Human browser acceptance must then be recorded on the Panitia PC. Only after both synthetic fixtures pass should the team prepare a separate non-production Panitia copy for live-host integration checks. No production deployment or merge is authorized by this stage.
+
+
+## 9. Verified CI evidence
+
+GitHub Actions [run #42638568110](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42638568110) completed successfully on commit `3304462932903aa7b85b7e0d118778c69e0fe6d3`:
+
+- Node.js 22.23.4.
+- 56 tests passed, 0 failed, 0 skipped.
+- Static security/import-boundary check passed across 10 source modules.
+- Browser ES module build succeeded: 10 modules, 29,782 source bytes.
+- Both staging fixtures resolved 7 imports against `dist/`; every imported module is present in the SHA-256 manifest.
+- Build artifact uploaded: `sephia-stage10-host-trial-build-3304462932903aa7b85b7e0d118778c69e0fe6d3` (12,895 bytes; expires 23 November 2026).
+
+This is repository/CI evidence only. Neither browser fixture has yet been accepted on the actual Panitia PC, and no live OTP host test has been performed.
