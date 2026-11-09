@@ -76,3 +76,14 @@ Human/browser acceptance remains pending. A green CI run is not evidence that Ch
 ## 7. Rollback
 
 If the build or integration causes trouble, revert the Stage 8 scripts/workflow changes independently. To disable the optional SEPHIA bridge, remove its dynamic import from `panitia/index.html` and the explicit mount from `panitia/components/topbar.html`. OTP thresholds, Firebase rules, and existing notification generation do not need to change.
+
+## 8. Verified CI evidence
+
+GitHub Actions [run #89](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42631028631) completed successfully on code commit `d16cda704cb97519ef7b000ec7503c52adde05d9`:
+- Node.js 22;
+- 47 tests passed, 0 failed, 0 skipped;
+- static security/import-boundary check passed across 10 JavaScript modules;
+- browser ES module build succeeded: 10 modules, 29,667 source bytes;
+- CI artifact uploaded successfully: `sephia-stage8-build-d16cda704cb97519ef7b000ec7503c52adde05d9` (12,867 bytes, 14-day retention).
+
+The only branch changes after the tested code commit are documentation/report updates; no executable source, test, package, or workflow changes were made after run #89.
