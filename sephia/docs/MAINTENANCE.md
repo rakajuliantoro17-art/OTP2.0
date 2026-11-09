@@ -5,7 +5,7 @@
 1. Read `../../docs/SEPHIA-DECISION-REGISTER.md`, `../../docs/SEPHIA-PHASE0-AUDIT.md`, and this module's `ARCHITECTURE.md`.
 2. Confirm the change stays inside SEPHIA's approved passive-reader scope.
 3. Identify whether the change affects the core contract, DOM adapter, runtime lifecycle, or optional presentation.
-4. Add or update unit, host-contract, audio-controller, and visual-controls regression tests before integrating with the OTP host.
+4. Add or update unit, host-contract, audio-controller, visual-controls, and avatar-renderer regression tests before integrating with the OTP host.
 5. Never change OTP thresholds, authentication, Firebase rules, or server behavior as part of a SEPHIA-only maintenance task.
 
 ## Local test
@@ -47,7 +47,7 @@ The current tests use Node's built-in test runner and do not require external de
 - [ ] Visualizer can be disabled without deactivating the reader.
 - [ ] Controls mount only into an explicit host-provided container.
 - [ ] Reduced-motion and keyboard focus behavior remain accessible.
-- [ ] Visual/UI errors cannot interrupt Panitia alert rendering.
+- [ ] Visual/UI errors cannot interrupt Panitia alert rendering.\n- [ ] Avatar remains hidden while inactive and in standby.\n- [ ] Avatar artwork uses a same-origin relative asset path only.\n- [ ] Mouth activity requires the actual speech controller speaking state.\n- [ ] CSS fallback is never described as the final digital-human avatar.\n- [ ] Avatar and visualizer respect reduced-motion preferences and dispose cleanly.
 
 ## Integration gate
 
@@ -56,7 +56,7 @@ Do not connect this module to Panitia until the following are verified:
 - Panitia authentication and session lifecycle;
 - actual deployed Firebase alert-read behavior;
 - host-generated event ID and numeric violation count;
-- local/staging browser behavior;
+- local/staging browser behavior;\n- avatar asset loading and target-workstation performance;\n- local TTS/viseme timing before lip-sync is claimed;
 - microphone and TTS feasibility for the exact serving origin.
 
 Vercel being paused is compatible with isolated repository development. It does not prove runtime or browser behavior.
