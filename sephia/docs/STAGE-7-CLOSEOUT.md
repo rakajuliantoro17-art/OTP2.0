@@ -19,7 +19,7 @@
 
 ## Automated verification
 
-GitHub Actions [run #73](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42629992116) passed the 43-test Stage 7 integration suite on code commit `4a896c688864815afced83440033aa63933747a6`. A later one-line host global naming correction (`window.SEPHIA`) is covered by the Panitia page-wiring assertion in the current test tree; CI is being rerun on the updated branch head:
+GitHub Actions [run #73](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42629992116) passed the 43-test Stage 7 integration suite on code commit `4a896c688864815afced83440033aa63933747a6`. A later one-line host global naming correction (`window.SEPHIA`) is covered by the Panitia page-wiring assertion. The updated test tree passed in [GitHub Actions run #75](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42630245014) on commit `25fc9d6645ee2872bb60d0f37441901bab2be980`:
 - Node.js 22
 - 43 tests passed
 - 0 failed
