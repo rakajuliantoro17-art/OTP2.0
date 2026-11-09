@@ -14,11 +14,14 @@ export function createVisualState({ onChange = () => {} } = {}) {
   let visualizerEnabled = true;
   let state = "inactive";
   let disposed = false;
+  const listeners = new Set();
 
   const publish = () => {
-    try {
-      onChange(Object.freeze({ active, visualizerEnabled, state }));
-    } catch {}
+    const snapshot = Object.freeze({ active, visualizerEnabled, state });
+    try { onChange(snapshot); } catch {}
+    for (const listener of listeners) {
+      try { listener(snapshot); } catch {}
+    }
   };
 
   const setState = (next) => {
@@ -45,6 +48,12 @@ export function createVisualState({ onChange = () => {} } = {}) {
       return true;
     },
     setState,
+    subscribe(listener) {
+      if (disposed || typeof listener !== "function") return () => {};
+      listeners.add(listener);
+      try { listener(Object.freeze({ active, visualizerEnabled, state })); } catch {}
+      return () => listeners.delete(listener);
+    },
     setVisualizerEnabled(value) {
       if (disposed || typeof value !== "boolean") return false;
       if (visualizerEnabled === value) return false;
@@ -61,6 +70,7 @@ export function createVisualState({ onChange = () => {} } = {}) {
       state = "inactive";
       disposed = true;
       publish();
+      listeners.clear();
     },
   });
 }
