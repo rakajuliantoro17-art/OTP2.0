@@ -8,6 +8,7 @@ const CSS = `
 .sephia-controls[data-state="standby"] .sephia-orb{background:#55d9ff;box-shadow:0 0 12px #55d9ff}
 .sephia-controls[data-state="speaking"] .sephia-orb{background:#b49aff;box-shadow:0 0 14px #b49aff}
 .sephia-controls[data-state="error"] .sephia-orb{background:#ff626f;box-shadow:0 0 12px #ff626f}
+.sephia-controls[data-state="limited"] .sephia-orb{background:#ffd166;box-shadow:0 0 12px #ffd166}
 .sephia-label{font-size:.82rem;font-weight:600;letter-spacing:.02em}
 .sephia-settings{position:relative}
 .sephia-settings summary{list-style:none;cursor:pointer;border-radius:50%;width:2rem;height:2rem;display:grid;place-items:center;border:1px solid rgba(150,190,220,.22);background:rgba(12,25,44,.7)}
@@ -70,7 +71,7 @@ export function mountSephiaControls({
 
   const visualizer = element(documentImpl, "div", "sephia-visualizer");
   visualizer.setAttribute("role", "img");
-  visualizer.setAttribute("aria-label", "Visualizer suara SEPHIA");
+  visualizer.setAttribute("aria-label", "Indikator aktivitas suara SEPHIA");
   for (let i = 0; i < 7; i += 1) {
     const bar = element(documentImpl, "span");
     bar.setAttribute("aria-hidden", "true");
