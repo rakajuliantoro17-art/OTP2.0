@@ -42,8 +42,9 @@ export function mountSephiaControls({
   onError = () => {},
 }) {
   if (!container || typeof container.appendChild !== "function") throw new TypeError("A mount container is required.");
-  if (!runtime || typeof runtime.activate !== "function" || typeof runtime.deactivate !== "function") {
-    throw new TypeError("A SEPHIA runtime is required.");
+  if (!runtime || typeof runtime.activate !== "function" || typeof runtime.deactivate !== "function" ||
+      typeof runtime.isActive !== "boolean") {
+    throw new TypeError("A SEPHIA runtime with an isActive state is required.");
   }
   if (!visualState || typeof visualState.setVisualizerEnabled !== "function") {
     throw new TypeError("A visual state controller is required.");
@@ -111,13 +112,18 @@ export function mountSephiaControls({
   const onTrigger = () => {
     try {
       if (runtime.isActive) {
-        runtime.deactivate();
-        visualState.deactivate();
+        try { runtime.deactivate(); }
+        finally { visualState.deactivate(); }
       } else {
         runtime.activate();
-        visualState.activate();
+        if (!runtime.isActive) throw new Error("SEPHIA runtime did not enter the active state.");
+        if (visualState.activate() === false) {
+          runtime.deactivate();
+          throw new Error("SEPHIA visual state could not be activated.");
+        }
       }
     } catch (error) {
+      if (!runtime.isActive) visualState.deactivate();
       try { onError(error); } catch {}
     }
   };
