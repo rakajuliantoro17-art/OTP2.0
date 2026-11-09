@@ -4,17 +4,25 @@
 **Target:** Google Chrome on Panitia PC  
 **Fixture:** `sephia/staging/`  
 **Data:** synthetic only  
-**Production:** no host injection, no OTP/Firebase/Moodle connection, no deployment
+**Production:** no deployment, no live OTP/Firebase/Moodle test
 
-## Purpose and limits
+## Scope and access model
 
-This runbook verifies the isolated reader, controls, avatar placeholder, DOM behavior, and simulated speech lifecycle in a real Chrome browser. It does **not** validate Panitia authentication/session expiry, actual host integration, Firebase Rules, real TTS, microphone/wake-word, or production safety. Those require separate approved staging integration and the actual Panitia workstation/session provider.
+The Panitia dashboard has no account login. It is reached through a dedicated page URL known to Panitia. A URL known only to a group is obscurity-based access, **not authentication**. SEPHIA must not claim to know who opened the page or infer identity from the URL.
 
-The fixture contains no remote scripts, API calls, Firebase SDK, OTP action, microphone request, or real audio output. The speech adapter is a deterministic mock.
+Stage 6 therefore tests a **document/page lifecycle boundary**, not a login session:
+- SEPHIA starts OFF after every page load.
+- Manual activation is required.
+- Manual OFF, `pagehide`, and `beforeunload` stop the reader and speech.
+- Browser back/forward-cache restoration does not reactivate SEPHIA; manual activation is required.
+- Page visibility changes alone do not stop SEPHIA; background-tab behavior must be measured.
+- No user identity, role, or login state is created or inferred.
+
+The fixture contains only synthetic data, local module imports, and a mock speech adapter. It does not call remote APIs, Firebase, OTP actions, or request microphone/camera/location permissions.
 
 ## Prepare the fixture on the Panitia PC
 
-1. Obtain the `feature/sephia-module` branch locally. Do not use the production branch or production page.
+1. Obtain branch `feature/sephia-module`; do not use `main` or the production dashboard.
 2. Open a terminal in the repository's `sephia` directory.
 3. Start a loopback-only static server:
 
@@ -23,72 +31,72 @@ python -m http.server 4173 --bind 127.0.0.1
 ```
 
 4. In Chrome on the same PC, open `http://127.0.0.1:4173/staging/`.
-5. Confirm the page title is **SEPHIA — Staging Acceptance Fixture** and the warning says this is synthetic data.
-6. Confirm SEPHIA is OFF on first load. Do not open OTP 2.0 or a production Panitia URL during this fixture test.
+5. Confirm the title **SEPHIA — Staging Acceptance Fixture** and the synthetic-data warning.
+6. Confirm SEPHIA is OFF. Do not open OTP 2.0 or a production Panitia URL during fixture tests.
 
-If Python is unavailable, use an already approved local static-file server. Do not expose the server to the LAN; bind to loopback only.
+If Python is unavailable, use an approved local static server bound to loopback only. Do not expose the fixture server to the LAN.
 
 ## Test procedure
 
-Record each result as PASS, FAIL, or BLOCKED, with Chrome version, OS version, date/time, and a screenshot or console excerpt that contains no real student data.
+Record PASS, FAIL, or BLOCKED with Chrome version, OS version, date/time, and evidence containing no real student data.
 
 | ID | Test | Procedure | Expected result |
 |---|---|---|---|
 | S6-01 | Initial state | Refresh fixture | SEPHIA OFF; avatar hidden; no event spoken |
-| S6-02 | Manual activation | Click SEPHIA once | State changes to active/standby |
-| S6-03 | Threshold 26 | Click count 26 | Item visible; no speech-state transition |
-| S6-04 | Threshold 27–30 | Click counts 27, 28, 29, 30 | Each distinct event accepted once |
-| S6-05 | Threshold 31 | Click count 31 | Item visible; rejected by qualification contract |
-| S6-06 | Duplicate | Send a qualifying event, then click duplicate | Same event ID is not delivered twice |
-| S6-07 | Burst | Click burst 27–29 | Events processed in order; newest event interrupts previous mock speech |
-| S6-08 | Audio failure | Click simulated audio failure | Error is logged; page and notification list remain usable |
-| S6-09 | Visualizer control | Toggle visualizer OFF/ON | Visual layer hides/shows independently of reader activation |
-| S6-10 | Manual shutdown | Click SEPHIA OFF while mock speech is pending | Speech is cancelled; state becomes inactive |
-| S6-11 | Refresh reset | Activate, then refresh | New page starts OFF; no old event replay |
-| S6-12 | Keyboard | Tab to controls and use Enter/Space | Controls remain operable and focus visible |
-| S6-13 | Reduced motion | Enable OS/Chrome reduced-motion preference and reload | CSS animation is suppressed |
-| S6-14 | Console | Inspect DevTools Console | No uncaught error during the above tests |
-| S6-15 | Network/privacy | DevTools Network, preserve log, repeat tests | Only loopback fixture/module requests; no remote host, API, telemetry, audio, or student-data transmission |
-| S6-16 | Permission | Inspect site permissions | Fixture never asks for microphone/camera/location |
-| S6-17 | Background tab | Switch away for 2 minutes, return, emit event | Record actual result; browser throttling is not assumed away |
-| S6-18 | Performance | Record 5-minute idle and 20-event burst in Performance/Task Manager | Record CPU, memory, long tasks, and visual responsiveness; do not infer performance from source tests |
+| S6-02 | Manual activation | Click SEPHIA once | Active/standby |
+| S6-03 | Threshold 26 | Click count 26 | Visible; ignored by SEPHIA |
+| S6-04 | Threshold 27–30 | Click 27, 28, 29, 30 | Each distinct event accepted once |
+| S6-05 | Threshold 31 | Click 31 | Visible; ignored by SEPHIA |
+| S6-06 | Duplicate | Send event then click duplicate | Same stable event ID not delivered twice while active |
+| S6-07 | Burst | Click burst 27–29 | Newest mock speech interrupts prior mock speech |
+| S6-08 | Audio failure | Click simulated failure | Error contained; fixture and list remain usable |
+| S6-09 | Visualizer | Toggle OFF/ON | Visual layer changes independently of reader |
+| S6-10 | Manual OFF | Turn SEPHIA OFF during mock speech | Speech cancelled; state inactive |
+| S6-11 | Refresh reset | Activate, refresh | Starts OFF; no historical event replay |
+| S6-12 | Page exit | Activate, navigate away/back or reload | `pagehide` cleanup; restored/reloaded page remains OFF |
+| S6-13 | Keyboard | Use Tab, Enter, Space | Controls operable; focus visible |
+| S6-14 | Reduced motion | Enable reduced motion and reload | Animation suppressed |
+| S6-15 | Console | Inspect DevTools Console | No uncaught errors |
+| S6-16 | Network/privacy | Preserve Network log and repeat | Loopback requests only; no remote API/telemetry/audio/student-data transmission |
+| S6-17 | Permissions | Inspect site permissions | No microphone/camera/location prompt |
+| S6-18 | Background tab | Switch away 2 minutes, return, emit event | Record actual browser result; do not assume execution guarantees |
+| S6-19 | Performance | 5-minute idle and 20-event burst | Record CPU, memory, long tasks, and responsiveness |
 
-### Important interpretation
+## Interpretation and limitations
 
-- The fixture's speech is mocked. S6-07 and S6-08 validate controller behavior, not voice quality, local processing, or audible output.
-- S6-17 does not establish locked-workstation behavior.
-- A fixture PASS is not a Panitia session/authentication PASS.
-- Do not generate real student violations to test SEPHIA.
-- Do not grant microphone permission during Stage 6 fixture tests.
+- Speech is mocked; these tests do not validate actual local TTS, audible output, voice quality, or audio locality.
+- Pagehide/beforeunload are best-effort browser lifecycle events; a crash or power loss may bypass graceful cleanup.
+- A URL-only dashboard remains accessible to anyone who obtains the URL, subject to separate network/server restrictions. This fixture does not validate URL secrecy or server authorization.
+- S6-18 does not establish locked-workstation behavior.
+- Do not generate real student violations or grant microphone permission during Stage 6.
+- Do not test against the live Panitia dashboard.
 
-## Host and workstation tests that remain blocked
+## Remaining host/workstation checks
 
-These cannot be completed by the isolated fixture:
+1. Verify the actual server/network restriction around the dedicated Panitia URL. Do not treat the URL itself as authentication.
+2. Verify the deployed Firebase rules and the host-rendered alert metadata in an approved staging copy.
+3. Confirm the existing server alert bridge handles counts 26, 27–30, 31+, missing/non-integer counts, and non-violation alerts.
+4. Verify pagehide cleanup in Chrome on the actual Panitia PC.
+5. Measure background-tab and workstation-lock behavior.
+6. Verify a concrete local-only TTS provider separately before enabling real audio.
+7. Inspect actual host header placement/CSS and performance only in a non-production staging copy.
 
-1. Actual Panitia login, logout, expiry, and account-switch lifecycle.
-2. Deactivation when the authenticated Panitia session expires.
-3. Deployed Firebase alert-read behavior and real host-rendered metadata.
-4. Actual browser TTS provider locality, audible output, autoplay, cancellation, and voice quality.
-5. Microphone/wake-word operation under the approved local-only policy.
-6. Workstation lock/unlock behavior.
-7. Real host header placement and CSS interaction.
-8. Actual Panitia workstation CPU/GPU/memory under integrated use.
-
-Do not fake these results. Record BLOCKED until an approved staging host and the Panitia PC are available.
+Do not fake these results. Record BLOCKED until the relevant staging host or Panitia PC is available.
 
 ## Rollback
 
-The fixture is isolated under `sephia/staging/`; it is not imported by OTP 2.0. If it causes a problem, stop the loopback server with Ctrl+C and close the fixture tab. No OTP data or configuration is changed.
+The fixture is isolated under `sephia/staging/` and is not imported by OTP 2.0. Stop the loopback server with Ctrl+C and close the fixture tab. No OTP data/configuration is changed.
 
-For a repository regression, revert the Stage 6 commit on `feature/sephia-module` only. Do not reset, merge, or cherry-pick to `main`; do not deploy. Keep the previous known-good feature commit available in Git history.
+For a repository regression, revert only the relevant commit on `feature/sephia-module`. Do not reset, merge, cherry-pick to `main`, or deploy.
 
 ## Acceptance decision
 
-Stage 6 may be marked **fully accepted** only after:
-- automated integration tests pass on the current branch head;
-- S6-01 through S6-16 pass in Chrome on the Panitia PC;
-- S6-17 and S6-18 are measured and recorded;
-- blocked host/session/audio tests have a separately approved, safe staging plan;
+Stage 6 can be marked fully accepted only after:
+- automated tests pass on the latest branch head;
+- S6-01 through S6-17 pass on Chrome/PC;
+- S6-18 and S6-19 are measured and recorded;
+- host URL/network access controls are independently reviewed;
+- real TTS remains disabled unless its local-only behavior is verified;
 - the acceptance report and rollback procedure are reviewed.
 
-The fixture itself is a test tool, not a release candidate.
+This fixture is a test tool, not a release candidate.
