@@ -68,9 +68,7 @@ export function createDomAlertObserver({
   return Object.freeze({
     start() {
       if (active) return;
-      active = true;
-
-      observer = new MutationObserverImpl((records) => {
+      const nextObserver = new MutationObserverImpl((records) => {
         for (const record of records) {
           for (const node of record.addedNodes || []) inspectNode(node);
 
@@ -85,13 +83,15 @@ export function createDomAlertObserver({
         }
       });
 
-      observer.observe(root, {
+      nextObserver.observe(root, {
         childList: true,
         subtree: true,
         characterData: true,
         attributes: true,
         attributeFilter: Object.values(NOTIFICATION_ATTRIBUTES),
       });
+      observer = nextObserver;
+      active = true;
     },
 
     stop() {
