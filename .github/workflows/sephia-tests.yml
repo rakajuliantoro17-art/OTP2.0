@@ -34,10 +34,10 @@ jobs:
       - name: Verify staging fixture against built distribution
         working-directory: sephia
         run: npm run verify:staging
-      - name: Upload Stage 9 staging build artifact
+      - name: Upload Stage 10 host trial build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage9-staging-build-${{ github.sha }}
+          name: sephia-stage10-host-trial-build-${{ github.sha }}
           path: sephia/dist/
           if-no-files-found: error
           retention-days: 14
