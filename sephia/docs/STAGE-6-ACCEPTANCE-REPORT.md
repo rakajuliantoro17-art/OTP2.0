@@ -1,52 +1,66 @@
 # SEPHIA Stage 6 — Staging Acceptance Report
 
 **Branch:** `feature/sephia-module`  
-**Baseline before Stage 6:** `5c153e7913fa058e2d5c45a610c2a2c86d5b29e4`  
-**Target browser:** Google Chrome on Panitia PC  
+**Target:** Google Chrome on Panitia PC  
+**Panitia access model:** dedicated URL; no account login  
 **Production changes:** none
+
+## Scope decision
+
+The dashboard has no login. The dedicated URL is obscurity-based access, not authentication. Stage 6 therefore validates page/document lifecycle cleanup only. It does not claim authenticated user identity, role, logout, expiry, or account-switch handling.
+
+No login was added. No host activation or deployment was performed.
 
 ## Status legend
 
-- **PASS — automated:** verified by source-level integration tests/CI.
-- **READY — manual:** fixture and procedure are prepared; Chrome execution has not occurred.
-- **BLOCKED:** requires an authenticated host, actual audio provider, or workstation behavior unavailable in the isolated fixture.
+- **PASS — automated:** verified by source-level tests/CI on the recorded commit.
+- **READY — manual:** fixture and procedure exist; Chrome execution has not occurred.
+- **BLOCKED:** requires actual workstation, staging host, server/network control review, or verified local audio provider.
 - **NOT RUN:** no evidence yet.
 
-## Evidence at Stage 6 preparation
+## Evidence and current status
 
 | Area | Status | Evidence / notes |
 |---|---|---|
-| Threshold 26 ignored; 27–30 accepted; 31 rejected | PASS — automated | Existing contract tests plus Stage 6 synthetic burst test |
-| Stable event-ID deduplication | PASS — automated | Observer test and Stage 6 duplicate test |
-| Newest event interrupts prior speech | PASS — automated | Audio controller concurrency test |
-| TTS failure containment | PASS — automated | Audio controller and Stage 6 failure test |
-| Manual stop cancels speech | PASS — automated | Runtime/audio lifecycle tests |
-| No historical backlog on activation | PASS — automated | Observer starts on new mutations only; Stage 6 manual OFF/ON test |
-| Browser fixture with synthetic notifications | READY — manual | `sephia/staging/index.html` |
-| Chrome visual/accessibility/console/network checks | READY — manual | See Chrome runbook |
-| Chrome performance profiling | NOT RUN | Requires Panitia PC |
-| Background-tab behavior | NOT RUN | Requires Panitia PC |
-| Workstation lock behavior | BLOCKED | Requires actual PC and OS session |
-| Real local TTS and voice quality | BLOCKED | No verified local provider; fixture intentionally uses mock speech |
-| Microphone/wake-word | BLOCKED | No local model/provider selected or browser permission test authorized |
-| Panitia auth/logout/session expiry | BLOCKED | No verified host session hook found |
-| Deployed Firebase Rules/host staging | BLOCKED | Deployed rules and authenticated staging host not verified |
-| Integrated Panitia header/host CSS | BLOCKED | SEPHIA remains disconnected from host |
-| OTP independence under real host integration | PARTIAL | Source-level isolation only; no live host integration test |
+| Threshold 26 ignored; 27–30 accepted; 31 rejected | PASS — automated | Notification contract and synthetic burst tests |
+| Stable event-ID deduplication | PASS — automated | Observer and acceptance tests |
+| Newest event interrupts prior mock speech | PASS — automated | Speech controller tests |
+| Mock TTS failure containment | PASS — automated | Audio and acceptance tests |
+| Manual stop cancels pending mock speech | PASS — automated | Runtime/audio lifecycle tests |
+| No backlog on activation | PASS — automated | Observer starts on new mutations; manual Chrome test pending |
+| Pagehide/beforeunload shutdown helper | PASS — source tests | Added helper and lifecycle tests; Chrome execution pending |
+| Manual activation after reload/BFCache restore | READY — manual | Chrome runbook S6-01/S6-12 |
+| Synthetic Chrome fixture | READY — manual | `sephia/staging/index.html` |
+| Chrome console/network/permissions/accessibility | READY — manual | Runbook S6-13 through S6-17 |
+| CPU/memory/background tab | NOT RUN | Requires Panitia PC |
+| Workstation lock/unlock | NOT RUN | Requires actual PC and OS session |
+| URL/server/network access control | BLOCKED | Requires review of actual deployment/network configuration |
+| Actual Firebase Rules and host alert bridge | BLOCKED | Deployed rules and staging host not verified |
+| Real local TTS/voice quality | BLOCKED | No concrete provider verified; mock only |
+| Microphone/wake-word | BLOCKED | Not implemented/authorized for Stage 6 |
+| Host header integration | BLOCKED | Runtime remains disconnected from host |
+| OTP independence under live integration | PARTIAL | Source-level isolation only; no live host test |
 
-## Stage 6 current-HEAD automated CI evidence
+## New Stage 6 lifecycle code
 
-GitHub Actions run [#58](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42562798678) completed successfully on branch head `c29431840b96f9f8df737bb54786492ec432bdf3` (the Stage 6 test code is unchanged from test commit `4cdd50217fedb8087d8014eb30c1c50b6b14eb3b`), Node.js 22.23.4:
+- `src/runtime/bind-page-lifecycle.js`: stops runtime and visual state on `pagehide` and `beforeunload`; does not infer identity or auto-activate on `pageshow`.
+- `tests/page-lifecycle.test.mjs`: covers page exit, BFCache-style pageshow non-reactivation, idempotent cleanup, and invalid dependencies.
+- The staging fixture now uses this lifecycle helper and cleans up all fixture components on page exit.
 
-- **33 tests passed**
-- **0 failed**
-- **0 skipped**
-- total test duration approximately 293 ms
+## Automated CI evidence
 
-The run includes the Stage 6 burst/threshold/deduplication test, manual OFF/ON and no-backlog test, simulated TTS-failure containment, pending-speech cancellation, and fixture syntax/isolation test. Subsequent changes after this test commit are documentation-only; executable source and test files are unchanged.
+The previously reported GitHub Actions run [#58](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42562798678) passed 33 tests on commit `c29431840b96f9f8df737bb54786492ec432bdf3`. That run predates the newly added lifecycle module/tests and therefore does **not** validate the latest branch head. A new CI run must pass before the current automated gate is marked green.
+
+## Acceptance decision
+
+**Stage 6 is not fully accepted yet.** Source-level page lifecycle behavior is implemented and has dedicated tests, but latest-head CI and manual Chrome/PC tests remain outstanding. The URL-only access model is explicitly documented as non-authentication. Production activation is not authorized by this report.
 
 ## Release gate
 
-**Stage 6 is not fully accepted at this point.** The repository-side test fixture and runbook are being prepared. Final acceptance requires current-HEAD CI plus manual Chrome/PC measurements and resolution or explicit deferral of host/session/audio blockers.
-
-Stage 7 production authorization is not implied by Stage 6 completion.
+Before any production consideration:
+1. Latest-head CI passes.
+2. Chrome fixture passes on the Panitia PC and records CPU/memory/background-tab evidence.
+3. Actual server/network restrictions for the dedicated URL are reviewed; URL secrecy alone is insufficient.
+4. Host alert metadata and Firebase read permissions are verified in an approved staging copy.
+5. Concrete local-only TTS is independently verified or audio remains disabled.
+6. Rollback and monitoring responsibilities are agreed.
