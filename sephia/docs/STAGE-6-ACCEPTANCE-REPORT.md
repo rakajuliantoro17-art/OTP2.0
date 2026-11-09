@@ -49,7 +49,7 @@ No login was added. No host activation or deployment was performed.
 
 ## Automated CI evidence
 
-The previously reported GitHub Actions run [#58](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42562798678) passed 33 tests on commit `c29431840b96f9f8df737bb54786492ec432bdf3`. That run predates the newly added lifecycle module/tests and therefore does **not** validate the latest branch head. A new CI run must pass before the current automated gate is marked green.
+GitHub Actions run [#67](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42627575549) completed successfully on the latest code-bearing branch head `fad983ab6e2d430a1fb819c38f426d34c62a8b12`, Node.js 22: **36 tests passed, 0 failed, 0 skipped**. This run includes the new page-lifecycle tests (pagehide shutdown, pageshow non-reactivation, repeated cleanup, and fail-closed dependency validation). A documentation-only report update follows; no executable source changed after the tested head.
 
 ## Acceptance decision
 
