@@ -50,7 +50,7 @@ export function mountSephiaControls({
   if (!documentImpl?.createElement) throw new TypeError("A document implementation is required.");
 
   let disposed = false;
-  if (!documentImpl.getElementById(STYLE_ID)) {
+  if (!documentImpl.getElementById?.(STYLE_ID)) {
     const style = element(documentImpl, "style");
     style.id = STYLE_ID;
     style.textContent = CSS;
@@ -93,6 +93,7 @@ export function mountSephiaControls({
 
   const render = (snapshot) => {
     if (disposed) return;
+    visualizerEnabled = snapshot.visualizerEnabled;
     root.dataset.state = snapshot.state;
     root.dataset.active = String(snapshot.active);
     trigger.setAttribute("aria-pressed", String(snapshot.active));
