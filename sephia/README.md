@@ -61,7 +61,7 @@ sephia/
 A host-rendered `.alert-item` may expose:
 
 - `data-sephia-event-id`: stable event identifier (required)
-- `data-sephia-event-type`: event type (optional, informational only)
+- `data-sephia-event-type`: exact event type `violation` (required)
 - `data-sephia-violation-count`: trusted integer from 27 through 30 (required)
 
 The host must populate metadata from the authoritative server-originated alert payload. DOM attributes are not inherently trustworthy. The message must remain visible text.
