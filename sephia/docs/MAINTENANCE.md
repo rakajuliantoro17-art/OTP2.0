@@ -8,13 +8,17 @@
 4. Add or update unit, host-contract, audio-controller, visual-controls, and avatar-renderer regression tests before integrating with the OTP host.
 5. Never change OTP thresholds, authentication, Firebase rules, or server behavior as part of a SEPHIA-only maintenance task.
 
-## Local test
+## Local test and build
 
-From this folder, with a supported Node.js version:
+From this folder, with Node.js 22:
 
 ```bash
 npm test
+npm run check
+npm run build
 ```
+
+The build has no third-party dependencies. It validates local relative imports, copies browser ES modules to `dist/`, and writes a SHA-256 manifest. CI uploads the output as a temporary artifact.
 
 The current tests use Node's built-in test runner and do not require external dependencies.
 
@@ -38,7 +42,7 @@ The current tests use Node's built-in test runner and do not require external de
 - [ ] Duplicate IDs are ignored during one active session.
 - [ ] Deactivation disconnects the observer and clears session memory.
 - [ ] Refresh/reopen does not auto-activate.
-- [ ] Logout/session expiry can deactivate the runtime once a verified host hook exists.
+- [ ] Pagehide and beforeunload stop the runtime; the Panitia dashboard has no account login, so no user logout/session-expiry hook is assumed.
 - [ ] No Firebase/API/Moodle/OTP mutation capability is introduced.
 - [ ] Optional audio/visual failures cannot break OTP 2.0.
 - [ ] Speech adapter is verified local before it is enabled.
@@ -53,7 +57,6 @@ The current tests use Node's built-in test runner and do not require external de
 
 Do not connect this module to Panitia until the following are verified:
 
-- Panitia authentication and session lifecycle;
 - actual deployed Firebase alert-read behavior;
 - host-generated event ID and numeric violation count;
 - local/staging browser behavior;\n- avatar asset loading and target-workstation performance;\n- local TTS/viseme timing before lip-sync is claimed;
