@@ -60,7 +60,7 @@ sephia/
 - **Host bridge:** OTP host now forwards stable Firebase event IDs and server-originated violation counts into eligible rendered alerts on this feature branch.
 - **Runtime:** explicit activation/deactivation; routes normalized notifications to optional speech controller without allowing callback errors to escape.
 - **Audio controller:** fixed generic announcement, newest-event interruption, cancellation, and contained provider failures. Concrete audio provider and microphone/wake-word remain gated pending local-processing verification.
-- **Visualizer & controls:** explicit mount-point UI, manual activation/deactivation, state indicator, holographic visualizer, and independent visualizer toggle. Host mounting and session wiring are not connected.
+- **Visualizer & controls:** explicit mount-point UI, manual activation/deactivation, state indicator, holographic state-driven activity indicator (not an audio waveform), and independent visualizer toggle. Host mounting and session wiring are not connected.
 
 ## Host contract (implemented on this feature branch only)
 
