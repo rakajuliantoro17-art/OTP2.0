@@ -13,13 +13,10 @@ class FakeElement {
     this.attrs = attrs;
     this.textContent = textContent;
     this.parentElement = null;
-    this.children = [];
   }
-
   matches(selector) {
     return selector === ".alert-item" && this.className.split(" ").includes("alert-item");
   }
-
   closest(selector) {
     let node = this;
     while (node) {
@@ -28,11 +25,9 @@ class FakeElement {
     }
     return null;
   }
-
   getAttribute(name) {
     return this.attrs[name] ?? null;
   }
-
   contains(node) {
     while (node) {
       if (node === this) return true;
@@ -57,17 +52,17 @@ class FakeMutationObserver {
 }
 FakeMutationObserver.instances = [];
 
-const validItem = (overrides = {}) => new FakeElement({
-  className: "alert-item",
-  attrs: {
-    "data-sephia-event-id": "evt-001",
-    "data-sephia-event-type": "critical",
-    "data-sephia-violation-count": "27",
-    ...overrides.attrs,
-  },
-  textContent: "Notifikasi pelanggaran OTP",
-  ...overrides,
-});
+const validItem = ({ attrs = {}, textContent = "Notifikasi pelanggaran OTP" } = {}) =>
+  new FakeElement({
+    className: "alert-item",
+    attrs: {
+      "data-sephia-event-id": "evt-001",
+      "data-sephia-event-type": "critical",
+      "data-sephia-violation-count": "27",
+      ...attrs,
+    },
+    textContent,
+  });
 
 test("accepts only trusted numeric violation counts >= 27", () => {
   assert.equal(readQualifyingNotification(validItem()).violationCount, 27);
