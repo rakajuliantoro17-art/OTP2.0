@@ -73,7 +73,7 @@ Each rendered `.alert-item` may expose:
 
 The message must be visible as text within the item. The host must populate these attributes from the authoritative alert payload. Client-provided or inferred values are not trusted.
 
-The host metadata path is now implemented on the isolated `feature/sephia-module` branch: server-originated alert payloads carry the numeric count, and the Panitia listener adds the Firebase child key to the newly rendered alert. Only counts 27–30 receive SEPHIA attributes. This is not deployed. Runtime activation remains blocked until the Panitia session lifecycle is verified.
+The host metadata path is implemented on the isolated `feature/sephia-module` branch: server-originated alert payloads carry the numeric count, and the Panitia listener adds the Firebase child key to the newly rendered alert. Only counts 27–30 receive SEPHIA attributes. The Panitia dashboard has no account login; SEPHIA does not infer identity or add a session model. The bridge uses page lifecycle cleanup and manual activation. This is not deployed.
 
 ## 4. Lifecycle
 
@@ -86,7 +86,7 @@ The host metadata path is now implemented on the isolated `feature/sephia-module
 - Panitia session expiry/logout: host must call runtime deactivation; do not infer authentication from URL or DOM visibility.
 - Fatal reader failure: stop SEPHIA only; never block host alert rendering.
 
-The repository audit did not find a verified Panitia authentication/session lifecycle hook. Session binding remains an integration blocker, not something the module should guess. See [Host Integration](./HOST-INTEGRATION.md) for the current data path and verification checklist.
+There is no Panitia account-login or authenticated session hook in the inspected host. SEPHIA therefore does not pretend to bind to a user identity. The page lifecycle helper stops the runtime on page exit; URL secrecy is not authentication. See [Host Integration](./HOST-INTEGRATION.md).
 
 ## 5. Error isolation
 
@@ -98,7 +98,7 @@ The repository audit did not find a verified Panitia authentication/session life
 - Visualizer failure: disable visual layer only.
 - Runtime failure: stop SEPHIA and preserve host page behavior.
 
-No errors should be thrown into the OTP event listener or prevent alert rendering.
+No errors should be thrown into the OTP event listener or prevent alert rendering. The Stage 8 static checker rejects network APIs, persistent browser storage, dynamic code evaluation, and microphone access in SEPHIA source.
 
 ## 6. Compatibility and versioning
 
@@ -106,7 +106,7 @@ No errors should be thrown into the OTP event listener or prevent alert renderin
 - Keep the notification contract versioned in documentation before changing attributes or qualification rules.
 - Preserve `src/notification-reader.js` as a compatibility entry point until imports are migrated.
 - Do not couple module version numbers to OTP application version numbers.
-- Breaking contract changes require tests, migration notes, and explicit approval.
+- Breaking contract changes require tests, migration notes, and explicit approval. `npm run build` validates local relative imports, copies the browser ES modules to `dist/`, and generates a SHA-256 manifest.
 
 ## 7. Security notes
 
