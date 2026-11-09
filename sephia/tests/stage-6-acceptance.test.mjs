@@ -148,3 +148,21 @@ test("Stage 6 stop cancels pending speech and keeps OTP-facing host callbacks is
   assert.deepEqual(h.received, ["pending-audio"]);
   h.runtime.dispose();
 });
+
+test("Stage 6 browser fixture is valid JavaScript and remains offline/synthetic-only", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const { spawnSync } = await import("node:child_process");
+  const { fileURLToPath } = await import("node:url");
+  const scriptPath = fileURLToPath(new URL("../staging/fixture.js", import.meta.url));
+  const htmlPath = fileURLToPath(new URL("../staging/index.html", import.meta.url));
+  const syntax = spawnSync(process.execPath, ["--check", scriptPath], { encoding: "utf8" });
+  assert.equal(syntax.status, 0, syntax.stderr || "fixture JavaScript syntax check failed");
+
+  const script = await readFile(scriptPath, "utf8");
+  const html = await readFile(htmlPath, "utf8");
+  assert.match(html, /id="alertList"/);
+  assert.match(html, /type="module" src="\.\/fixture\.js"/);
+  assert.match(html, /synthetic|simulasi/i);
+  assert.doesNotMatch(script, /fetch\s*\(|XMLHttpRequest|WebSocket|EventSource|firebase|localStorage|sessionStorage|getUserMedia/);
+  assert.doesNotMatch(html, /https?:\/\//);
+});
