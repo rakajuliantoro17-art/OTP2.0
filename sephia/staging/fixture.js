@@ -1,4 +1,5 @@
 import { createSephiaRuntime } from "../src/runtime/create-sephia-runtime.js";
+import { bindPageLifecycle } from "../src/runtime/bind-page-lifecycle.js";
 import { createNotificationSpeechController } from "../src/audio/announcement.js";
 import { createVisualState } from "../src/visual/visual-state.js";
 import { mountSephiaControls } from "../src/visual/mount-sephia-controls.js";
@@ -73,6 +74,7 @@ const avatar = mountSephiaAvatar({
   visualState,
   speechController,
 });
+const pageLifecycle = bindPageLifecycle({ runtime, visualState });
 
 function addSyntheticAlert(count, eventId = "sim-" + (++sequence)) {
   const item = document.createElement("article");
@@ -119,6 +121,7 @@ document.getElementById("clear").addEventListener("click", () => {
 });
 
 window.addEventListener("pagehide", () => {
+  pageLifecycle.dispose();
   runtime.dispose();
   speechController.dispose();
   controls.dispose();
