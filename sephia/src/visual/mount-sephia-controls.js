@@ -50,6 +50,12 @@ export function mountSephiaControls({
   if (!documentImpl?.createElement) throw new TypeError("A document implementation is required.");
 
   let disposed = false;
+  if (!documentImpl.getElementById(STYLE_ID)) {
+    const style = element(documentImpl, "style");
+    style.id = STYLE_ID;
+    style.textContent = CSS;
+    (documentImpl.head || container).appendChild(style);
+  }
   const root = element(documentImpl, "div", "sephia-controls");
   root.dataset.state = "inactive";
 
