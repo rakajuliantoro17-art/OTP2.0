@@ -45,13 +45,13 @@
 | V5-11 | Indonesian phoneme/viseme lip-sync | Local TTS timing integration | **Blocked:** no verified local TTS/viseme provider |
 | V5-12 | Logout/session expiry hides avatar | Real host session integration | **Blocked:** no verified host session hook |
 
-## Risks and gates
+## Automated verification evidence\n\n- GitHub Actions workflow: [SEPHIA Tests run #48](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42559862077).\n- Tested commit: `6646faa28e539b70ef16488144aa2c823030302d` on `feature/sephia-module`.\n- Result: **28 tests passed, 0 failed, 0 skipped** under Node.js 22 (`node --test`).\n- Included coverage: host payload/event-key contract, notification qualification, runtime lifecycle, speech controller, visual state, visual controls, runtime activation/deactivation failure containment, and avatar visibility/speech-state behavior.\n- This is source-level CI evidence only. It does not verify the actual Panitia browser, final artwork, local TTS, session expiry, or target workstation performance.\n\n## Risks and gates
 
 1. **Session lifecycle — Critical integration blocker.** Do not connect the runtime/avatar to Panitia until the real authenticated session, logout, expiry, and account-switch lifecycle are identified and tested.
 2. **Local TTS — High privacy/feasibility gate.** No external TTS/AI fallback. Browser-native speech must not be assumed local.
 3. **Final artwork — Medium product gate.** Current CSS fallback is a placeholder only.
 4. **Browser/device performance — Medium operational gate.** No claims until measured on the actual workstation.
-5. **CI — Pending evidence.** Workflow definition exists, but a green run must be read from GitHub Actions before the automated test gate is marked passed.
+5. **CI — Passed for the recorded commit.** Run #48 passed 28/28 tests. Re-run CI after any subsequent code changes; the result does not replace browser/device acceptance.
 
 ## Scope protection
 
