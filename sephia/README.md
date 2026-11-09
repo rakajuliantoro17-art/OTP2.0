@@ -4,7 +4,7 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 
 ## Status
 
-- Stage 2 notification metadata bridge and passive reader are implemented on this feature branch.
+- Stage 2 host metadata bridge and Stage 3 speech-controller foundation are implemented on this feature branch.
 - Stage 2 remains isolated: session-bound runtime activation and production deployment are not authorized or verified.
 - Development branch: `feature/sephia-module`.
 - Not imported by the OTP 2.0 application and not active in any deployment.
@@ -28,9 +28,11 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 sephia/
 ├── docs/
 │   ├── ARCHITECTURE.md
+│   ├── AUDIO-ADAPTER.md
 │   ├── HOST-INTEGRATION.md
 │   ├── MAINTENANCE.md
-│   └── STAGE-2-CLOSEOUT.md
+│   ├── STAGE-2-CLOSEOUT.md
+│   └── STAGE-3-CLOSEOUT.md
 ├── src/
 │   ├── core/
 │   │   └── notification-contract.js
@@ -38,18 +40,21 @@ sephia/
 │   │   └── dom-alert-observer.js
 │   ├── runtime/
 │   │   └── create-sephia-runtime.js
+│   ├── audio/
+│   │   └── announcement.js
 │   └── notification-reader.js
 ├── tests/
 │   ├── notification-reader.test.mjs
-│   └── host-contract.test.mjs
+│   ├── host-contract.test.mjs
+│   └── audio-controller.test.mjs
 └── package.json
 ```
 
 - **Core:** pure contract validation and qualification.
 - **Adapter:** passive observation of the exact `#alertList` element.
 - **Host bridge:** OTP host now forwards stable Firebase event IDs and server-originated violation counts into eligible rendered alerts on this feature branch.
-- **Runtime:** explicit activation/deactivation and session lifecycle.
-- **Optional future modules:** TTS, voice input, avatar, and visualizer remain separate and are not implemented.
+- **Runtime:** explicit activation/deactivation; routes normalized notifications to optional speech controller without allowing callback errors to escape.
+- **Audio controller:** fixed generic announcement, newest-event interruption, cancellation, and contained provider failures. Concrete audio provider and microphone/wake-word remain gated pending local-processing verification.
 
 ## Host contract (implemented on this feature branch only)
 
@@ -80,6 +85,6 @@ A GitHub Actions workflow at `.github/workflows/sephia-tests.yml` runs this suit
 3. Connect runtime only after a trusted session provider and expiry/logout hook are verified.
 4. Only then consider audio and visual layers as separately gated modules.
 
-See [Architecture](./docs/ARCHITECTURE.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 2 Closeout](./docs/STAGE-2-CLOSEOUT.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
+See [Architecture](./docs/ARCHITECTURE.md), [Audio Adapter](./docs/AUDIO-ADAPTER.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 2 Closeout](./docs/STAGE-2-CLOSEOUT.md), [Stage 3 Closeout](./docs/STAGE-3-CLOSEOUT.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
 
 Nothing in this folder self-activates or changes the production application.
