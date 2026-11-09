@@ -27,15 +27,18 @@ test("Chrome runbook builds dist before serving fixture on loopback", async () =
   assert.match(runbook, /npm run build/);
   assert.match(runbook, /127\.0\.0\.1:4173\/staging/);
   assert.match(runbook, /mock/i);
+  assert.match(runbook, /panitia-host\.html/);
 });
 
-test("Stage 9 package verifies the built fixture before artifact upload", async () => {
+test("Stage 10 package verifies both built fixtures before artifact upload", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const workflow = await read("../.github/workflows/sephia-tests.yml");
   const verifier = await read("scripts/verify-staging-build.mjs");
   assert.equal(pkg.scripts["verify:staging"], "node ./scripts/verify-staging-build.mjs");
+  assert.equal(pkg.version, "0.10.0-stage.10");
   assert.match(verifier, /manifest\.json/);
-  assert.match(verifier, /manifestPaths\.has/);\n  assert.match(verifier, /panitia-host-fixture\.js/);
+  assert.match(verifier, /manifestPaths\.has/);
+  assert.match(verifier, /panitia-host-fixture\.js/);
   assert.match(workflow, /npm run verify:staging/);
   assert.match(workflow, /sephia-stage10-host-trial-build-/);
 });
