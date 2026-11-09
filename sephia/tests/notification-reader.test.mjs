@@ -77,7 +77,7 @@ test("contract accepts count >= 27 and rejects malformed or incomplete events", 
     eventId: "evt", violationCount: "27", message: "Alert",
   }).violationCount, 27);
 
-  for (const value of ["", "26", "27x", "27.5", "-27", " 27", "999999999999999999999"]) {
+  for (const value of ["", "26", "31", "27x", "27.5", "-27", " 27", "999999999999999999999"]) {
     assert.equal(normalizeNotification({
       eventId: "evt", violationCount: value, message: "Alert",
     }), null);
