@@ -247,3 +247,25 @@ Do not start implementation until:
 7. The user approves the specific implementation stage.
 
 No item in this specification is evidence that the feature has been built.
+
+
+## 13. Additional verified repository constraints (Phase 0 audit)
+
+See `docs/SEPHIA-PHASE0-AUDIT.md` for evidence and the full risk register.
+
+- Panitia notifications currently originate from Firebase `alerts`; the local `/events` stream is used for student state, not alerts.
+- The Panitia listener discards Firebase `snap.key` and renders only message text.
+- The alert object has no explicit numeric violation count in the DOM contract. Alert existence alone does not prove count >=27.
+- `api/violation.js` can create alerts for selected critical violation types below count 27; the SEPHIA filter must use trusted numeric count.
+- The Panitia page source has no verified authentication/session/logout hook. Do not invent a session flag.
+- Vercel currently disables microphone access through its Permissions-Policy. Local LAN HTTP may also fail browser secure-context requirements. Verify the exact target URL/browser before designing wake-word activation.
+- Repository Firebase rules do not explicitly grant `alerts` read, but deployed rules are unknown. Do not change rules for SEPHIA.
+- Existing alert renderer interpolates message text with `innerHTML`; this is a separate XSS-hardening issue.
+- A TOTP secret is hard-coded in `moodle/inject.html`; treat it as exposed and remediate separately with coordinated rotation.
+
+## 14. Integration gates added after audit
+
+1. External runtime verification: Vercel protection, live Firebase rules, Panitia auth/session model, workstation URL/browser/OS.
+2. Notification contract: stable event ID and trusted numeric violation count attached only to the existing rendered notification item; safe text rendering.
+3. Scoped browser reader: observe only `#alertList`; no direct Firebase/API access.
+4. Audio and visualizer: only after browser microphone/TTS compatibility is proven.
