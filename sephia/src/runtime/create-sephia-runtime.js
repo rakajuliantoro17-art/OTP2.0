@@ -1,8 +1,8 @@
 import { createDomAlertObserver } from "../adapters/dom-alert-observer.js";
 
 /**
- * Runtime lifecycle only. It does not activate automatically and has no
- * persistence, audio, microphone, network, or OTP-control capability.
+ * Runtime lifecycle. Optional speech is injected through a narrow adapter;
+ * no provider, microphone, network, persistence, or OTP-control capability is bundled.
  */
 export function createSephiaRuntime({
   root,
