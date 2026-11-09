@@ -26,7 +26,7 @@ test("Stage 8 security check blocks network, persistence, eval, and microphone A
   const source = await read("scripts/check.mjs");
   for (const pattern of [
     /network fetch/, /persistent browser storage/, /dynamic code evaluation/,
-    /microphone access/, /import boundary/,
+    /microphone access/, /source boundary/,
   ]) assert.match(source, pattern);
 });
 
