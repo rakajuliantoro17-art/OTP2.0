@@ -57,7 +57,11 @@ Explicit activation/deactivation and session-local duplicate prevention. Runtime
 
 `visual-state.js` owns a small, non-persistent state model. `mount-sephia-controls.js` mounts controls only into an explicitly supplied container, uses DOM APIs/text nodes, and never searches the host document. The visualizer can be disabled independently without stopping the reader. Reduced-motion and visible keyboard focus are supported. The host supplies the explicit header mount. The Panitia dashboard has no account login; do not invent user-session or logout semantics.
 
-### Avatar renderer — `src/visual/mount-sephia-avatar.js`\n\nMounts only into an explicitly supplied container. It remains hidden unless the service is active and the visual state is listening or speaking, and is also hidden when the visualizer is disabled. Optional artwork must use a same-origin relative path; absent or failed artwork falls back to a CSS placeholder. The placeholder is not the final approved digital-human asset. Mouth activity requires both the speaking visual state and an injected speech controller reporting `isSpeaking === true`; this is a simple activity cue, not phoneme-aligned lip-sync.\n\n### Audio controller — `src/audio/announcement.js`
+### Avatar renderer — `src/visual/mount-sephia-avatar.js`
+
+Mounts only into an explicitly supplied container. It remains hidden unless the service is active and the visual state is listening or speaking, and is also hidden when the visualizer is disabled. Optional artwork must use a same-origin relative path; absent or failed artwork falls back to a CSS placeholder. The placeholder is not the final approved digital-human asset. Mouth activity requires both the speaking visual state and an injected speech controller reporting `isSpeaking === true`; this is a simple activity cue, not phoneme-aligned lip-sync.
+
+### Audio controller — `src/audio/announcement.js`
 
 Uses a fixed approved announcement, accepts only normalized violation events, cancels the prior utterance when a newer event arrives, and contains provider failures. A concrete provider is intentionally not bundled until local-only processing is verified on the target browser/OS. Microphone and wake-word remain future gated capabilities.
 
