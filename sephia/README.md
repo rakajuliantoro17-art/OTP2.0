@@ -4,7 +4,7 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 
 ## Status
 
-- Stage 2 host metadata bridge, Stage 3 speech-controller foundation, and Stage 4 visualizer/control modules are implemented on this feature branch.
+- Stage 2 host metadata bridge, Stage 3 speech-controller foundation, Stage 4 visualizer/control modules, and Stage 5 avatar-renderer foundation are implemented on this feature branch.
 - Stage 2 remains isolated: session-bound runtime activation and production deployment are not authorized or verified.
 - Development branch: `feature/sephia-module`.
 - Not imported by the OTP 2.0 application and not active in any deployment.
@@ -60,7 +60,7 @@ sephia/
 - **Host bridge:** OTP host now forwards stable Firebase event IDs and server-originated violation counts into eligible rendered alerts on this feature branch.
 - **Runtime:** explicit activation/deactivation; routes normalized notifications to optional speech controller without allowing callback errors to escape.
 - **Audio controller:** fixed generic announcement, newest-event interruption, cancellation, and contained provider failures. Concrete audio provider and microphone/wake-word remain gated pending local-processing verification.
-- **Visualizer & controls:** explicit mount-point UI, manual activation/deactivation, state indicator, holographic state-driven activity indicator (not an audio waveform), and independent visualizer toggle. Host mounting and session wiring are not connected.
+- **Visualizer & controls:** explicit mount-point UI, manual activation/deactivation, state indicator, holographic state-driven activity indicator (not an audio waveform), and independent visualizer toggle. Runtime cleanup is hardened against observer/speech failures. Host mounting and session wiring are not connected.\n- **Avatar renderer:** isolated presentation component with hidden-by-default behavior, optional same-origin asset slot, CSS fallback placeholder, and speech-state-gated mouth activity. It is not the final digital-human artwork and does not provide phoneme lip-sync.
 
 ## Host contract (implemented on this feature branch only)
 
@@ -91,6 +91,6 @@ A GitHub Actions workflow at `.github/workflows/sephia-tests.yml` runs this suit
 3. Connect runtime only after a trusted session provider and expiry/logout hook are verified.
 4. Only then consider audio and visual layers as separately gated modules.
 
-See [Architecture](./docs/ARCHITECTURE.md), [Audio Adapter](./docs/AUDIO-ADAPTER.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 2 Closeout](./docs/STAGE-2-CLOSEOUT.md), [Stage 3 Closeout](./docs/STAGE-3-CLOSEOUT.md), [Stage 4 Closeout](./docs/STAGE-4-CLOSEOUT.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
+See [Architecture](./docs/ARCHITECTURE.md), [Audio Adapter](./docs/AUDIO-ADAPTER.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 2 Closeout](./docs/STAGE-2-CLOSEOUT.md), [Stage 3 Closeout](./docs/STAGE-3-CLOSEOUT.md), [Stage 4 Closeout](./docs/STAGE-4-CLOSEOUT.md), [Stage 5 Avatar Specification](./docs/STAGE-5-AVATAR-SPEC.md), [Stage 4–5 Verification Plan](./docs/STAGE-4-5-VERIFICATION-PLAN.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
 
 Nothing in this folder self-activates or changes the production application.
