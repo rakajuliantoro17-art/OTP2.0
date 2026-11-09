@@ -25,7 +25,7 @@ export function normalizeNotification({ eventId, eventType = null, violationCoun
   if (!/^\d+$/.test(rawCount)) return null;
 
   const count = Number(rawCount);
-  if (!Number.isSafeInteger(count) || count < MIN_QUALIFYING_VIOLATION_COUNT) return null;
+  if (!Number.isSafeInteger(count) || count < MIN_QUALIFYING_VIOLATION_COUNT || count > MAX_EXPECTED_VIOLATION_COUNT) return null;
   if (typeof message !== "string" || !message.trim()) return null;
 
   return Object.freeze({
