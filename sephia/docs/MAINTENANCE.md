@@ -2,7 +2,7 @@
 
 ## Before changing code
 
-1. Read `../docs/SEPHIA-DECISION-REGISTER.md`, `../docs/SEPHIA-PHASE0-AUDIT.md`, and this module's `ARCHITECTURE.md`.
+1. Read `../../docs/SEPHIA-DECISION-REGISTER.md`, `../../docs/SEPHIA-PHASE0-AUDIT.md`, and this module's `ARCHITECTURE.md`.
 2. Confirm the change stays inside SEPHIA's approved passive-reader scope.
 3. Identify whether the change affects the core contract, DOM adapter, runtime lifecycle, or optional presentation.
 4. Add or update tests before integrating with the OTP host.
