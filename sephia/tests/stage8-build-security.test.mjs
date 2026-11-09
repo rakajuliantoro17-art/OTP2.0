@@ -36,5 +36,5 @@ test("build workflow runs tests, static checks, build, and publishes a CI artifa
   assert.match(workflow, /npm run check/);
   assert.match(workflow, /npm run build/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
-  assert.match(workflow, /sephia-stage9-staging-build-/);
+  assert.match(workflow, /sephia-stage10-host-trial-build-/);
 });
