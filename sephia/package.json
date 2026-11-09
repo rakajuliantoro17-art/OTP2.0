@@ -1,6 +1,6 @@
 {
   "name": "otp2-sephia",
-  "version": "0.8.0-stage.8",
+  "version": "0.10.0-stage.10",
   "private": true,
   "type": "module",
   "scripts": {
