@@ -4,7 +4,7 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 
 ## Status
 
-- Stage 2 notification metadata bridge, Stage 3 speech-controller foundation, Stage 4 visualizer/control modules, Stage 5 avatar-renderer foundation, and Stage 6 page-lifecycle helper are implemented on this feature branch.
+- Stage 2 notification metadata bridge, Stage 3 speech-controller foundation, Stage 4 visualizer/control modules, Stage 5 avatar-renderer foundation, Stage 6 page-lifecycle helper, and Stage 7 opt-in Panitia host integration are implemented on this feature branch.
 - The dashboard has no account login; access is through a dedicated URL known to Panitia. This is not authentication and does not establish viewer identity.
 - SEPHIA remains disconnected from the host dashboard and is not active in any deployment.
 - Development branch: `feature/sephia-module`; no merge to `main` or production deployment is authorized.
