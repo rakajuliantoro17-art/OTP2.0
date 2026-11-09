@@ -1,0 +1,8 @@
+{
+  "name": "otp2-sephia",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
