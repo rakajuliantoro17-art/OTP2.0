@@ -11,17 +11,21 @@ export function createSephiaRuntime({
   speechController = null,
   onNotificationError = () => {},
 }) {
+  const reportError = (error) => {
+    try { onNotificationError(error); } catch {}
+  };
+
   const deliverNotification = (event) => {
     try { onNotification?.(event); } catch (error) {
-      try { onNotificationError(error); } catch {}
+      reportError(error);
     }
     try {
       const result = speechController?.announce(event);
       if (result && typeof result.catch === "function") {
-        result.catch((error) => { try { onNotificationError(error); } catch {} });
+        result.catch(reportError);
       }
     } catch (error) {
-      try { onNotificationError(error); } catch {}
+      reportError(error);
     }
   };
 
@@ -32,29 +36,40 @@ export function createSephiaRuntime({
   });
 
   let active = false;
+  let disposed = false;
 
   return Object.freeze({
     activate() {
-      if (active) return;
+      if (disposed || active) return false;
+      // Do not set active until the observer successfully starts.
       observer.start();
       active = true;
+      return true;
     },
 
     deactivate() {
-      if (!active) return;
-      observer.stop();
-      try { speechController?.stop(); } catch {}
+      if (!active) return false;
+      // A broken observer or speech adapter must not strand the runtime in
+      // an active state or prevent the other cleanup operation from running.
+      try { observer.stop(); } catch (error) { reportError(error); }
+      try { speechController?.stop(); } catch (error) { reportError(error); }
       active = false;
+      return true;
     },
 
     dispose() {
-      observer.stop();
-      try { speechController?.dispose(); } catch {}
+      if (disposed) return;
+      try { observer.stop(); } catch (error) { reportError(error); }
+      try { speechController?.dispose(); } catch (error) { reportError(error); }
       active = false;
+      disposed = true;
     },
 
     get isActive() {
       return active;
+    },
+    get isDisposed() {
+      return disposed;
     },
   });
 }
