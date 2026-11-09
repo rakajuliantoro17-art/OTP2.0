@@ -1,9 +1,9 @@
-import { createSephiaRuntime } from "../src/runtime/create-sephia-runtime.js";
-import { bindPageLifecycle } from "../src/runtime/bind-page-lifecycle.js";
-import { createNotificationSpeechController } from "../src/audio/announcement.js";
-import { createVisualState } from "../src/visual/visual-state.js";
-import { mountSephiaControls } from "../src/visual/mount-sephia-controls.js";
-import { mountSephiaAvatar } from "../src/visual/mount-sephia-avatar.js";
+import { createSephiaRuntime } from "../dist/runtime/create-sephia-runtime.js";
+import { bindPageLifecycle } from "../dist/runtime/bind-page-lifecycle.js";
+import { createNotificationSpeechController } from "../dist/audio/announcement.js";
+import { createVisualState } from "../dist/visual/visual-state.js";
+import { mountSephiaControls } from "../dist/visual/mount-sephia-controls.js";
+import { mountSephiaAvatar } from "../dist/visual/mount-sephia-avatar.js";
 
 const alertList = document.getElementById("alertList");
 const status = document.getElementById("fixtureStatus");
