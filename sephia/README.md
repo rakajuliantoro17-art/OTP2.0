@@ -61,11 +61,13 @@ The host must populate metadata from the authoritative server-originated alert p
 
 ## Test
 
-From this folder, using Node.js with built-in `node:test` support:
+From this folder, using Node.js 22 with built-in `node:test` support. The suite includes unit tests and source-level regression checks for the OTP host contract:
 
 ```bash
 npm test
 ```
+
+A GitHub Actions workflow at `.github/workflows/sephia-tests.yml` runs this suite when SEPHIA files change. The workflow is configured, but its first run has not yet been independently verified.
 
 ## Integration gates
 
