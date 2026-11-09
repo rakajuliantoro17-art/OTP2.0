@@ -10,17 +10,14 @@ assert.equal(manifest.name, "SEPHIA");
 assert.equal(manifest.format, "browser-esm");
 assert.ok(manifest.files.length > 0, "Build manifest must list modules.");
 
-const fixtures = [
-  "staging/fixture.js",
-  "staging/panitia-host-fixture.js",
-];
+const fixtures = ["staging/fixture.js", "staging/panitia-host-fixture.js"];
 const manifestPaths = new Set(manifest.files.map((file) => file.path));
 let verifiedImports = 0;
 
 for (const relativeFixture of fixtures) {
   const fixturePath = join(root, relativeFixture);
   const fixture = await readFile(fixturePath, "utf8");
-  const imports = [...fixture.matchAll(/(?:from\\s*|import\\s*)["'](\\.{1,2}\\/[^"']+)["']/g)];
+  const imports = [...fixture.matchAll(/(?:from\s*|import\s*)["'](\.{1,2}\/[^"']+)["']/g)];
   assert.ok(imports.length > 0, relativeFixture + " must import built modules.");
 
   for (const match of imports) {
