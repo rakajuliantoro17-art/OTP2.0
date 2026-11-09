@@ -19,6 +19,7 @@ test("Panitia loads SEPHIA only after alert component and catches optional-modul
   assert.ok(bridgeImport > alertLoad);
   assert.ok(guardedCatch > bridgeImport);
   assert.match(html, /document\.addEventListener\("DOMContentLoaded", initializeDashboard\)/);
+  assert.ok(html.includes("window.SEPHIA = mountPanitiaSephia"));
 });
 
 test("host integration contains no authentication assumption or persistent identity storage", async () => {
