@@ -19,9 +19,18 @@ export function createNotificationSpeechController({
     try { onStateChange(value ? "speaking" : "standby"); } catch {}
   };
 
+  const stop = () => {
+    if (disposed) return;
+    activeToken += 1;
+    try { adapter.cancel(); } catch (error) {
+      try { onError(error); } catch {}
+    }
+    setSpeaking(false);
+  };
+
   return Object.freeze({
     async announce(event) {
-      if (disposed || !event?.eventId || !Number.isSafeInteger(event.violationCount) ||
+      if (disposed || !event?.eventId || event.eventType !== "violation" || !Number.isSafeInteger(event.violationCount) ||
           event.violationCount < 27 || event.violationCount > 30) return false;
 
       const token = ++activeToken;
@@ -45,18 +54,11 @@ export function createNotificationSpeechController({
       }
     },
 
-    stop() {
-      if (disposed) return;
-      activeToken += 1;
-      try { adapter.cancel(); } catch (error) {
-        try { onError(error); } catch {}
-      }
-      setSpeaking(false);
-    },
+    stop,
 
     dispose() {
       if (disposed) return;
-      this.stop?.();
+      stop();
       disposed = true;
     },
 
