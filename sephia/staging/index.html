@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>SEPHIA — Staging Acceptance Fixture</title>
+  <style>
+    :root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#07111f;color:#e7f2ff}
+    *{box-sizing:border-box}body{margin:0;padding:clamp(16px,4vw,40px);background:radial-gradient(ellipse at 12% 0%,#142b48 0,transparent 42%),#07111f}
+    main{max-width:1000px;margin:auto}.panel{border:1px solid #24415e;border-radius:18px;padding:20px;margin:18px 0;background:rgba(11,27,47,.86);box-shadow:0 14px 40px #0004}
+    h1{font-size:clamp(1.4rem,3vw,2rem);margin:0 0 8px}.muted{color:#a8bfd4;line-height:1.55}.warning{border-left:3px solid #f0c46a;padding:10px 14px;background:#4a3a1d55}
+    .actions{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}.actions button{border:1px solid #416887;border-radius:10px;padding:10px 13px;background:#132d48;color:#e7f2ff;cursor:pointer}.actions button:hover{background:#1b4162}
+    #alertList{display:grid;gap:8px;max-height:260px;overflow:auto}.alert-item{padding:11px 13px;border:1px solid #31516c;border-radius:10px;background:#0c1d30}.alert-msg{color:#d8e8f6}.meta{font:12px ui-monospace,monospace;color:#87b5d4;margin-top:5px}
+    #eventLog{white-space:pre-wrap;overflow-wrap:anywhere;max-height:220px;overflow:auto;font:12px/1.6 ui-monospace,monospace;color:#a9c8df}
+    #sephiaControls{display:flex;justify-content:flex-end;min-height:50px}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>SEPHIA — Staging Acceptance Fixture</h1>
+  <p class="muted">Lingkungan simulasi terisolasi. Tidak terhubung ke OTP 2.0, Firebase, API, Moodle, akun Panitia, atau data siswa. Seluruh identitas dan notifikasi di bawah ini sintetis.</p>
+  <p class="warning">Audio di fixture ini hanya mock/simulasi Promise; tidak mengeluarkan suara, tidak meminta mikrofon, dan tidak menguji TTS lokal. Jangan gunakan URL produksi.</p>
+
+  <section class="panel">
+    <div id="sephiaControls"></div>
+    <div id="avatarMount"></div>
+    <div class="actions">
+      <button data-count="26">Simulasi count 26</button>
+      <button data-count="27">Simulasi count 27</button>
+      <button data-count="28">Simulasi count 28</button>
+      <button data-count="29">Simulasi count 29</button>
+      <button data-count="30">Simulasi count 30</button>
+      <button data-count="31">Simulasi count 31</button>
+      <button id="duplicate">Kirim ulang event terakhir</button>
+      <button id="burst">Simulasi burst 27–29</button>
+      <button id="failAudio">Simulasi kegagalan audio</button>
+      <button id="clear">Bersihkan daftar simulasi</button>
+    </div>
+    <p class="muted" id="fixtureStatus" role="status">Status fixture: siap. SEPHIA harus OFF saat halaman pertama dibuka.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Daftar notifikasi sintetis (#alertList)</h2>
+    <div id="alertList" aria-live="polite"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Log uji lokal</h2>
+    <div id="eventLog" aria-live="polite">Fixture dimuat. Belum ada event.</div>
+  </section>
+</main>
+<script type="module" src="./fixture.js"></script>
+</body>
+</html>
