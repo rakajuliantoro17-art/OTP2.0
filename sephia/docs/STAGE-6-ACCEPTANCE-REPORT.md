@@ -34,16 +34,16 @@
 | Integrated Panitia header/host CSS | BLOCKED | SEPHIA remains disconnected from host |
 | OTP independence under real host integration | PARTIAL | Source-level isolation only; no live host integration test |
 
-## Latest pre-Stage-6 CI evidence
+## Stage 6 current-HEAD automated CI evidence
 
-GitHub Actions run [#49](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42559904030) completed successfully on commit `5c153e7913fa058e2d5c45a610c2a2c86d5b29e4`, Node.js 22.23.4:
+GitHub Actions run [#57](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42562752516) completed successfully on the current Stage 6 test commit `4cdd50217fedb8087d8014eb30c1c50b6b14eb3b`, Node.js 22.23.4:
 
-- 28 tests passed
-- 0 failed
-- 0 skipped
-- total test duration approximately 188 ms
+- **33 tests passed**
+- **0 failed**
+- **0 skipped**
+- total test duration approximately 266 ms
 
-This CI run predates the Stage 6 acceptance test and fixture. It is baseline evidence only; the Stage 6 commit must receive its own successful CI run before Stage 6 automated acceptance is marked PASS.
+The run includes the Stage 6 burst/threshold/deduplication test, manual OFF/ON and no-backlog test, simulated TTS-failure containment, pending-speech cancellation, and fixture syntax/isolation test. Subsequent changes after this test commit are documentation-only; executable source and test files are unchanged.
 
 ## Release gate
 
