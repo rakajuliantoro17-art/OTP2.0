@@ -37,7 +37,7 @@ SEPHIA runtime lifecycle
   src/runtime/create-sephia-runtime.js
       |
       +--> audio announcement controller (optional)
-      +--> future visualizer (optional)
+      +--> visualizer and controls (optional)
       +--> future avatar renderer (optional)
 ```
 
@@ -52,6 +52,10 @@ Narrow integration with the host DOM. An adapter may observe only the explicitly
 ### Runtime — `src/runtime/`
 
 Explicit activation/deactivation and session-local duplicate prevention. Runtime must not self-start and must clear its in-memory event IDs when stopped.
+
+### Visualizer and controls — `src/visual/`
+
+`visual-state.js` owns a small, non-persistent state model. `mount-sephia-controls.js` mounts controls only into an explicitly supplied container, uses DOM APIs/text nodes, and never searches the host document. The visualizer can be disabled independently without stopping the reader. Reduced-motion and visible keyboard focus are supported. The host remains responsible for trusted header placement and session-expiry/logout deactivation.
 
 ### Audio controller — `src/audio/announcement.js`
 
