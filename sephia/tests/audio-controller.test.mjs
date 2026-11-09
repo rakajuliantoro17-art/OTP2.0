@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { DEFAULT_ANNOUNCEMENT, createNotificationSpeechController } from "../src/audio/announcement.js";
 
-const valid = (eventId) => ({ eventId, violationCount: 27, message: "visible alert" });
+const valid = (eventId) => ({ eventId, eventType: "violation", violationCount: 27, message: "visible alert" });
 
 function deferred() {
   let resolve;
@@ -17,6 +17,7 @@ test("audio controller uses the approved generic announcement and rejects out-of
   const controller = createNotificationSpeechController({ adapter });
 
   assert.equal(await controller.announce({ ...valid("bad"), violationCount: 26 }), false);
+  assert.equal(await controller.announce({ ...valid("wrong-type"), eventType: "critical" }), false);
   assert.equal(spoken.length, 0);
   assert.equal(await controller.announce(valid("ok")), true);
   assert.deepEqual(spoken, [DEFAULT_ANNOUNCEMENT]);
