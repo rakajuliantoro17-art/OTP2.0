@@ -89,7 +89,7 @@ async function initializeDashboard() {
     // SEPHIA is optional: its failure must never block the Panitia dashboard.
     try {
         const { mountPanitiaSephia } = await import("../sephia/src/host/mount-panitia-sephia.js");
-        window.SEPhIA = mountPanitiaSephia({
+        window.SEPHIA = mountPanitiaSephia({
             onError(error) {
                 console.warn("[SEPHIA] Modul tidak aktif; dashboard tetap berjalan.", error);
             }
