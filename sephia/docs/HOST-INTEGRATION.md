@@ -55,7 +55,9 @@ Do not infer session validity from URL, page visibility, the presence of dashboa
 - [ ] Test count above 30, missing count, non-integer count, and non-violation alert: visible if the host already renders it, but no SEPHIA metadata.
 - [ ] Confirm duplicate Firebase delivery does not cause duplicate speech within one active runtime session.
 - [ ] Confirm SEPHIA observer failure does not affect Panitia alert rendering.
-- [ ] Run `npm test` from `sephia/` and perform browser staging tests.
+- [ ] Run `npm test` from `sephia/`; this includes unit tests and source-level host-contract regression checks.
+- [ ] Confirm the GitHub Actions workflow `.github/workflows/sephia-tests.yml` passes.
+- [ ] Perform browser staging tests.
 
 ## 6. Rollback
 
