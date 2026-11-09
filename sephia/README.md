@@ -91,6 +91,6 @@ A GitHub Actions workflow at `.github/workflows/sephia-tests.yml` runs this suit
 3. Connect runtime only after a trusted session provider and expiry/logout hook are verified.
 4. Only then consider audio and visual layers as separately gated modules.
 
-See [Architecture](./docs/ARCHITECTURE.md), [Audio Adapter](./docs/AUDIO-ADAPTER.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 2 Closeout](./docs/STAGE-2-CLOSEOUT.md), [Stage 3 Closeout](./docs/STAGE-3-CLOSEOUT.md), [Stage 4 Closeout](./docs/STAGE-4-CLOSEOUT.md), [Stage 5 Avatar Specification](./docs/STAGE-5-AVATAR-SPEC.md), [Stage 4–5 Verification Plan](./docs/STAGE-4-5-VERIFICATION-PLAN.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
+See [Architecture](./docs/ARCHITECTURE.md), [Audio Adapter](./docs/AUDIO-ADAPTER.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 2 Closeout](./docs/STAGE-2-CLOSEOUT.md), [Stage 3 Closeout](./docs/STAGE-3-CLOSEOUT.md), [Stage 4 Closeout](./docs/STAGE-4-CLOSEOUT.md), [Stage 5 Avatar Specification](./docs/STAGE-5-AVATAR-SPEC.md), [Stage 4–5 Verification Plan](./docs/STAGE-4-5-VERIFICATION-PLAN.md), [Stage 6 Chrome Runbook](./docs/STAGE-6-CHROME-TEST-RUNBOOK.md), [Stage 6 Acceptance Report](./docs/STAGE-6-ACCEPTANCE-REPORT.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
 
 Nothing in this folder self-activates or changes the production application.
