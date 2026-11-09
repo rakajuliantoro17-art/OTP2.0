@@ -51,16 +51,30 @@ The current tests use Node's built-in test runner and do not require external de
 - [ ] Visualizer can be disabled without deactivating the reader.
 - [ ] Controls mount only into an explicit host-provided container.
 - [ ] Reduced-motion and keyboard focus behavior remain accessible.
-- [ ] Visual/UI errors cannot interrupt Panitia alert rendering.\n- [ ] Avatar remains hidden while inactive and in standby.\n- [ ] Avatar artwork uses a same-origin relative asset path only.\n- [ ] Mouth activity requires the actual speech controller speaking state.\n- [ ] CSS fallback is never described as the final digital-human avatar.\n- [ ] Avatar and visualizer respect reduced-motion preferences and dispose cleanly.
+- [ ] Visual/UI errors cannot interrupt Panitia alert rendering.
+- [ ] Avatar remains hidden while inactive and in standby.
+- [ ] Avatar artwork uses a same-origin relative asset path only.
+- [ ] Mouth activity requires the actual speech controller speaking state.
+- [ ] CSS fallback is never described as the final digital-human avatar.
+- [ ] Avatar and visualizer respect reduced-motion preferences and dispose cleanly.
 
-## Stage 6 staging acceptance\n\n- Use only the isolated synthetic fixture in `staging/`; never connect it to production OTP, Firebase, Moodle, or real student data.\n- Follow `docs/STAGE-6-CHROME-TEST-RUNBOOK.md` and record results in `docs/STAGE-6-ACCEPTANCE-REPORT.md`.\n- A passing Node.js suite does not prove Chrome, local TTS, microphone, session expiry, workstation lock, or device performance.\n- Keep the fixture bound to loopback (`127.0.0.1`) and do not expose its static server to the LAN.\n- Stage 6 Chrome acceptance is deferred until the Stage 8 build artifact is ready; passing Node tests does not replace the PC test.\n\n## Production release gate
+## Stage 6 staging acceptance
+
+- Use only the isolated synthetic fixture in `staging/`; never connect it to production OTP, Firebase, Moodle, or real student data.
+- Follow `docs/STAGE-6-CHROME-TEST-RUNBOOK.md` and record results in `docs/STAGE-6-ACCEPTANCE-REPORT.md`.
+- A passing Node.js suite does not prove Chrome, local TTS, microphone, session expiry, workstation lock, or device performance.
+- Keep the fixture bound to loopback (`127.0.0.1`) and do not expose its static server to the LAN.
+- Stage 6 Chrome acceptance is deferred until the Stage 8 build artifact is ready; passing Node tests does not replace the PC test.
+
+## Production release gate
 
 The feature-branch source integration is already in place. Do not promote it to production until the following are verified:
 
 - actual deployed Firebase alert-read behavior;
 - host-generated event ID and numeric violation count;
 - local/staging browser behavior;
-- avatar asset loading and target-workstation performance;\n- local TTS/viseme timing before lip-sync is claimed;
+- avatar asset loading and target-workstation performance;
+- local TTS/viseme timing before lip-sync is claimed;
 - microphone and TTS feasibility only if those future capabilities are explicitly approved.
 
 Vercel being paused is compatible with isolated repository development. It does not prove runtime or browser behavior.
