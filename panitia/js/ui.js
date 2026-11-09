@@ -218,12 +218,20 @@ function addAlert(message, type = "info") {
 
     const item = document.createElement("div");
     item.className = `alert-item alert-${type}`;
-    item.innerHTML = `
-        <span class="alert-icon">${icon}</span>
-        <span class="alert-msg">${message}</span>
-        <span class="alert-time">${time}</span>
-    `;
 
+    const iconElement = document.createElement("span");
+    iconElement.className = "alert-icon";
+    iconElement.textContent = icon;
+
+    const messageElement = document.createElement("span");
+    messageElement.className = "alert-msg";
+    messageElement.textContent = String(message ?? "");
+
+    const timeElement = document.createElement("span");
+    timeElement.className = "alert-time";
+    timeElement.textContent = time;
+
+    item.append(iconElement, messageElement, timeElement);
     list.prepend(item);
 
     // Batasi maksimal 20 alert di DOM
