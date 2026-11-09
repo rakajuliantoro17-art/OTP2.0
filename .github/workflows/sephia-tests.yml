@@ -31,10 +31,13 @@ jobs:
       - name: Build browser ES module package
         working-directory: sephia
         run: npm run build
-      - name: Upload Stage 8 build artifact
+      - name: Verify staging fixture against built distribution
+        working-directory: sephia
+        run: npm run verify:staging
+      - name: Upload Stage 9 staging build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage8-build-${{ github.sha }}
+          name: sephia-stage9-staging-build-${{ github.sha }}
           path: sephia/dist/
           if-no-files-found: error
           retention-days: 14
