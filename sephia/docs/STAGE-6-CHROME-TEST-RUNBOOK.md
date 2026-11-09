@@ -45,6 +45,20 @@ python -m http.server 4173 --bind 127.0.0.1
 
 If Python is unavailable, use an approved local static server bound to loopback only. Do not expose the fixture server to the LAN.
 
+## Stage 10 — Panitia host bridge fixture
+
+The additional page `/staging/panitia-host.html` imports the built `dist/host/mount-panitia-sephia.js` bridge and uses the exact host mount IDs. It is still synthetic-only and does not open the OTP dashboard.
+
+Record PASS/FAIL/BLOCKED for:
+- Initial OFF and manual activation.
+- Count 26 ignored; counts 27–30 forwarded once; count 31 ignored.
+- Duplicate event ID ignored.
+- Manual OFF prevents subsequent callbacks.
+- Refresh returns to OFF with no backlog replay.
+- Console and Network panel show no SEPHIA errors or non-loopback requests.
+
+See [Stage 10 Host Trial Readiness](./STAGE-10-HOST-TRIAL-READINESS.md) for the complete H10 matrix.
+
 ## Test procedure
 
 Record PASS, FAIL, or BLOCKED with Chrome version, OS version, date/time, and evidence containing no real student data.
