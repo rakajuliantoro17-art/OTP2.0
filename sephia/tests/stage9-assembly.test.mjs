@@ -35,7 +35,7 @@ test("Stage 9 package verifies the built fixture before artifact upload", async 
   const verifier = await read("scripts/verify-staging-build.mjs");
   assert.equal(pkg.scripts["verify:staging"], "node ./scripts/verify-staging-build.mjs");
   assert.match(verifier, /manifest\.json/);
-  assert.match(verifier, /manifestPaths\.has/);
+  assert.match(verifier, /manifestPaths\.has/);\n  assert.match(verifier, /panitia-host-fixture\.js/);
   assert.match(workflow, /npm run verify:staging/);
-  assert.match(workflow, /sephia-stage9-staging-build-/);
+  assert.match(workflow, /sephia-stage10-host-trial-build-/);
 });
