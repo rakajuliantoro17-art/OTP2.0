@@ -36,12 +36,12 @@
 
 ## Stage 6 current-HEAD automated CI evidence
 
-GitHub Actions run [#57](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42562752516) completed successfully on the current Stage 6 test commit `4cdd50217fedb8087d8014eb30c1c50b6b14eb3b`, Node.js 22.23.4:
+GitHub Actions run [#58](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42562798678) completed successfully on branch head `c29431840b96f9f8df737bb54786492ec432bdf3` (the Stage 6 test code is unchanged from test commit `4cdd50217fedb8087d8014eb30c1c50b6b14eb3b`), Node.js 22.23.4:
 
 - **33 tests passed**
 - **0 failed**
 - **0 skipped**
-- total test duration approximately 266 ms
+- total test duration approximately 293 ms
 
 The run includes the Stage 6 burst/threshold/deduplication test, manual OFF/ON and no-backlog test, simulated TTS-failure containment, pending-speech cancellation, and fixture syntax/isolation test. Subsequent changes after this test commit are documentation-only; executable source and test files are unchanged.
 
