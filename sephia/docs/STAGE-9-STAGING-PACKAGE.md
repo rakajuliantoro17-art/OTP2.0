@@ -83,3 +83,15 @@ After the fixture passes on the Panitia PC:
 4. Decide whether to supply final avatar artwork.
 5. Independently qualify a local-only TTS provider or leave audio disabled.
 6. Complete host-integrated staging and rollback rehearsal before any production approval.
+
+## 9. Verified CI evidence
+
+GitHub Actions [run #106](https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42634295302) completed successfully on commit `76f09828bc58e070640685a87c01f8ed60cd6cd8`:
+- Node.js 22;
+- 51 tests passed, 0 failed, 0 skipped;
+- static security/import-boundary check passed across 10 source modules;
+- browser ES module build succeeded: 10 modules, 29,667 source bytes;
+- staging verifier resolved all 6 fixture imports against `dist/` and confirmed each is present in the SHA-256 manifest;
+- Stage 9 artifact uploaded successfully: `sephia-stage9-staging-build-76f09828bc58e070640685a87c01f8ed60cd6cd8` (12,867 bytes).
+
+This confirms repository/CI assembly only. It does not replace the manual Chrome/PC acceptance matrix or host-integrated staging.
