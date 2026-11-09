@@ -5,7 +5,7 @@
 1. Read `../../docs/SEPHIA-DECISION-REGISTER.md`, `../../docs/SEPHIA-PHASE0-AUDIT.md`, and this module's `ARCHITECTURE.md`.
 2. Confirm the change stays inside SEPHIA's approved passive-reader scope.
 3. Identify whether the change affects the core contract, DOM adapter, runtime lifecycle, or optional presentation.
-4. Add or update unit and host-contract regression tests before integrating with the OTP host.
+4. Add or update unit, host-contract, and audio-controller regression tests before integrating with the OTP host.
 5. Never change OTP thresholds, authentication, Firebase rules, or server behavior as part of a SEPHIA-only maintenance task.
 
 ## Local test
@@ -41,6 +41,9 @@ The current tests use Node's built-in test runner and do not require external de
 - [ ] Logout/session expiry can deactivate the runtime once a verified host hook exists.
 - [ ] No Firebase/API/Moodle/OTP mutation capability is introduced.
 - [ ] Optional audio/visual failures cannot break OTP 2.0.
+- [ ] Speech adapter is verified local before it is enabled.
+- [ ] New notification interrupts current speech; no overlapping utterances.
+- [ ] Microphone/wake-word permission is never requested on page load.
 
 ## Integration gate
 
