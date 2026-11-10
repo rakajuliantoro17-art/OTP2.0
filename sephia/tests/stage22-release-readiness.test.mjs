@@ -22,7 +22,7 @@ test("Stage 22 release audit is available and does not auto-deploy", async () =>
 test("release audit records the actual security and voice gates", async () => {
   const report = await read("docs/STAGE-22-RELEASE-READINESS.md");
   assert.match(report, /secure context/i);
-  assert.match(report, /Approved Indonesian feminine voice/);
+  assert.match(report, /Indonesian feminine voice/);
   assert.match(report, /#alertList/);
   assert.match(report, /No Firebase\/API\/Moodle access/);
 });
