@@ -34,10 +34,13 @@ jobs:
       - name: Verify staging fixture against built distribution
         working-directory: sephia
         run: npm run verify:staging
-      - name: Upload Stage 10 host trial build artifact
+      - name: Verify actual Panitia host contract against built package
+        working-directory: sephia
+        run: npm run verify:host
+      - name: Upload Stage 11 host integration build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage10-host-trial-build-${{ github.sha }}
+          name: sephia-stage11-host-integration-${{ github.sha }}
           path: sephia/dist/
           if-no-files-found: error
           retention-days: 14
