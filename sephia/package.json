@@ -1,12 +1,13 @@
 {
   "name": "otp2-sephia",
-  "version": "0.10.0-stage.10",
+  "version": "0.11.0-stage.11",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test",
     "check": "node ./scripts/check.mjs",
     "build": "node ./scripts/build.mjs",
-    "verify:staging": "node ./scripts/verify-staging-build.mjs"
+    "verify:staging": "node ./scripts/verify-staging-build.mjs",
+    "verify:host": "node ./scripts/verify-host-integration.mjs"
   }
 }
