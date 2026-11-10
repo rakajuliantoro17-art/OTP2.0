@@ -76,9 +76,10 @@ export function mountPanitiaSephia({
       adapter: speechAdapter,
       onStateChange(state) {
         if (!visualState.snapshot.active) return;
-        visualState.setState(state);
-        if (state === "speaking") wakeRecognizer.pause();
-        else if (state === "standby") wakeRecognizer.resume();
+        if (state === "speaking") visualState.setState("speaking");
+        else if (state === "standby") {
+          visualState.setState(wakeRecognizer.isActive ? "standby" : "limited");
+        }
       },
       onError(error) {
         if (visualState.snapshot.active) visualState.setState("limited");
