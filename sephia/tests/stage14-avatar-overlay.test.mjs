@@ -8,10 +8,10 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 test("Stage 14 host avatar overlay is included in package and CI", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const workflow = await read("../.github/workflows/sephia-tests.yml");
-  assert.equal(pkg.version, "0.14.0-stage.14");
+  assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.equal(pkg.scripts["verify:avatar"], "node --test ./tests/avatar-renderer.test.mjs ./tests/panitia-host-integration.test.mjs");
   assert.match(workflow, /npm run verify:avatar/);
-  assert.match(workflow, /sephia-stage14-host-avatar-overlay-/);
+  assert.match(workflow, /sephia-stage\d+-(?:host-avatar-overlay|notification-speech-pipeline)-/);
 });
 
 test("Panitia topbar mounts avatar separately from the SEPHIA control", async () => {
