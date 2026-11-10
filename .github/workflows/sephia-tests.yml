@@ -46,10 +46,13 @@ jobs:
       - name: Verify Panitia avatar overlay and failure isolation
         working-directory: sephia
         run: npm run verify:avatar
-      - name: Upload Stage 14 avatar overlay build artifact
+      - name: Verify end-to-end notification speech pipeline
+        working-directory: sephia
+        run: npm run verify:pipeline
+      - name: Upload Stage 15 notification speech pipeline artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage14-host-avatar-overlay-${{ github.sha }}
+          name: sephia-stage15-notification-speech-pipeline-${{ github.sha }}
           path: sephia/dist/
           if-no-files-found: error
           retention-days: 14
