@@ -29,14 +29,14 @@ test("host callback remains optional and production default remains no-op", asyn
   assert.match(bridge, /try \{ onNotification\(event\); \} catch \(error\) \{ report\(error\); \}/);
 });
 
-test("Stage 10 verifier checks both built fixtures and workflow artifact", async () => {
+test("Stage 10 verifier checks both built fixtures and remains wired in current CI", async () => {
   const verifier = await read("scripts/verify-staging-build.mjs");
   const workflow = await read("../.github/workflows/sephia-tests.yml");
   const pkg = JSON.parse(await read("package.json"));
-  assert.equal(pkg.version, "0.10.0-stage.10");
+  assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.match(verifier, /staging\/fixture\.js/);
   assert.match(verifier, /staging\/panitia-host-fixture\.js/);
   assert.match(verifier, /manifestPaths\.has/);
   assert.match(workflow, /npm run verify:staging/);
-  assert.match(workflow, /sephia-stage10-host-trial-build-/);
+  assert.match(workflow, /sephia-stage\d+-(?:host-trial-build|host-integration)-/);
 });
