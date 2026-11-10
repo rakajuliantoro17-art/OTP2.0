@@ -18,7 +18,7 @@ Stage 6 therefore tests a **document/page lifecycle boundary**, not a login sess
 - Page visibility changes alone do not stop SEPHIA; background-tab behavior must be measured.
 - No user identity, role, or login state is created or inferred.
 
-The fixture imports the packaged `dist/` modules and contains only synthetic data plus a mock speech adapter. It does not call remote APIs, Firebase, OTP actions, or request microphone/camera/location permissions.
+The host fixture imports the packaged `dist/` modules and contains only synthetic data plus a mock speech adapter. It does not call remote APIs, Firebase, OTP actions, or request microphone/camera/location permissions. A separate voice-diagnostics page is available for explicit local TTS and on-device wake-word checks; it is not part of the Stage 6 no-permission fixture.
 
 ## Prepare the fixture on the Panitia PC
 
@@ -59,7 +59,7 @@ Record PASS/FAIL/BLOCKED for:
 
 See [Stage 10 Host Trial Readiness](./STAGE-10-HOST-TRIAL-READINESS.md) for the complete H10 matrix.
 
-## Test procedure
+## Stage 16 — local voice diagnostics\n\nAfter `npm run build`, open `http://127.0.0.1:4173/staging/voice-diagnostics.html` on the Panitia PC. This page is separate from the synthetic host fixture. Click **Uji suara SEPHIA** to test the selected local Indonesian feminine TTS voice, then click **Mulai uji “SEPHIA”** to request microphone access and check on-device `id-ID` recognition. Say only “SEPHIA”; do not use student names or real alert data. Stop the recognizer after the test. The page never auto-starts the microphone, stores audio, or sends transcripts. If the browser lacks a local feminine Indonesian voice or on-device recognition, record BLOCKED rather than enabling a cloud fallback.\n\n## Test procedure
 
 Record PASS, FAIL, or BLOCKED with Chrome version, OS version, date/time, and evidence containing no real student data.
 
