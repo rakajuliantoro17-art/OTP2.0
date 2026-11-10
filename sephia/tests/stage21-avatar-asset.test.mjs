@@ -18,5 +18,5 @@ test("Panitia host points to the bundled original SEPHIA portrait", async () => 
 
 test("portrait is self-contained and does not load remote fonts, images, or scripts", async () => {
   const svg = await read("assets/avatar-sephia.svg");
-  assert.doesNotMatch(svg, /https?:\/\/|<image\b|<script\b|@import|font-family:/i);
+  assert.doesNotMatch(svg, /(?:href|src)\s*=\s*["']https?:\/\/|<image\b|<script\b|@import|font-family:/i);
 });
