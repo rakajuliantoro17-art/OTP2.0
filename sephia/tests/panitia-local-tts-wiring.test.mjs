@@ -27,6 +27,7 @@ test("Panitia bridge injects a local Indonesian speech adapter into the runtime"
     documentImpl,
     windowImpl,
     createSpeechAdapter: () => adapter,
+    createWakeWordRecognizer: () => ({ isActive: true, start: async () => true, stop() {}, dispose() {} }),
     createRuntime: (options) => {
       runtimeOptions = options;
       return {
@@ -52,7 +53,7 @@ test("Panitia bridge injects a local Indonesian speech adapter into the runtime"
   bridge.dispose();
 });
 
-test("TTS failure degrades only the SEPHIA visual state to limited mode", async () => {
+test("TTS failure degrades only the SEPHIA visual state to red error mode", async () => {
   const documentImpl = {
     getElementById(id) { return { id }; },
   };
@@ -80,6 +81,6 @@ test("TTS failure degrades only the SEPHIA visual state to limited mode", async 
     eventType: "violation",
     violationCount: 28,
   }), false);
-  assert.equal(bridge.visualState.snapshot.state, "limited");
+  assert.equal(bridge.visualState.snapshot.state, "error");
   bridge.dispose();
 });
