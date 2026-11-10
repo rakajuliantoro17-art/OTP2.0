@@ -1,6 +1,7 @@
 # SEPHIA Stage 11 — Host Integration Build and Verification
 
-**Status:** strengthened repository verifier committed; latest CI run must be checked before marking the repository gate passed  
+**Status:** strengthened repository verifier committed; latest CI run pending final green confirmation  
+**Chrome acceptance:** pending on the Panitia PC  
 **Branch:** `feature/sephia-module`  
 **Vercel:** paused; no deployment attempted  
 **Production:** unchanged; no merge to `main`, no Firebase Rules/Moodle/OTP behavior changes
