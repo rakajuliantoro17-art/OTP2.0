@@ -1,6 +1,6 @@
 {
   "name": "otp2-sephia",
-  "version": "0.16.0-stage.16",
+  "version": "0.18.0-stage.18",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,6 +13,7 @@
     "verify:wakeword": "node --test ./tests/local-wake-word.test.mjs ./tests/panitia-wake-word-wiring.test.mjs",
     "verify:avatar": "node --test ./tests/avatar-renderer.test.mjs ./tests/panitia-host-integration.test.mjs",
     "verify:pipeline": "node --test ./tests/runtime-speech-pipeline.test.mjs ./tests/audio-controller.test.mjs",
-    "verify:diagnostics": "node --test ./tests/stage16-voice-diagnostics.test.mjs"
+    "verify:diagnostics": "node --test ./tests/stage16-voice-diagnostics.test.mjs",
+    "verify:audio": "node --test ./tests/local-audio-announcement.test.mjs"
   }
 }
