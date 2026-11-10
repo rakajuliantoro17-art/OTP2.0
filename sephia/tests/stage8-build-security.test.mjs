@@ -30,11 +30,11 @@ test("Stage 8 security check blocks network, persistence, eval, and microphone A
   ]) assert.match(source, pattern);
 });
 
-test("build workflow runs tests, static checks, build, and publishes a CI artifact", async () => {
+test("build workflow runs tests, static checks, build, and publishes a versioned CI artifact", async () => {
   const workflow = await read("../.github/workflows/sephia-tests.yml");
   assert.match(workflow, /npm test/);
   assert.match(workflow, /npm run check/);
   assert.match(workflow, /npm run build/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
-  assert.match(workflow, /sephia-stage10-host-trial-build-/);
+  assert.match(workflow, /sephia-stage\d+-(?:host-trial-build|host-integration)-/);
 });
