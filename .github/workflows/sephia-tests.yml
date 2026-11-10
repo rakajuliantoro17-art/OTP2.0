@@ -37,7 +37,7 @@ jobs:
       - name: Verify actual Panitia host contract against built package
         working-directory: sephia
         run: npm run verify:host
-      - name: Upload Stage 11 host integration build artifact
+      - name: Upload Stage 12 local Indonesian TTS build artifact
         uses: actions/upload-artifact@v4
         with:
           name: sephia-stage12-local-indonesian-tts-${{ github.sha }}
