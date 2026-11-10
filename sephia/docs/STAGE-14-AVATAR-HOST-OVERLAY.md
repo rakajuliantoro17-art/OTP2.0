@@ -21,7 +21,7 @@ Stage 21 adds an original same-origin SVG portrait at `/sephia/assets/avatar-sep
 
 The CSS-generated geometric face is retained only as a loading/error fallback. It is a placeholder, not the approved final artwork. If the SVG fails to load, the fallback is shown and the dashboard continues to work.
 
-Mouth movement is a short speaking-state cue only. It is not phoneme-aligned lip synchronization. True audio-timed lip synchronization remains incomplete.
+Mouth movement is a short speaking-state cue only. Phoneme-aligned lip synchronization is intentionally outside the approved SEPHIA scope and is not a release blocker.
 
 ## Lifecycle and failure policy
 
