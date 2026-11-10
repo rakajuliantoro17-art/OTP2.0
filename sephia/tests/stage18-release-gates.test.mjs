@@ -13,7 +13,7 @@ test("Stage 18 package and CI include the local audio acceptance gate", async ()
   assert.equal(pkg.scripts["verify:audio"], "node --test ./tests/local-audio-announcement.test.mjs");
   assert.match(workflow, /- main/);
   assert.match(workflow, /npm run verify:audio/);
-  assert.match(workflow, /sephia-stage18-local-audio-/);
+  assert.match(workflow, /sephia-stage18-local-voice-diagnostics-/);
   assert.match(readme, /Stage 18/);
 });
 
@@ -24,5 +24,5 @@ test("production voice and avatar assets are not falsely represented as complete
   assert.match(bridge, /createBrowserLocalIndonesianTts/);
   assert.match(avatar, /CSS-generated geometric placeholder/);
   assert.match(stage18, /A valid audio file does not yet exist/);
-  assert.match(stage18, /not selected in production/);
+  assert.match(stage18, /not yet wired as production voice|not selected by default yet/);
 });
