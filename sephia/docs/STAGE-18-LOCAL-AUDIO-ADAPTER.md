@@ -52,7 +52,6 @@ The expected asset path is `sephia/assets/sephia-announcement.wav`. Do not creat
 
 - Approved Indonesian feminine audio asset and workstation audition.
 - Final semi-realistic adult feminine avatar artwork; the current CSS face remains a placeholder.
-- True phoneme/audio-timed lip synchronization; the current mouth motion is only a speaking-state cue.
 - Chrome on-device wake-word acceptance on the Panitia PC.
 - Live Panitia staging acceptance, including microphone permission and secure-context checks.
 - Complete production build and Vercel preview/production configuration verification.
