@@ -15,7 +15,7 @@ test("Stage 11 CI verifies host contract after building distribution", async () 
   const workflow = await read("../.github/workflows/sephia-tests.yml");
   assert.match(workflow, /npm run verify:host/);
   assert.ok(workflow.indexOf("npm run build") < workflow.indexOf("npm run verify:host"));
-  assert.match(workflow, /sephia-stage\\d+-(?:host-integration|local-indonesian-tts)-/);
+  assert.match(workflow, /sephia-stage\d+-(?:host-integration|local-indonesian-tts)-/);
 });
 
 test("Stage 11 verifier checks host load order, source/dist parity, and package integrity", async () => {
