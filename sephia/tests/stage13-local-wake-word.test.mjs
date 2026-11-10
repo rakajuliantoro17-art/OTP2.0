@@ -41,3 +41,14 @@ test("Stage 13 documentation states language-pack and workstation acceptance req
   assert.match(report, /secure context/);
   assert.match(report, /Panitia workstation/);
 });
+
+
+test("same-origin wake-word microphone is permitted while camera and geolocation remain blocked", async () => {
+  const policy = JSON.parse(await read("../vercel.json"));
+  const header = policy.headers.find((entry) => entry.source === "/(.*)");
+  const permissions = header.headers.find((entry) => entry.key === "Permissions-Policy").value;
+  assert.match(permissions, /microphone=\(self\)/);
+  assert.match(permissions, /on-device-speech-recognition=\(self\)/);
+  assert.match(permissions, /camera=\(\)/);
+  assert.match(permissions, /geolocation=\(\)/);
+});
