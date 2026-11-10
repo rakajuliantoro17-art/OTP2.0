@@ -64,11 +64,11 @@ test("refuses cloud voices and English-only default voices", async () => {
   adapter.dispose();
 });
 
-test("reports missing browser speech APIs as unavailable without throwing at mount", () => {
+test("reports missing browser speech APIs as unavailable without throwing at mount", async () => {
   const adapter = createBrowserLocalIndonesianTts({
     speechSynthesisImpl: null,
     UtteranceImpl: null,
   });
   assert.equal(adapter.available, false);
-  assert.throws(() => adapter.speak("Uji"), /Browser speech synthesis is unavailable/);
+  await assert.rejects(adapter.speak("Uji"), /Browser speech synthesis is unavailable/);
 });
