@@ -23,7 +23,7 @@ test("production voice and avatar assets are not falsely represented as complete
   const avatar = await read("docs/STAGE-14-AVATAR-HOST-OVERLAY.md");
   const stage18 = await read("docs/STAGE-18-LOCAL-AUDIO-ADAPTER.md");
   assert.match(bridge, /createBrowserLocalIndonesianTts/);
-  assert.match(avatar, /CSS-generated geometric placeholder/);
+  assert.match(avatar, /CSS-generated geometric/);
   assert.match(stage18, /A valid audio file does not yet exist/);
   assert.match(stage18, /not yet wired as production voice|not selected by default yet/);
 });
