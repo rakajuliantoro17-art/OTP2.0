@@ -56,6 +56,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sephia-stage16-local-voice-diagnostics-${{ github.sha }}
-          path: sephia/dist/
+          path: |
+            sephia/dist/
+            sephia/staging/voice-diagnostics.html
+            sephia/staging/voice-diagnostics.js
           if-no-files-found: error
           retention-days: 14
