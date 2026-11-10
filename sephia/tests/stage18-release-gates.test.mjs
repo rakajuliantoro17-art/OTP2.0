@@ -9,11 +9,11 @@ test("Stage 18 package and CI include the local audio acceptance gate", async ()
   const pkg = JSON.parse(await read("package.json"));
   const workflow = await read("../.github/workflows/sephia-tests.yml");
   const readme = await read("README.md");
-  assert.equal(pkg.version, "0.18.0-stage.18");
+  assert.equal(pkg.version, "0.19.0-stage.19");
   assert.equal(pkg.scripts["verify:audio"], "node --test ./tests/local-audio-announcement.test.mjs");
   assert.match(workflow, /- main/);
   assert.match(workflow, /npm run verify:audio/);
-  assert.match(workflow, /sephia-stage18-local-voice-diagnostics-/);
+  assert.match(workflow, /sephia-stage19-local-voice-diagnostics-/);
   assert.match(readme, /Stage 18/);
 });
 
