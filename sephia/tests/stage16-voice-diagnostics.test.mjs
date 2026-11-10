@@ -12,6 +12,7 @@ test("Stage 16 diagnostic page is included in the package and CI", async () => {
   assert.equal(pkg.scripts["verify:diagnostics"], "node --test ./tests/stage16-voice-diagnostics.test.mjs");
   assert.match(workflow, /npm run verify:diagnostics/);
   assert.match(workflow, /sephia-stage16-local-voice-diagnostics-/);
+  assert.match(workflow, /staging\/voice-diagnostics\.html/);
 });
 
 test("diagnostic page loads local modules only and does not auto-start microphone", async () => {
