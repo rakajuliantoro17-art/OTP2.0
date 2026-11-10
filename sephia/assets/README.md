@@ -1,6 +1,10 @@
 # SEPHIA Voice Assets
 
-This directory contains only approved, same-origin static assets used by the SEPHIA browser module.
+This directory contains same-origin static assets used by the SEPHIA browser module. The avatar SVG is an original project asset; the announcement WAV remains absent pending voice approval.
+
+## Avatar portrait asset
+
+`avatar-sephia.svg` is the original local vector portrait used by the Panitia host. It contains no remote image, font, or script dependency. Final visual acceptance on the target monitor remains pending.
 
 ## Expected announcement asset
 
