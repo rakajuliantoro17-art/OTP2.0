@@ -43,10 +43,13 @@ jobs:
       - name: Verify on-device Indonesian wake-word recognition
         working-directory: sephia
         run: npm run verify:wakeword
-      - name: Upload Stage 13 local wake-word build artifact
+      - name: Verify Panitia avatar overlay and failure isolation
+        working-directory: sephia
+        run: npm run verify:avatar
+      - name: Upload Stage 14 avatar overlay build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage13-local-wake-word-${{ github.sha }}
+          name: sephia-stage14-host-avatar-overlay-${{ github.sha }}
           path: sephia/dist/
           if-no-files-found: error
           retention-days: 14
