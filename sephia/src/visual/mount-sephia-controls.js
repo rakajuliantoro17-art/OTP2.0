@@ -1,7 +1,7 @@
 const STYLE_ID = "sephia-controls-styles";
 
 const CSS = `
-.sephia-controls{font:inherit;color:var(--sephia-text,#e8f6ff);display:inline-flex;align-items:center;gap:.55rem;position:relative}
+.sephia-topbar-tools{display:flex;align-items:center;gap:.7rem;min-width:0}\n.sephia-controls{font:inherit;color:var(--sephia-text,#e8f6ff);display:inline-flex;align-items:center;gap:.55rem;position:relative}
 .sephia-trigger{display:inline-flex;align-items:center;gap:.55rem;border:1px solid rgba(104,220,255,.38);border-radius:999px;padding:.48rem .78rem;background:rgba(9,24,44,.82);color:inherit;cursor:pointer;box-shadow:0 0 18px rgba(36,190,255,.12)}
 .sephia-trigger:focus-visible,.sephia-settings summary:focus-visible,.sephia-settings button:focus-visible{outline:2px solid #7deaff;outline-offset:3px}
 .sephia-orb{width:.62rem;height:.62rem;border-radius:50%;background:#788895;box-shadow:0 0 0 3px rgba(120,136,149,.12)}
