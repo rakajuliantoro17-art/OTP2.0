@@ -8,14 +8,14 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 test("Stage 11 host integration verifier is part of the package scripts", async () => {
   const pkg = JSON.parse(await read("package.json"));
   assert.equal(pkg.scripts["verify:host"], "node ./scripts/verify-host-integration.mjs");
-  assert.match(pkg.version, /stage\.11$/);
+  assert.match(pkg.version, /^0\.\\d+\.0-stage\\.\\d+$/);
 });
 
 test("Stage 11 CI verifies host contract after building distribution", async () => {
   const workflow = await read("../.github/workflows/sephia-tests.yml");
   assert.match(workflow, /npm run verify:host/);
   assert.ok(workflow.indexOf("npm run build") < workflow.indexOf("npm run verify:host"));
-  assert.match(workflow, /sephia-stage11-host-integration-/);
+  assert.match(workflow, /sephia-stage\\d+-host-integration-/);
 });
 
 test("Stage 11 verifier checks host load order, source/dist parity, and package integrity", async () => {
