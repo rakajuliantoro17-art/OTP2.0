@@ -19,7 +19,7 @@
 
 Stage 21 adds an original same-origin SVG portrait at `/sephia/assets/avatar-sephia.svg` and the Panitia host supplies that path to the renderer. The portrait is an original stylized vector illustration of an adult woman, not a photograph or a likeness of a real person. It is the first local artwork version; final visual approval on the target Panitia monitor remains pending.
 
-The CSS-generated geometric face is retained only as a loading/error fallback. It is a placeholder, not the approved final portrait. If the SVG fails to load, the fallback is shown and the dashboard continues to work.
+The CSS-generated geometric face is retained only as a loading/error fallback. It is a placeholder, not the approved final artwork. If the SVG fails to load, the fallback is shown and the dashboard continues to work.
 
 Mouth movement is a short speaking-state cue only. It is not phoneme-aligned lip synchronization. True audio-timed lip synchronization remains incomplete.
 
