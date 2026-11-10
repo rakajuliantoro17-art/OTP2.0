@@ -18,13 +18,16 @@ test("Stage 11 CI verifies host contract after building distribution", async () 
   assert.match(workflow, /sephia-stage11-host-integration-/);
 });
 
-test("Stage 11 verifier binds the actual Panitia page to explicit mounts and built dependencies", async () => {
+test("Stage 11 verifier checks host load order, source/dist parity, and package integrity", async () => {
   const verifier = await read("scripts/verify-host-integration.mjs");
   assert.match(verifier, /panitia\/index\.html/);
   assert.match(verifier, /sephiaControlMount/);
   assert.match(verifier, /alertList/);
-  assert.match(verifier, /manifest\.files/);
-  assert.match(verifier, /doesNotMatch\(bridge/);
+  assert.match(verifier, /bridgeLoad > alertLoad/);
+  assert.match(verifier, /builtBridge, sourceBridge/);
+  assert.match(verifier, /createHash/);
+  assert.match(verifier, /manifestPaths/);
+  assert.match(verifier, /doesNotMatch\(sourceBridge/);
 });
 
 test("Stage 11 closeout explicitly separates CI build from browser acceptance and deployment", async () => {
