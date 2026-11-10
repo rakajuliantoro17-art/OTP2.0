@@ -52,6 +52,10 @@ function setup(overrides = {}) {
       calls.push(["avatar.mount", args.container.id]);
       return { dispose() { calls.push("avatar.dispose"); } };
     },
+    mountAvatar: (args) => {
+      calls.push(["avatar.mount", args.container.id]);
+      return { dispose() { calls.push("avatar.dispose"); } };
+    },
     bindLifecycle: (args) => {
       calls.push(["lifecycle.bind", Boolean(args.runtime), Boolean(args.visualState)]);
       return lifecycle;
@@ -105,6 +109,7 @@ test("construction failure disposes already-created pieces and reports error", (
   assert.throws(() => mountPanitiaSephia({
     documentImpl, windowImpl, onError: (e) => errors.push(e.message),
     createState: () => ({ dispose() { stateDisposed = true; } }),
+    mountAvatar: () => ({ dispose() {} }),
     createRuntime: () => { throw new Error("runtime construction failed"); },
   }), /runtime construction failed/);
   assert.equal(stateDisposed, true);
