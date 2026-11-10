@@ -21,7 +21,7 @@ function createWindow(availability = ["available"]) {
     stop() { this.stopped = true; }
     abort() { this.aborted = true; }
   }
-  return { SpeechRecognition: FakeRecognition, calls };
+  return { SpeechRecognition: FakeRecognition, isSecureContext: true, calls };
 }
 
 test("requires strict on-device SpeechRecognition support", async () => {
@@ -97,4 +97,14 @@ test("pause, resume, and stop release recognizer instances", async () => {
   assert.equal(win.calls.instances[1].aborted, true);
   assert.equal(recognizer.isActive, false);
   recognizer.dispose();
+});
+
+
+test("refuses wake-word access from an insecure LAN origin", async () => {
+  const win = createWindow();
+  win.isSecureContext = false;
+  const recognizer = createLocalWakeWordRecognizer({ windowImpl: win });
+  assert.equal(recognizer.supported, false);
+  await assert.rejects(recognizer.start(), /HTTPS atau localhost/);
+  assert.equal(win.calls.instances.length, 0);
 });
