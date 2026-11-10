@@ -1,6 +1,6 @@
 # SEPHIA Stage 11 — Host Integration Build and Verification
 
-**Status:** strengthened repository verifier committed; latest CI run pending final green confirmation  
+**Status:** repository/build/CI contract passed on GitHub Actions run #138  
 **Chrome acceptance:** pending on the Panitia PC  
 **Branch:** `feature/sephia-module`  
 **Vercel:** paused; no deployment attempted  
@@ -42,6 +42,24 @@ npm run verify:host
 ```
 
 The workflow uploads the built `sephia/dist/` package as a Stage 11 artifact. The artifact is a browser ES module package, not a Vercel deployment.
+
+## CI evidence
+
+GitHub Actions run #138 completed successfully on 10 November 2026:
+
+- Run: https://github.com/rakajuliantoro17-art/OTP2.0/actions/runs/42727905442
+- Tested code/documentation commit: `ce3addde9200e62064386fda1ef41a43a3a615a1`
+- Node.js: 22.23.4
+- Automated tests: **60 passed, 0 failed, 0 skipped**
+- Static security and local import boundary: **10 source modules passed**
+- Browser package build: **10 modules**, 29,782 source bytes
+- Staging fixture verifier: **7 built imports resolved**
+- Stage 11 host verifier: **passed**, including Panitia load order, source/distribution parity, manifest path/size/SHA-256 integrity, built dependency closure, and host bridge isolation
+- Artifact: `sephia-stage11-host-integration-ce3addde9200e62064386fda1ef41a43a3a615a1`
+- Artifact ID: `13722269448`; size: **12,894 bytes**
+- Artifact SHA-256: `97adc78fbdbfc1ef11c09bf1b91746a470a5c819590cbabac9f3d0f838e3a993`
+
+Earlier runs #133–#137 failed because legacy Stage 8–10 regression tests still hard-coded the previous package version and artifact name. Those tests have been made version-aware. The successful #138 run executed the complete workflow through artifact upload.
 
 ## Important integration boundary
 
