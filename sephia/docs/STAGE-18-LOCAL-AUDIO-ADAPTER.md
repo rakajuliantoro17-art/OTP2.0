@@ -23,7 +23,7 @@ The production voice path for SEPHIA is a pre-approved audio file because the an
 
 ## Integration status
 
-The Panitia bridge continues to use the strict local Indonesian browser TTS adapter for diagnostics until a real approved audio asset has been supplied and reviewed. This Stage 18 adapter is intentionally not selected by default yet: switching to it before the WAV exists would make every announcement fail. Integration is a subsequent stage after asset approval.
+Stage 19 adds an explicit `announcementAssetUrl` host option. If it is omitted (the default), the Panitia bridge continues to use the strict local Indonesian browser TTS adapter for diagnostics. If a same-origin bundled WAV path is supplied, the host selects this adapter. The option remains unset in the production host until a real approved audio asset has been supplied and reviewed; switching it on before the WAV exists would make every announcement fail.
 
 ## Automated tests
 
