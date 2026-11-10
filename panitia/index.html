@@ -90,6 +90,7 @@ async function initializeDashboard() {
     try {
         const { mountPanitiaSephia } = await import("../sephia/src/host/mount-panitia-sephia.js");
         window.SEPHIA = mountPanitiaSephia({
+            avatarAssetUrl: "/sephia/assets/avatar-sephia.svg",
             onError(error) {
                 console.warn("[SEPHIA] Modul tidak aktif; dashboard tetap berjalan.", error);
             }
