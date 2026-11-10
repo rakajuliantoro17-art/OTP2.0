@@ -67,7 +67,9 @@ export function mountPanitiaSephia({
       },
       onStateChange(snapshot) {
         if (!visualState.snapshot.active) return;
-        if (snapshot.state === "limited" || snapshot.state === "error") {
+        if (snapshot.state === "error") {
+          visualState.setState("error");
+        } else if (snapshot.state === "limited") {
           visualState.setState("limited");
         } else if (snapshot.state === "standby" || snapshot.state === "listening") {
           if (!speechController?.isSpeaking) visualState.setState("standby");
@@ -86,7 +88,7 @@ export function mountPanitiaSephia({
         }
       },
       onError(error) {
-        if (visualState.snapshot.active) visualState.setState("limited");
+        if (visualState.snapshot.active) visualState.setState("error");
         report(error);
       },
     });
