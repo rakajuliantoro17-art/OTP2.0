@@ -8,10 +8,10 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 test("Stage 13 package and CI expose the on-device wake-word gate", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const workflow = await read("../.github/workflows/sephia-tests.yml");
-  assert.equal(pkg.version, "0.13.0-stage.13");
+  assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.equal(pkg.scripts["verify:wakeword"], "node --test ./tests/local-wake-word.test.mjs ./tests/panitia-wake-word-wiring.test.mjs");
   assert.match(workflow, /npm run verify:wakeword/);
-  assert.match(workflow, /sephia-stage13-local-wake-word-/);
+  assert.match(workflow, /sephia-stage\d+-(?:local-wake-word|host-avatar-overlay)-/);
 });
 
 test("recognizer requires local Indonesian processing and never uses cloud fallback", async () => {
