@@ -4,6 +4,7 @@ import { createVisualState } from "../visual/visual-state.js";
 import { mountSephiaControls } from "../visual/mount-sephia-controls.js";
 import { createNotificationSpeechController } from "../audio/announcement.js";
 import { createBrowserLocalIndonesianTts } from "../audio/browser-local-tts.js";
+import { createLocalWakeWordRecognizer } from "../audio/local-wake-word.js";
 
 /**
  * Opt-in host bridge for the Panitia dashboard.
@@ -24,6 +25,10 @@ export function mountPanitiaSephia({
     speechSynthesisImpl: win?.speechSynthesis,
     UtteranceImpl: win?.SpeechSynthesisUtterance,
   }),
+  createWakeWordRecognizer = (win, callbacks) => createLocalWakeWordRecognizer({
+    windowImpl: win,
+    ...callbacks,
+  }),
 } = {}) {
   if (!documentImpl?.getElementById) throw new TypeError("Panitia document is required.");
   if (!windowImpl?.addEventListener) throw new TypeError("Panitia window is required.");
@@ -40,6 +45,7 @@ export function mountPanitiaSephia({
   let visualState;
   let speechAdapter;
   let speechController;
+  let wakeRecognizer;
   let runtime;
   let controls;
   let lifecycle;
@@ -51,11 +57,28 @@ export function mountPanitiaSephia({
 
   try {
     visualState = createState();
+    wakeRecognizer = createWakeWordRecognizer(windowImpl, {
+      onWakeWord() {
+        if (visualState.snapshot.active) visualState.setState("listening");
+      },
+      onStateChange(snapshot) {
+        if (!visualState.snapshot.active) return;
+        if (snapshot.state === "limited" || snapshot.state === "error") {
+          visualState.setState("limited");
+        } else if (snapshot.state === "standby" || snapshot.state === "listening") {
+          if (!speechController?.isSpeaking) visualState.setState("standby");
+        }
+      },
+      onError: report,
+    });
     speechAdapter = createSpeechAdapter(windowImpl);
     speechController = createNotificationSpeechController({
       adapter: speechAdapter,
       onStateChange(state) {
-        if (visualState.snapshot.active) visualState.setState(state);
+        if (!visualState.snapshot.active) return;
+        visualState.setState(state);
+        if (state === "speaking") wakeRecognizer.pause();
+        else if (state === "standby") wakeRecognizer.resume();
       },
       onError(error) {
         if (visualState.snapshot.active) visualState.setState("limited");
@@ -78,12 +101,22 @@ export function mountPanitiaSephia({
       visualState,
       documentImpl,
       onError: report,
+      onActivated() {
+        return wakeRecognizer.start().then((started) => {
+          if (!started && visualState.snapshot.active) visualState.setState("limited");
+          return started;
+        });
+      },
+      onDeactivated() {
+        wakeRecognizer.stop();
+      },
     });
     lifecycle = bindLifecycle({ windowImpl, runtime, visualState });
   } catch (error) {
     try { lifecycle?.dispose(); } catch {}
     try { controls?.dispose(); } catch {}
     try { runtime?.dispose(); } catch {}
+    try { wakeRecognizer?.dispose(); } catch {}
     try { speechController?.dispose(); } catch {}
     try { speechAdapter?.dispose(); } catch {}
     try { visualState?.dispose(); } catch {}
@@ -96,6 +129,7 @@ export function mountPanitiaSephia({
     disposed = true;
     try { lifecycle?.dispose(); } catch (error) { report(error); }
     try { runtime?.dispose(); } catch (error) { report(error); }
+    try { wakeRecognizer?.dispose(); } catch (error) { report(error); }
     try { speechController?.dispose(); } catch (error) { report(error); }
     try { speechAdapter?.dispose(); } catch (error) { report(error); }
     try { controls?.dispose(); } catch (error) { report(error); }
@@ -110,6 +144,7 @@ export function mountPanitiaSephia({
     visualState,
     speechAdapter,
     speechController,
+    wakeRecognizer,
     controls,
     get isDisposed() { return disposed; },
     dispose,
