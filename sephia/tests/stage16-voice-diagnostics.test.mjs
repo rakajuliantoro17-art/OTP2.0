@@ -22,7 +22,7 @@ test("diagnostic page loads local modules only and does not auto-start microphon
   assert.match(script, /dist\/audio\/browser-local-tts\.js/);
   assert.match(script, /dist\/audio\/local-wake-word\.js/);
   assert.match(script, /wakeStart\.addEventListener\("click"/);
-  assert.doesNotMatch(script, /wake\.start\(\)\s*;/);
+  const wakeClick = script.indexOf('wakeStart.addEventListener("click"');\n  const wakeStartCall = script.indexOf("wake.start()");\n  assert.ok(wakeClick >= 0 && wakeStartCall > wakeClick, "microphone recognition must start only from an explicit click");
 });
 
 test("diagnostics use fixed synthetic phrase and dispose speech resources on pagehide", async () => {
