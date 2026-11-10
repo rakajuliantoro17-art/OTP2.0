@@ -32,7 +32,7 @@ Mouth movement is a short speaking-state cue only. It is not phoneme-aligned lip
 
 ## Verification
 
-Automated checks cover the explicit mount, same-origin asset policy, visual-state visibility, visualizer coupling, and failure isolation. They do not establish the appearance or frame rate on the actual Panitia PC.
+Automated checks cover the explicit mount, same-origin asset policy, visual-state visibility, visualizer coupling, and failure isolation. They do not establish the appearance or frame rate on the actual Panitia PC; Chrome workstation acceptance is still pending.
 
 ## Remaining acceptance
 
