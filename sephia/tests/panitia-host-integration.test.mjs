@@ -52,10 +52,6 @@ function setup(overrides = {}) {
       calls.push(["avatar.mount", args.container.id]);
       return { dispose() { calls.push("avatar.dispose"); } };
     },
-    mountAvatar: (args) => {
-      calls.push(["avatar.mount", args.container.id]);
-      return { dispose() { calls.push("avatar.dispose"); } };
-    },
     bindLifecycle: (args) => {
       calls.push(["lifecycle.bind", Boolean(args.runtime), Boolean(args.visualState)]);
       return lifecycle;
