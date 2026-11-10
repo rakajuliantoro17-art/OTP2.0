@@ -72,3 +72,20 @@ test("reports missing browser speech APIs as unavailable without throwing at mou
   assert.equal(adapter.available, false);
   await assert.rejects(adapter.speak("Uji"), /Browser speech synthesis is unavailable/);
 });
+
+
+test("cancel while waiting for Indonesian voice prevents a late utterance", async () => {
+  const voices = [];
+  const synthesis = fakeSynthesis(voices);
+  const adapter = createBrowserLocalIndonesianTts({
+    speechSynthesisImpl: synthesis,
+    UtteranceImpl: FakeUtterance,
+  });
+  const pending = adapter.speak("Pengumuman uji");
+  adapter.cancel();
+  voices.push({ name: "Indonesian Local", lang: "id-ID", localService: true });
+  synthesis.emit("voiceschanged");
+  await assert.rejects(pending, /dibatalkan/);
+  assert.equal(synthesis.calls.spoken.length, 0);
+  adapter.dispose();
+});
