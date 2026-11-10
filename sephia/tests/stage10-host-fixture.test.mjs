@@ -38,5 +38,5 @@ test("Stage 10 verifier checks both built fixtures and remains wired in current 
   assert.match(verifier, /staging\/panitia-host-fixture\.js/);
   assert.match(verifier, /manifestPaths\.has/);
   assert.match(workflow, /npm run verify:staging/);
-  assert.match(workflow, /sephia-stage\d+-(?:host-trial-build|host-integration|local-indonesian-tts|local-wake-word|host-avatar-overlay|notification-speech-pipeline)-/);
+  assert.match(workflow, /sephia-stage\d+-(?:host-trial-build|host-integration|local-indonesian-tts|local-wake-word|host-avatar-overlay|notification-speech-pipeline|local-voice-diagnostics)-/);
 });
