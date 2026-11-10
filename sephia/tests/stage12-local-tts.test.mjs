@@ -11,7 +11,7 @@ test("Stage 12 package metadata and CI include the local Indonesian TTS gate", a
   assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.equal(pkg.scripts["verify:tts"], "node --test ./tests/browser-local-tts.test.mjs ./tests/panitia-local-tts-wiring.test.mjs");
   assert.match(workflow, /npm run verify:tts/);
-  assert.match(workflow, /sephia-stage\d+-(?:local-indonesian-tts|local-wake-word)-/);
+  assert.match(workflow, /sephia-stage\d+-(?:local-indonesian-tts|local-wake-word|host-avatar-overlay)-/);
 });
 
 test("browser TTS is wired through the Panitia host bridge and runtime", async () => {
