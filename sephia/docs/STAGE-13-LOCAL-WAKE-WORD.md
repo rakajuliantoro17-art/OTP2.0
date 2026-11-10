@@ -22,7 +22,7 @@ A one-time browser language-pack download may require internet access. The spoke
 - No transcript is displayed, logged, persisted, or sent to the host.
 - After a wake event, visual listening feedback is shown for 10 seconds; no command parsing or dashboard action is triggered.
 - The wake listener is armed only after the Panitia user manually activates SEPHIA.
-- TTS playback pauses the recognizer and resumes it after speech completes.
+- The generic TTS announcement does not contain the wake phrase; the recognizer remains armed, and the real workstation trial must check acoustic echo does not create false activations.
 - Deactivation, page close, and disposal stop the recognizer and release browser recognition resources.
 
 ## Browser compatibility
@@ -38,7 +38,7 @@ The feature requires a secure context and microphone permission. It must be veri
 3. Say “SEPHIA” repeatedly in the real Panitia room and record false-positive/false-negative rates outside the application; do not store audio in SEPHIA.
 4. Confirm unrelated words, low-confidence results, and approximate phrases do not activate the wake state.
 5. Confirm browser microphone denial or missing language pack produces limited mode without breaking dashboard alerts.
-6. Confirm TTS pauses the recognizer and it resumes after speech.
+6. Confirm TTS output does not cause false wake-word activations.
 7. Confirm deactivation and page close stop the microphone/recognizer.
 8. Confirm no audio/transcript request leaves the workstation.
 
