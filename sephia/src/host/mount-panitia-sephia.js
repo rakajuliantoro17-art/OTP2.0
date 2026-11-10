@@ -2,24 +2,26 @@ import { createSephiaRuntime } from "../runtime/create-sephia-runtime.js";
 import { bindPageLifecycle } from "../runtime/bind-page-lifecycle.js";
 import { createVisualState } from "../visual/visual-state.js";
 import { mountSephiaControls } from "../visual/mount-sephia-controls.js";
+import { mountSephiaAvatar } from "../visual/mount-sephia-avatar.js";
 import { createNotificationSpeechController } from "../audio/announcement.js";
 import { createBrowserLocalIndonesianTts } from "../audio/browser-local-tts.js";
 import { createLocalWakeWordRecognizer } from "../audio/local-wake-word.js";
 
 /**
  * Opt-in host bridge for the Panitia dashboard.
- * Resolves only the two explicit mount points; never scans the document.
- * No login/session identity is assumed. Speech accepts only browser-reported
- * local Indonesian voices; if unavailable, notifications remain visual-only.
+ * Resolves only explicit mount points; never scans the document.
+ * Avatar rendering is optional and isolated from the notification runtime.
  */
 export function mountPanitiaSephia({
   documentImpl = globalThis.document,
   windowImpl = globalThis.window,
   onError = () => {},
   onNotification = () => {},
+  avatarAssetUrl = null,
   createRuntime = createSephiaRuntime,
   createState = createVisualState,
   mountControls = mountSephiaControls,
+  mountAvatar = mountSephiaAvatar,
   bindLifecycle = bindPageLifecycle,
   createSpeechAdapter = (win) => createBrowserLocalIndonesianTts({
     speechSynthesisImpl: win?.speechSynthesis,
@@ -35,6 +37,7 @@ export function mountPanitiaSephia({
 
   const alertRoot = documentImpl.getElementById("alertList");
   const controlsMount = documentImpl.getElementById("sephiaControlMount");
+  const avatarMount = documentImpl.getElementById("sephiaAvatarMount");
   if (!alertRoot || alertRoot.id !== "alertList") {
     throw new Error('Panitia alert root "#alertList" is unavailable; SEPHIA was not mounted.');
   }
@@ -48,6 +51,7 @@ export function mountPanitiaSephia({
   let wakeRecognizer;
   let runtime;
   let controls;
+  let avatar;
   let lifecycle;
   let disposed = false;
 
@@ -90,12 +94,28 @@ export function mountPanitiaSephia({
       root: alertRoot,
       speechController,
       onNotification(event) {
-        // Optional host callback. Speech controller receives the same validated
-        // event through the runtime's isolated notification delivery path.
         try { onNotification(event); } catch (error) { report(error); }
       },
       onNotificationError: report,
     });
+
+    // The avatar is decorative/optional: its failure cannot disable alerts,
+    // controls, TTS, or the wake-word lifecycle.
+    if (avatarMount && typeof mountAvatar === "function") {
+      try {
+        avatar = mountAvatar({
+          container: avatarMount,
+          visualState,
+          speechController,
+          avatarAssetUrl,
+          documentImpl,
+          onError: report,
+        });
+      } catch (error) {
+        report(error);
+      }
+    }
+
     controls = mountControls({
       container: controlsMount,
       runtime,
@@ -120,6 +140,7 @@ export function mountPanitiaSephia({
   } catch (error) {
     try { lifecycle?.dispose(); } catch {}
     try { controls?.dispose(); } catch {}
+    try { avatar?.dispose(); } catch {}
     try { wakeRecognizer?.stop(); } catch {}
     try { runtime?.dispose(); } catch {}
     try { wakeRecognizer?.dispose(); } catch {}
@@ -139,6 +160,7 @@ export function mountPanitiaSephia({
     try { wakeRecognizer?.dispose(); } catch (error) { report(error); }
     try { speechController?.dispose(); } catch (error) { report(error); }
     try { speechAdapter?.dispose(); } catch (error) { report(error); }
+    try { avatar?.dispose(); } catch (error) { report(error); }
     try { controls?.dispose(); } catch (error) { report(error); }
     try { visualState?.dispose(); } catch (error) { report(error); }
     windowImpl.removeEventListener?.("pagehide", dispose);
@@ -153,6 +175,7 @@ export function mountPanitiaSephia({
     speechController,
     wakeRecognizer,
     controls,
+    avatar,
     get isDisposed() { return disposed; },
     dispose,
   });
