@@ -43,6 +43,7 @@ The Stage 19 host wiring tests cover:
 3. Final semi-realistic avatar artwork; current CSS portrait is still a placeholder.
 4. Audio-timed lip synchronization.
 5. Chrome on-device wake-word support and microphone permission test on the Panitia PC.
-6. Live host staging acceptance and production/Vercel configuration verification.
+6. WAV asset production, consent/license verification, and human audition (Stage 20).
+7. Live host staging acceptance and production/Vercel configuration verification.
 
 No claim of production-ready voice or avatar is made by this stage.
