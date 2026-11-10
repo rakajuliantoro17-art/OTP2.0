@@ -37,7 +37,7 @@ The current browser TTS adapter is retained for diagnostics only; its local voic
 
 ## Branch relationship
 
-At this audit, `feature/sephia-module` is ahead of `main` by 365 commits and behind by 2. The two main-side commits concern a staging verifier that was added and subsequently removed; the final main tree does not retain that file. The branches remain divergent. Do not force-push, rewrite history, merge, or silently rebase. Review the eventual pull-request diff and GitHub mergeability before merging.
+At this audit, `feature/sephia-module` is ahead of `main` by more than 360 commits and behind by 2. The two main-side commits concern a staging verifier that was added and subsequently removed; the final main tree does not retain that file. The branches remain divergent. Do not force-push, rewrite history, merge, or silently rebase. Review the eventual pull-request diff and GitHub mergeability before merging.
 
 ## Deployment sequence after blockers close
 
