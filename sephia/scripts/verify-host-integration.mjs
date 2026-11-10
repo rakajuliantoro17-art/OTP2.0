@@ -56,6 +56,9 @@ for (const path of [
   "runtime/bind-page-lifecycle.js",
   "visual/visual-state.js",
   "visual/mount-sephia-controls.js",
+  "audio/announcement.js",
+  "audio/browser-local-tts.js",
+  "audio/local-wake-word.js",
   "adapters/dom-alert-observer.js",
 ]) assert.ok(manifestPaths.has(path), "Built integration dependency missing from manifest: " + path);
 
