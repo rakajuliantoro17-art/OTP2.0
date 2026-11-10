@@ -9,7 +9,7 @@ function isIndonesianLocalVoice(voice) {
 export function selectIndonesianLocalVoice(voices = []) {
   const candidates = voices.filter(isIndonesianLocalVoice);
   if (!candidates.length) return null;
-  return candidates.find((voice) => FEMALE_HINTS.test(voice.name || "")) || candidates[0];
+  return candidates.find((voice) => FEMALE_HINTS.test(voice.name || "")) || null;
 }
 
 /**
