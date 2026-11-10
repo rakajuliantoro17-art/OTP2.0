@@ -4,11 +4,13 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 
 ## Status
 
-- Stages 2–17 are implemented to varying repository/CI levels on this feature branch. Stage 12 adds a strict local Indonesian feminine-voice TTS adapter; Stage 13 adds an opt-in on-device wake-word path; Stage 14 mounts the avatar overlay, and Stage 15 adds synthetic end-to-end notification-to-speech tests, and Stage 16 adds a local workstation voice-diagnostics page. Actual Chrome/PC acceptance remains pending, and the CSS avatar remains a placeholder until final artwork is supplied. Stage 17 defines a natural-voice strategy: because the approved announcement is fixed, the preferred production path is a consented, approved local audio asset rather than heavyweight runtime synthesis. Neural candidates remain unapproved until audition, license review, and device testing.
+- Stages 2–17 provide the host contract, security boundaries, local TTS diagnostics, on-device wake-word prototype, avatar overlay, synthetic notification-to-speech tests, and natural-voice strategy.
+- Stage 18 adds a deterministic local-audio playback adapter for the one approved generic announcement. The adapter is tested but is not selected in production until the real approved WAV asset is supplied.
+- Actual Chrome/Panitia-PC acceptance remains pending. The CSS avatar remains a placeholder; final semi-realistic artwork and phoneme-timed lip sync are not yet supplied.
 - The dashboard has no account login; access is through a dedicated URL known to Panitia. This is not authentication and does not establish viewer identity.
 - SEPHIA host integration is present on this feature branch only; it is not deployed. The control appears after dashboard components load, but the reader remains OFF until manually activated.
 - Development branch: `feature/sephia-module`; no merge to `main` or production deployment is authorized.
-- Vercel may remain paused while repository work and local tests continue.
+- Vercel project resume was reported by the project owner; the GitHub/Vercel Production Branch and deployment integration still require direct verification.
 
 ## Approved operating boundary
 
@@ -28,17 +30,12 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 ```text
 sephia/
 ├── docs/
-│   ├── HOST-INTEGRATION.md
-│   ├── STAGE-6-ACCESS-BOUNDARY.md
-│   ├── STAGE-6-CHROME-TEST-RUNBOOK.md
-│   └── STAGE-6-ACCEPTANCE-REPORT.md
 ├── src/
 │   ├── adapters/
 │   ├── audio/
 │   ├── core/
+│   ├── host/
 │   ├── runtime/
-│   │   ├── bind-page-lifecycle.js
-│   │   └── create-sephia-runtime.js
 │   └── visual/
 ├── staging/
 └── tests/
@@ -56,10 +53,15 @@ From `sephia/`, run with Node.js 22:
 
 ```bash
 npm test
+npm run check
+npm run build
+npm run verify:staging
+npm run verify:host
+npm run verify:audio
 ```
 
-Then follow [the Chrome staging runbook](./docs/STAGE-6-CHROME-TEST-RUNBOOK.md). The staging fixture imports the built `dist/` modules and uses synthetic alerts plus mock speech only; it is not connected to OTP/Firebase or a live Panitia page. Build first with `npm run build`, then serve `staging/` on loopback at `127.0.0.1:4173`. The build copies browser ES modules to `dist/`, validates local imports, and writes a SHA-256 manifest. CI uploads this output as a 14-day artifact.
+Then follow [the Chrome staging runbook](./docs/STAGE-6-CHROME-TEST-RUNBOOK.md). The staging fixture imports the built `dist/` modules and uses synthetic alerts plus mock speech only; it is not connected to OTP/Firebase or a live Panitia page. The build copies browser ES modules to `dist/`, validates local imports, and writes a SHA-256 manifest. CI uploads this output as a 14-day artifact.
 
-See [Stage 17 Natural Voice Strategy](./docs/STAGE-17-NATURAL-VOICE-STRATEGY.md), [Stage 16 Voice Diagnostics](./docs/STAGE-16-VOICE-DIAGNOSTICS.md), [Stage 15 Notification Speech Pipeline](./docs/STAGE-15-NOTIFICATION-SPEECH-PIPELINE.md), [Stage 14 Avatar Host Overlay](./docs/STAGE-14-AVATAR-HOST-OVERLAY.md), [Stage 13 Local Wake Word](./docs/STAGE-13-LOCAL-WAKE-WORD.md), [Stage 12 Local Indonesian TTS](./docs/STAGE-12-LOCAL-INDONESIAN-TTS.md), [Stage 10 Host Trial Readiness](./docs/STAGE-10-HOST-TRIAL-READINESS.md), [Stage 9 Staging Package](./docs/STAGE-9-STAGING-PACKAGE.md), [Access Boundary](./docs/STAGE-6-ACCESS-BOUNDARY.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 6 Acceptance Report](./docs/STAGE-6-ACCEPTANCE-REPORT.md), [Audio Adapter](./docs/AUDIO-ADAPTER.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
+See [Stage 18 Local Audio Adapter](./docs/STAGE-18-LOCAL-AUDIO-ADAPTER.md), [Stage 17 Natural Voice Strategy](./docs/STAGE-17-NATURAL-VOICE-STRATEGY.md), [Stage 16 Voice Diagnostics](./docs/STAGE-16-VOICE-DIAGNOSTICS.md), [Stage 15 Notification Speech Pipeline](./docs/STAGE-15-NOTIFICATION-SPEECH-PIPELINE.md), [Stage 14 Avatar Host Overlay](./docs/STAGE-14-AVATAR-HOST-OVERLAY.md), [Stage 13 Local Wake Word](./docs/STAGE-13-LOCAL-WAKE-WORD.md), [Stage 12 Local Indonesian TTS](./docs/STAGE-12-LOCAL-INDONESIAN-TTS.md), [Stage 10 Host Trial Readiness](./docs/STAGE-10-HOST-TRIAL-READINESS.md), [Stage 9 Staging Package](./docs/STAGE-9-STAGING-PACKAGE.md), [Access Boundary](./docs/STAGE-6-ACCESS-BOUNDARY.md), [Host Integration](./docs/HOST-INTEGRATION.md), [Stage 6 Acceptance Report](./docs/STAGE-6-ACCEPTANCE-REPORT.md), [Audio Adapter](./docs/AUDIO-ADAPTER.md), and [Maintenance Guide](./docs/MAINTENANCE.md).
 
 The build output is uploaded as a 14-day GitHub Actions artifact. It is not a production deployment. Nothing in this folder self-activates or changes production OTP behavior.
