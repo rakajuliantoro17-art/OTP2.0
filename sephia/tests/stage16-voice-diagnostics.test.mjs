@@ -8,10 +8,10 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 test("Stage 16 diagnostic page is included in the package and CI", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const workflow = await read("../.github/workflows/sephia-tests.yml");
-  assert.equal(pkg.version, "0.18.0-stage.18");
+  assert.equal(pkg.version, "0.19.0-stage.19");
   assert.equal(pkg.scripts["verify:diagnostics"], "node --test ./tests/stage16-voice-diagnostics.test.mjs");
   assert.match(workflow, /npm run verify:diagnostics/);
-  assert.match(workflow, /sephia-stage18-local-voice-diagnostics-/);
+  assert.match(workflow, /sephia-stage19-local-voice-diagnostics-/);
   assert.match(workflow, /staging\/voice-diagnostics\.html/);
 });
 
