@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/sephia-module
+      - main
     paths:
       - "sephia/**"
       - ".github/workflows/sephia-tests.yml"
@@ -52,13 +53,18 @@ jobs:
       - name: Verify isolated local voice diagnostics page
         working-directory: sephia
         run: npm run verify:diagnostics
-      - name: Upload Stage 16 local voice diagnostics artifact
+      - name: Verify fixed local audio announcement adapter
+        working-directory: sephia
+        run: npm run verify:audio
+      - name: Upload Stage 18 SEPHIA build and diagnostic fixtures
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage16-local-voice-diagnostics-${{ github.sha }}
+          name: sephia-stage18-local-audio-\u0024{{ github.sha }}
           path: |
             sephia/dist/
             sephia/staging/voice-diagnostics.html
             sephia/staging/voice-diagnostics.js
+            sephia/staging/panitia-host.html
+            sephia/staging/panitia-host-fixture.js
           if-no-files-found: error
           retention-days: 14
