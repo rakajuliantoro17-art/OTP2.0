@@ -49,10 +49,13 @@ jobs:
       - name: Verify end-to-end notification speech pipeline
         working-directory: sephia
         run: npm run verify:pipeline
-      - name: Upload Stage 15 notification speech pipeline artifact
+      - name: Verify isolated local voice diagnostics page
+        working-directory: sephia
+        run: npm run verify:diagnostics
+      - name: Upload Stage 16 local voice diagnostics artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage15-notification-speech-pipeline-${{ github.sha }}
+          name: sephia-stage16-local-voice-diagnostics-${{ github.sha }}
           path: sephia/dist/
           if-no-files-found: error
           retention-days: 14
