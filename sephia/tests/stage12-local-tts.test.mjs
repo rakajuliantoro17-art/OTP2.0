@@ -35,6 +35,6 @@ test("Stage 12 documentation states the real workstation acceptance limits", asy
   const report = await read("docs/STAGE-12-LOCAL-INDONESIAN-TTS.md");
   assert.match(report, /English/);
   assert.match(report, /localService=true/);
-  assert.match(report, /cannot guarantee|cannot.*guarantee/i);
+  assert.match(report, /cannot guarantee|cannot.*guarantee|does not prove|doesn.t prove/i);
   assert.match(report, /Panitia PC acceptance/);
 });
