@@ -24,7 +24,7 @@ The portrait is an original vector illustration, not a photograph or a likeness 
 1. Review the portrait on the actual Panitia monitor for crop, scale, contrast, and visual fit.
 2. Decide whether the vector illustration meets the intended semi-realistic style or should be replaced with a higher-fidelity approved portrait.
 3. Verify responsive placement and reduced-motion behavior in Chrome.
-4. Implement true phoneme/audio-timed lip synchronization only after the final voice asset and timing strategy are approved.
+4. Keep the existing speaking-state mouth cue; phoneme-aligned lip synchronization is not part of the approved release scope.
 
 ## Release boundary
 
