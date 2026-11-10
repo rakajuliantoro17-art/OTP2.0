@@ -12,10 +12,12 @@ class FakeWindow {
 function setup(overrides = {}) {
   const alertRoot = { id: "alertList" };
   const controlsMount = { id: "sephiaControlMount" };
+  const avatarMount = { id: "sephiaAvatarMount" };
   const documentImpl = {
     getElementById(id) {
       if (id === "alertList") return alertRoot;
       if (id === "sephiaControlMount") return controlsMount;
+      if (id === "sephiaAvatarMount") return avatarMount;
       throw new Error("Unexpected document lookup: " + id);
     },
   };
@@ -63,6 +65,7 @@ test("Panitia bridge mounts only explicit alert and header control targets, inac
     ["controls.mount", "sephiaControlMount"],
     ["lifecycle.bind", true, true],
   ]);
+  assert.ok(calls.includes(["avatar.mount", "sephiaAvatarMount"]));
   assert.equal(result.isDisposed, false);
 });
 
@@ -73,6 +76,7 @@ test("pagehide disposes the Panitia bridge and stops runtime", () => {
   assert.equal(runtime.isActive, false);
   assert.ok(calls.includes("runtime.dispose"));
   assert.ok(calls.includes("controls.dispose"));
+  assert.ok(calls.includes("avatar.dispose"));
   assert.ok(calls.includes("state.dispose"));
 });
 
@@ -127,6 +131,7 @@ test("optional host notification callback forwards runtime events without becomi
     createState: () => ({ snapshot: { active: false }, dispose() {} }),
     createRuntime: (options) => { runtimeOptions = options; return runtime; },
     mountControls: () => ({ dispose() {} }),
+    mountAvatar: () => ({ dispose() {} }),
     bindLifecycle: () => ({ dispose() {} }),
   });
 
@@ -139,4 +144,14 @@ test("optional host notification callback forwards runtime events without becomi
   runtimeOptions.onNotification(event);
   assert.deepEqual(received, [event]);
   bridge.dispose();
+});
+
+
+test("avatar renderer failure is isolated; Panitia runtime and controls still mount", () => {
+  const { result, calls } = setup({
+    mountAvatar: () => { throw new Error("avatar asset unavailable"); },
+  });
+  assert.equal(result.isDisposed, false);
+  assert.ok(calls.some((entry) => Array.isArray(entry) && entry[0] === "runtime.create"));
+  result.dispose();
 });
