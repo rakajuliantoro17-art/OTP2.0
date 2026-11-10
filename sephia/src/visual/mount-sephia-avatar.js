@@ -33,8 +33,8 @@ function createElement(documentImpl, tag, className, text) {
 
 /**
  * Mounts an optional avatar presentation into an explicit host-provided node.
- * The final digital-human artwork is supplied separately as a same-origin asset.
- * The CSS fallback is only a loading placeholder, not the approved final avatar.
+ * A same-origin portrait asset may be supplied by the host.
+ * The CSS-generated face remains a fallback placeholder if that asset fails.
  */
 export function mountSephiaAvatar({
   container,
@@ -86,7 +86,7 @@ export function mountSephiaAvatar({
     image = createElement(documentImpl, "img");
     image.alt = "";
     image.decoding = "async";
-    image.loading = "lazy";
+    image.loading = "eager";
     image.src = avatarAssetUrl;
     image.addEventListener("error", () => {
       if (!disposed) {
