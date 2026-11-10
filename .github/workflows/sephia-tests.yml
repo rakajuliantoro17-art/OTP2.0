@@ -56,15 +56,19 @@ jobs:
       - name: Verify fixed local audio announcement adapter
         working-directory: sephia
         run: npm run verify:audio
-      - name: Upload Stage 19 SEPHIA build and diagnostic fixtures
+      - name: Verify approved voice WAV asset (BLOCKED until supplied)
+        working-directory: sephia
+        run: npm run verify:voice-asset
+      - name: Upload Stage 20 SEPHIA build and diagnostic fixtures
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage19-local-voice-diagnostics-${{ github.sha }}
+          name: sephia-stage20-local-voice-diagnostics-${{ github.sha }}
           path: |
             sephia/dist/
             sephia/staging/voice-diagnostics.html
             sephia/staging/voice-diagnostics.js
             sephia/staging/panitia-host.html
             sephia/staging/panitia-host-fixture.js
+            sephia/assets/README.md
           if-no-files-found: error
           retention-days: 14
