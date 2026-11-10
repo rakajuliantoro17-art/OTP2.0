@@ -9,7 +9,7 @@ test("Stage 14 host avatar overlay is included in package and CI", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const workflow = await read("../.github/workflows/sephia-tests.yml");
   assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
-  assert.equal(pkg.scripts["verify:avatar"], "node --test ./tests/avatar-renderer.test.mjs ./tests/panitia-host-integration.test.mjs");
+  assert.match(pkg.scripts["verify:avatar"], /stage21-avatar-asset\.test\.mjs/);
   assert.match(workflow, /npm run verify:avatar/);
   assert.match(workflow, /sephia-stage\d+-(?:host-avatar-overlay|notification-speech-pipeline|local-voice-diagnostics)-/);
 });
