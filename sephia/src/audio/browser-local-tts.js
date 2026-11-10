@@ -13,10 +13,10 @@ export function selectIndonesianLocalVoice(voices = []) {
 }
 
 /**
- * Browser/OS TTS adapter. It deliberately accepts only voices marked localService
- * and with an Indonesian language tag. It never downloads voices or calls a
- * remote speech service. The browser's localService flag is a platform claim,
- * so the actual workstation still requires acceptance testing.
+ * Browser/OS TTS adapter. It accepts only voices marked localService and
+ * tagged Indonesian. No remote speech service or voice download is used.
+ * localService is a browser-reported platform property, not a cryptographic
+ * guarantee; the actual workstation still requires privacy acceptance tests.
  */
 export function createBrowserLocalIndonesianTts({
   speechSynthesisImpl = globalThis.speechSynthesis,
@@ -36,6 +36,7 @@ export function createBrowserLocalIndonesianTts({
   }
 
   let disposed = false;
+  let generation = 0;
   let currentUtterance = null;
   let selectedVoice = selectIndonesianLocalVoice(speechSynthesisImpl.getVoices());
 
@@ -90,8 +91,9 @@ export function createBrowserLocalIndonesianTts({
     async speak(text) {
       if (disposed) throw new Error("TTS adapter sudah dihentikan.");
       if (typeof text !== "string" || !text.trim()) throw new TypeError("Teks pengumuman kosong.");
+      const operation = ++generation;
       const voice = await waitForVoice();
-      if (disposed) throw new Error("TTS adapter sudah dihentikan.");
+      if (disposed || operation !== generation) throw new Error("Permintaan TTS dibatalkan.");
 
       speechSynthesisImpl.cancel();
       const utterance = new UtteranceImpl(text);
@@ -126,6 +128,7 @@ export function createBrowserLocalIndonesianTts({
 
     cancel() {
       if (disposed) return;
+      generation += 1;
       currentUtterance = null;
       try { speechSynthesisImpl.cancel(); } finally { publish("ready"); }
     },
@@ -133,6 +136,7 @@ export function createBrowserLocalIndonesianTts({
     dispose() {
       if (disposed) return;
       disposed = true;
+      generation += 1;
       speechSynthesisImpl.removeEventListener?.("voiceschanged", refreshVoice);
       currentUtterance = null;
       try { speechSynthesisImpl.cancel(); } catch {}
