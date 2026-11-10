@@ -31,7 +31,7 @@ test("selects only local Indonesian voices and prefers an explicitly feminine hi
 });
 
 test("speaks Indonesian with explicit id-ID and calm voice parameters", async () => {
-  const voice = { name: "Indonesian Local", lang: "id-ID", localService: true };
+  const voice = { name: "Indonesian Female Local", lang: "id-ID", localService: true };
   const synthesis = fakeSynthesis([voice]);
   const adapter = createBrowserLocalIndonesianTts({
     speechSynthesisImpl: synthesis,
@@ -83,9 +83,15 @@ test("cancel while waiting for Indonesian voice prevents a late utterance", asyn
   });
   const pending = adapter.speak("Pengumuman uji");
   adapter.cancel();
-  voices.push({ name: "Indonesian Local", lang: "id-ID", localService: true });
+  voices.push({ name: "Indonesian Female Local", lang: "id-ID", localService: true });
   synthesis.emit("voiceschanged");
   await assert.rejects(pending, /dibatalkan/);
   assert.equal(synthesis.calls.spoken.length, 0);
   adapter.dispose();
+});
+
+
+test("rejects an Indonesian local voice with no verified feminine name hint", () => {
+  const voice = { name: "Microsoft Andika", lang: "id-ID", localService: true };
+  assert.equal(selectIndonesianLocalVoice([voice]), null);
 });
