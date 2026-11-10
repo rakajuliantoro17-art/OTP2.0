@@ -30,15 +30,15 @@ test("Chrome runbook builds dist before serving fixture on loopback", async () =
   assert.match(runbook, /panitia-host\.html/);
 });
 
-test("Stage 10 package verifies both built fixtures before artifact upload", async () => {
+test("Stage 10 package verifier remains wired across later staged versions", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const workflow = await read("../.github/workflows/sephia-tests.yml");
   const verifier = await read("scripts/verify-staging-build.mjs");
   assert.equal(pkg.scripts["verify:staging"], "node ./scripts/verify-staging-build.mjs");
-  assert.equal(pkg.version, "0.10.0-stage.10");
+  assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.match(verifier, /manifest\.json/);
   assert.match(verifier, /manifestPaths\.has/);
   assert.match(verifier, /panitia-host-fixture\.js/);
   assert.match(workflow, /npm run verify:staging/);
-  assert.match(workflow, /sephia-stage10-host-trial-build-/);
+  assert.match(workflow, /sephia-stage\d+-(?:host-trial-build|host-integration)-/);
 });
