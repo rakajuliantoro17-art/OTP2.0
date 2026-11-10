@@ -2,7 +2,19 @@ export const APPROVED_SEPHIA_ANNOUNCEMENT =
   "Perhatian, Panitia. Ada notifikasi pelanggaran OTP baru. Silakan periksa notifikasinya di dashboard, ya.";
 
 const DEFAULT_ASSET = "/sephia/assets/sephia-announcement.wav";
-const SAFE_LOCAL_PATH = /^(?:\/(?!\/)|\.\.?\/)[^?#]*$/;
+
+function isSafeLocalAudioPath(path) {
+  if (typeof path !== "string" || path.includes("\\") || /[?#%]/.test(path)) return false;
+  const rooted = path.startsWith("/sephia/assets/");
+  const relative = path.startsWith("./assets/");
+  if (!rooted && !relative) return false;
+  if (!/\.wav$/i.test(path)) return false;
+  const parts = path.split("/");
+  return parts.every((part, index) =>
+    (index === 0 && (part === "" || part === ".")) ||
+    (part.length > 0 && part !== "." && part !== "..")
+  );
+}
 
 function createAudio(AudioImpl, assetUrl) {
   const audio = new AudioImpl();
@@ -20,8 +32,8 @@ export function createLocalAudioAnnouncementAdapter({
   assetUrl = DEFAULT_ASSET,
   onStatus = () => {},
 } = {}) {
-  if (typeof assetUrl !== "string" || !SAFE_LOCAL_PATH.test(assetUrl)) {
-    throw new TypeError("SEPHIA audio must use a same-origin relative asset path.");
+  if (!isSafeLocalAudioPath(assetUrl)) {
+    throw new TypeError("SEPHIA audio must use a bundled same-origin WAV asset path.");
   }
   if (typeof AudioImpl !== "function") {
     return Object.freeze({
@@ -73,7 +85,6 @@ export function createLocalAudioAnnouncementAdapter({
         const current = {
           audio,
           resolve,
-          reject,
           onEnded: () => {
             clearOperation(current);
             publish("ready");
