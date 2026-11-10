@@ -56,10 +56,10 @@ jobs:
       - name: Verify fixed local audio announcement adapter
         working-directory: sephia
         run: npm run verify:audio
-      - name: Upload Stage 18 SEPHIA build and diagnostic fixtures
+      - name: Upload Stage 19 SEPHIA build and diagnostic fixtures
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage18-local-voice-diagnostics-${{ github.sha }}
+          name: sephia-stage19-local-voice-diagnostics-${{ github.sha }}
           path: |
             sephia/dist/
             sephia/staging/voice-diagnostics.html
