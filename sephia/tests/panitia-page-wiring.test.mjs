@@ -8,6 +8,7 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 test("Panitia topbar exposes exactly one explicit SEPHIA control mount", async () => {
   const topbar = await read("panitia/components/topbar.html");
   assert.equal((topbar.match(/id="sephiaControlMount"/g) || []).length, 1);
+  assert.equal((topbar.match(/id="sephiaAvatarMount"/g) || []).length, 1);
 });
 
 test("Panitia loads SEPHIA only after alert component and catches optional-module failures", async () => {
@@ -26,5 +27,7 @@ test("host integration contains no authentication assumption or persistent ident
   const bridge = await read("sephia/src/host/mount-panitia-sephia.js");
   assert.match(bridge, /getElementById\("alertList"\)/);
   assert.match(bridge, /getElementById\("sephiaControlMount"\)/);
+  assert.match(bridge, /getElementById\("sephiaAvatarMount"\)/);
+  assert.match(bridge, /mountSephiaAvatar/);
   assert.doesNotMatch(bridge, /localStorage|sessionStorage|firebase|fetch\(/i);
 });
