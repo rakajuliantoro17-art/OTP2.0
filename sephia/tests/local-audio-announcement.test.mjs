@@ -81,4 +81,12 @@ test("remote and protocol-relative audio assets are rejected", () => {
     AudioImpl: FakeAudio,
     assetUrl: "//example.com/voice.wav",
   }), /same-origin/);
+  assert.throws(() => createLocalAudioAnnouncementAdapter({
+    AudioImpl: FakeAudio,
+    assetUrl: "/sephia/assets/../../private.wav",
+  }), /same-origin/);
+  assert.throws(() => createLocalAudioAnnouncementAdapter({
+    AudioImpl: FakeAudio,
+    assetUrl: "/sephia/assets/voice.mp3",
+  }), /same-origin/);
 });
