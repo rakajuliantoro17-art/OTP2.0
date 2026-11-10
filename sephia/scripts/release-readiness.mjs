@@ -20,6 +20,8 @@ add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module
   "GitHub Actions workflow listens to the feature branch and main.");
 add("Same-origin microphone policy", /microphone=\(self\)/.test(vercel) && /on-device-speech-recognition=\(self\)/.test(vercel) ? "PASS" : "BLOCKED",
   "Vercel response policy permits same-origin microphone and on-device recognition.");
+add("Audio activation remains opt-in", !/announcementAssetUrl\\s*:/.test(host) ? "PASS" : "BLOCKED",
+  "Production host does not enable the WAV adapter before the approved asset is supplied.");
 add("Bundled portrait", avatarExists ? "PASS" : "BLOCKED",
   avatarExists ? "Original SVG portrait is present." : "Portrait asset is missing.");
 add("Approved voice WAV", voiceExists ? "REVIEW_REQUIRED" : "BLOCKED",
