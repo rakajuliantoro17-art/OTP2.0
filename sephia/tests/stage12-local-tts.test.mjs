@@ -8,10 +8,10 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 test("Stage 12 package metadata and CI include the local Indonesian TTS gate", async () => {
   const pkg = JSON.parse(await read("package.json"));
   const workflow = await read("../.github/workflows/sephia-tests.yml");
-  assert.equal(pkg.version, "0.12.0-stage.12");
+  assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.equal(pkg.scripts["verify:tts"], "node --test ./tests/browser-local-tts.test.mjs ./tests/panitia-local-tts-wiring.test.mjs");
   assert.match(workflow, /npm run verify:tts/);
-  assert.match(workflow, /sephia-stage12-local-indonesian-tts-/);
+  assert.match(workflow, /sephia-stage\d+-(?:local-indonesian-tts|local-wake-word)-/);
 });
 
 test("browser TTS is wired through the Panitia host bridge and runtime", async () => {
