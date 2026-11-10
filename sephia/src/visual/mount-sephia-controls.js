@@ -114,9 +114,9 @@ export function mountSephiaControls({
   const onTrigger = () => {
     try {
       if (runtime.isActive) {
+        try { onDeactivated(); } catch (error) { try { onError(error); } catch {} }
         try { runtime.deactivate(); }
         finally { visualState.deactivate(); }
-        try { onDeactivated(); } catch (error) { try { onError(error); } catch {} }
       } else {
         runtime.activate();
         if (!runtime.isActive) throw new Error("SEPHIA runtime did not enter the active state.");
