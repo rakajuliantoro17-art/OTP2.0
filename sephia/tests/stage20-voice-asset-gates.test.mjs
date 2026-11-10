@@ -23,5 +23,5 @@ test("voice asset is not claimed as complete without a real file and human revie
   assert.match(assetGuide, /intentionally absent/);
   assert.match(productionDoc, /No real voice asset is included/);
   assert.match(validator, /BLOCKED/);
-  assert.match(productionDoc, /Two independent listeners/);
+  assert.match(productionDoc, /at least two independent listeners/i);
 });
