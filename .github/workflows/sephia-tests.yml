@@ -37,7 +37,10 @@ jobs:
       - name: Verify actual Panitia host contract against built package
         working-directory: sephia
         run: npm run verify:host
-      - name: Verify local Indonesian TTS adapter\n        working-directory: sephia\n        run: npm run verify:tts\n      - name: Verify on-device Indonesian wake-word recognition
+      - name: Verify local Indonesian TTS adapter
+        working-directory: sephia
+        run: npm run verify:tts
+      - name: Verify on-device Indonesian wake-word recognition
         working-directory: sephia
         run: npm run verify:wakeword
       - name: Upload Stage 13 local wake-word build artifact
