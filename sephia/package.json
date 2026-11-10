@@ -1,6 +1,6 @@
 {
   "name": "otp2-sephia",
-  "version": "0.11.0-stage.11",
+  "version": "0.12.0-stage.12",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,6 +8,7 @@
     "check": "node ./scripts/check.mjs",
     "build": "node ./scripts/build.mjs",
     "verify:staging": "node ./scripts/verify-staging-build.mjs",
-    "verify:host": "node ./scripts/verify-host-integration.mjs"
+    "verify:host": "node ./scripts/verify-host-integration.mjs",
+    "verify:tts": "node --test ./tests/browser-local-tts.test.mjs ./tests/panitia-local-tts-wiring.test.mjs"
   }
 }
