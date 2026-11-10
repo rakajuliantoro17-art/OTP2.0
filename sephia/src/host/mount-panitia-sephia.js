@@ -5,6 +5,7 @@ import { mountSephiaControls } from "../visual/mount-sephia-controls.js";
 import { mountSephiaAvatar } from "../visual/mount-sephia-avatar.js";
 import { createNotificationSpeechController } from "../audio/announcement.js";
 import { createBrowserLocalIndonesianTts } from "../audio/browser-local-tts.js";
+import { createLocalAudioAnnouncementAdapter } from "../audio/local-audio-announcement.js";
 import { createLocalWakeWordRecognizer } from "../audio/local-wake-word.js";
 
 /**
@@ -18,15 +19,18 @@ export function mountPanitiaSephia({
   onError = () => {},
   onNotification = () => {},
   avatarAssetUrl = null,
+  announcementAssetUrl = null,
   createRuntime = createSephiaRuntime,
   createState = createVisualState,
   mountControls = mountSephiaControls,
   mountAvatar = mountSephiaAvatar,
   bindLifecycle = bindPageLifecycle,
-  createSpeechAdapter = (win) => createBrowserLocalIndonesianTts({
-    speechSynthesisImpl: win?.speechSynthesis,
-    UtteranceImpl: win?.SpeechSynthesisUtterance,
-  }),
+  createSpeechAdapter = (win, assetUrl) => assetUrl
+    ? createLocalAudioAnnouncementAdapter({ AudioImpl: win?.Audio, assetUrl })
+    : createBrowserLocalIndonesianTts({
+      speechSynthesisImpl: win?.speechSynthesis,
+      UtteranceImpl: win?.SpeechSynthesisUtterance,
+    }),
   createWakeWordRecognizer = (win, callbacks) => createLocalWakeWordRecognizer({
     windowImpl: win,
     ...callbacks,
@@ -77,7 +81,7 @@ export function mountPanitiaSephia({
       },
       onError: report,
     });
-    speechAdapter = createSpeechAdapter(windowImpl);
+    speechAdapter = createSpeechAdapter(windowImpl, announcementAssetUrl);
     speechController = createNotificationSpeechController({
       adapter: speechAdapter,
       onStateChange(state) {
