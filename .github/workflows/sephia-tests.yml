@@ -71,5 +71,6 @@ jobs:
             sephia/staging/panitia-host-fixture.js
             sephia/assets/README.md
             sephia/assets/avatar-sephia.svg
+            sephia/assets/avatar-sephia.svg
           if-no-files-found: error
           retention-days: 14
