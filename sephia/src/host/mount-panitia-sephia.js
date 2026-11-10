@@ -105,6 +105,10 @@ export function mountPanitiaSephia({
         return wakeRecognizer.start().then((started) => {
           if (!started && visualState.snapshot.active) visualState.setState("limited");
           return started;
+        }).catch((error) => {
+          if (visualState.snapshot.active) visualState.setState("limited");
+          report(error);
+          return false;
         });
       },
       onDeactivated() {
@@ -115,6 +119,7 @@ export function mountPanitiaSephia({
   } catch (error) {
     try { lifecycle?.dispose(); } catch {}
     try { controls?.dispose(); } catch {}
+    try { wakeRecognizer?.stop(); } catch {}
     try { runtime?.dispose(); } catch {}
     try { wakeRecognizer?.dispose(); } catch {}
     try { speechController?.dispose(); } catch {}
@@ -128,6 +133,7 @@ export function mountPanitiaSephia({
     if (disposed) return;
     disposed = true;
     try { lifecycle?.dispose(); } catch (error) { report(error); }
+    try { wakeRecognizer?.stop(); } catch (error) { report(error); }
     try { runtime?.dispose(); } catch (error) { report(error); }
     try { wakeRecognizer?.dispose(); } catch (error) { report(error); }
     try { speechController?.dispose(); } catch (error) { report(error); }
