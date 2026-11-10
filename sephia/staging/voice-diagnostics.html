@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SEPHIA · Diagnostik Suara Lokal</title>
+  <style>
+    :root{color-scheme:dark;font-family:Inter,Segoe UI,Arial,sans-serif;background:#07111f;color:#eaf5ff}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 80% 0%,#1d3152 0,transparent 38%),#07111f;padding:clamp(1rem,4vw,3rem)}
+    main{max-width:760px;margin:0 auto}
+    .panel{border:1px solid #29435f;border-radius:22px;background:rgba(11,25,43,.88);padding:clamp(1.1rem,3vw,2rem);box-shadow:0 22px 70px #0007}
+    h1{margin:.2rem 0 .5rem;font-size:clamp(1.5rem,4vw,2.1rem)}
+    p{color:#b8c9d9;line-height:1.6}
+    .sub{font-size:.82rem;letter-spacing:.14em;color:#7bdfff;text-transform:uppercase}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;margin-top:1.4rem}
+    .tile{border:1px solid #2a4662;border-radius:16px;padding:1rem;background:#0d1d31}
+    h2{font-size:1rem;margin:0 0 .5rem}
+    .status{min-height:3.4rem;color:#d4e5f4;font-size:.9rem;line-height:1.5;overflow-wrap:anywhere}
+    button{border:1px solid #55c9ef;border-radius:12px;background:#123a55;color:#eafaff;padding:.7rem .9rem;font-weight:650;cursor:pointer}
+    button.secondary{border-color:#667c93;background:#1b2b40}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    .actions{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:.8rem}
+    .note{font-size:.82rem;color:#9fb5ca;margin-top:1.2rem}
+    #wakeResult{font-weight:650;color:#86e6ff}
+  </style>
+</head>
+<body>
+<main>
+  <div class="panel">
+    <div class="sub">OTP 2.0 · sandbox diagnostik lokal</div>
+    <h1>SEPHIA — Pemeriksaan Suara</h1>
+    <p>Halaman ini hanya memeriksa kemampuan suara lokal pada browser laptop Panitia. Tidak terhubung ke Firebase, Moodle, API OTP, atau data siswa. Tidak ada audio maupun transkrip yang disimpan.</p>
+    <div class="grid">
+      <section class="tile">
+        <h2>1. Text-to-Speech Indonesia</h2>
+        <div id="ttsStatus" class="status" role="status">Belum diperiksa. Klik tombol untuk menguji suara lokal.</div>
+        <div class="actions">
+          <button id="ttsButton" type="button">Uji suara SEPHIA</button>
+        </div>
+      </section>
+      <section class="tile">
+        <h2>2. Wake word lokal</h2>
+        <div id="wakeStatus" class="status" role="status">Belum diperiksa. Mikrofon hanya diminta setelah tombol mulai ditekan.</div>
+        <div id="wakeResult" aria-live="polite"></div>
+        <div class="actions">
+          <button id="wakeStart" type="button">Mulai uji “SEPHIA”</button>
+          <button id="wakeStop" class="secondary" type="button" disabled>Hentikan</button>
+        </div>
+      </section>
+    </div>
+    <p class="note">Persyaratan wake word: HTTPS atau localhost, izin mikrofon, dukungan pengenalan suara on-device, dan paket bahasa id-ID lokal. Jika tidak tersedia, fitur harus tetap nonaktif. Diagnostik ini tidak mengubah pengaturan Windows atau Chrome.</p>
+  </div>
+</main>
+<script type="module" src="./voice-diagnostics.js"></script>
+</body>
+</html>
