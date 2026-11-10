@@ -35,6 +35,9 @@ export function createLocalWakeWordRecognizer({
   confidenceThreshold = 0.88,
   restartDelayMs = 350,
 } = {}) {
+  if (windowImpl?.isSecureContext !== true) {
+    return unavailableController("Wake word memerlukan HTTPS atau localhost (secure context).");
+  }
   const Recognition = windowImpl?.SpeechRecognition;
   if (typeof Recognition !== "function" ||
       typeof Recognition.available !== "function" ||
