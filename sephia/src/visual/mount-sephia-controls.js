@@ -40,6 +40,8 @@ export function mountSephiaControls({
   visualState,
   documentImpl = globalThis.document,
   onError = () => {},
+  onActivated = () => {},
+  onDeactivated = () => {},
 }) {
   if (!container || typeof container.appendChild !== "function") throw new TypeError("A mount container is required.");
   if (!runtime || typeof runtime.activate !== "function" || typeof runtime.deactivate !== "function" ||
@@ -114,6 +116,7 @@ export function mountSephiaControls({
       if (runtime.isActive) {
         try { runtime.deactivate(); }
         finally { visualState.deactivate(); }
+        try { onDeactivated(); } catch (error) { try { onError(error); } catch {} }
       } else {
         runtime.activate();
         if (!runtime.isActive) throw new Error("SEPHIA runtime did not enter the active state.");
@@ -121,6 +124,12 @@ export function mountSephiaControls({
           runtime.deactivate();
           throw new Error("SEPHIA visual state could not be activated.");
         }
+        try {
+          const activation = onActivated();
+          if (activation && typeof activation.catch === "function") {
+            activation.catch((error) => { try { onError(error); } catch {} });
+          }
+        } catch (error) { try { onError(error); } catch {} }
       }
     } catch (error) {
       if (!runtime.isActive) visualState.deactivate();
