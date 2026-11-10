@@ -40,7 +40,7 @@ jobs:
       - name: Upload Stage 11 host integration build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage11-host-integration-${{ github.sha }}
+          name: sephia-stage12-local-indonesian-tts-${{ github.sha }}
           path: sephia/dist/
           if-no-files-found: error
           retention-days: 14
