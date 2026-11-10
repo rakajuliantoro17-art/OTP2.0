@@ -59,7 +59,7 @@ jobs:
       - name: Upload Stage 18 SEPHIA build and diagnostic fixtures
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage18-local-audio-\u0024{{ github.sha }}
+          name: sephia-stage18-local-voice-diagnostics-${{ github.sha }}
           path: |
             sephia/dist/
             sephia/staging/voice-diagnostics.html
