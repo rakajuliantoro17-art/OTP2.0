@@ -11,7 +11,7 @@ test("Stage 13 package and CI expose the on-device wake-word gate", async () => 
   assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.equal(pkg.scripts["verify:wakeword"], "node --test ./tests/local-wake-word.test.mjs ./tests/panitia-wake-word-wiring.test.mjs");
   assert.match(workflow, /npm run verify:wakeword/);
-  assert.match(workflow, /sephia-stage\d+-(?:local-wake-word|host-avatar-overlay)-/);
+  assert.match(workflow, /sephia-stage\d+-(?:local-wake-word|host-avatar-overlay|notification-speech-pipeline)-/);
 });
 
 test("recognizer requires local Indonesian processing and never uses cloud fallback", async () => {
