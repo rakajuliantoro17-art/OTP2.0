@@ -3,7 +3,7 @@ const LOCAL_ASSET_PATH = /^(?:\.\.?\/|\/(?!\/))/;
 
 const CSS = `
 .sephia-avatar[hidden]{display:none}
-.sephia-avatar{position:relative;display:grid;justify-items:center;gap:.55rem;width:min(13rem,42vw);padding:1rem;border:1px solid rgba(111,211,255,.24);border-radius:1.35rem;background:radial-gradient(ellipse at 50% 18%,rgba(68,174,226,.2),rgba(8,18,35,.92) 72%);box-shadow:0 12px 42px rgba(0,0,0,.24),inset 0 0 28px rgba(88,190,255,.06);color:#e8f6ff}
+.sephia-avatar{position:fixed;z-index:1200;right:1rem;top:5.25rem;pointer-events:none;position:fixed;display:grid;justify-items:center;gap:.55rem;width:min(13rem,42vw);padding:1rem;border:1px solid rgba(111,211,255,.24);border-radius:1.35rem;background:radial-gradient(ellipse at 50% 18%,rgba(68,174,226,.2),rgba(8,18,35,.92) 72%);box-shadow:0 12px 42px rgba(0,0,0,.24),inset 0 0 28px rgba(88,190,255,.06);color:#e8f6ff}
 .sephia-avatar-portrait{position:relative;display:grid;place-items:center;width:8rem;height:8rem;overflow:hidden;border:1px solid rgba(137,222,255,.42);border-radius:50%;background:radial-gradient(circle at 50% 35%,rgba(125,210,255,.3),rgba(22,43,73,.88) 68%);box-shadow:0 0 28px rgba(57,190,255,.16)}
 .sephia-avatar-portrait img{width:100%;height:100%;object-fit:cover}
 .sephia-avatar-fallback{position:relative;width:100%;height:100%;display:grid;place-items:center}
@@ -16,6 +16,9 @@ const CSS = `
 .sephia-avatar-name{font-size:.78rem;font-weight:650;letter-spacing:.12em}
 .sephia-avatar-caption{font-size:.7rem;color:#a9c8dc}
 @keyframes sephia-mouth{from{height:.1rem;width:.45rem}to{height:.42rem;width:.62rem}}
+@keyframes sephia-avatar-float{from{transform:translateY(0)}to{transform:translateY(-3px)}}
+.sephia-avatar[data-state="speaking"],.sephia-avatar[data-state="listening"]{animation:sephia-avatar-float 2.8s ease-in-out infinite alternate}
+@media(max-width:640px){.sephia-avatar{right:.55rem;top:4.5rem;width:min(10rem,42vw);padding:.7rem}.sephia-avatar-portrait{width:6rem;height:6rem}}
 @media(prefers-reduced-motion:reduce){.sephia-avatar *{animation:none!important;transition:none!important}}
 `;
 
