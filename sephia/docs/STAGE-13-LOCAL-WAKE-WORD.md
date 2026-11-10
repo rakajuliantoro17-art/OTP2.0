@@ -29,7 +29,7 @@ A one-time browser language-pack download may require internet access. The spoke
 
 This capability is optional and requires browser support for the on-device Web Speech API, including \`SpeechRecognition.processLocally\`, static \`available()\`, and static \`install()\`. The older Web Speech recognition path is intentionally not used because it may process audio through a remote service.
 
-The feature requires a secure context and microphone permission. It must be verified in Chrome on the actual Panitia workstation. If unsupported, SEPHIA remains usable for visual notifications and local TTS where available, but wake-word listening is disabled.
+The feature requires a secure context and microphone permission. The feature branch's Vercel Permissions-Policy now grants microphone and on-device speech recognition to the same origin only; camera and geolocation remain disabled. This header change is isolated to the feature branch and has not been deployed. It must be verified in Chrome on the actual Panitia workstation. If unsupported, SEPHIA remains usable for visual notifications and local TTS where available, but wake-word listening is disabled.
 
 ## Acceptance tests
 
