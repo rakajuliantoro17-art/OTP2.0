@@ -25,7 +25,7 @@ function createWindow(availability = ["available"]) {
 }
 
 test("requires strict on-device SpeechRecognition support", async () => {
-  const recognizer = createLocalWakeWordRecognizer({ windowImpl: {} });
+  const recognizer = createLocalWakeWordRecognizer({ windowImpl: { isSecureContext: true } });
   assert.equal(recognizer.supported, false);
   await assert.rejects(recognizer.start(), /tidak didukung/);
 });
