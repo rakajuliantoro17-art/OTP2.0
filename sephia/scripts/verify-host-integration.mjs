@@ -31,9 +31,12 @@ assert.ok(alertLoad > topbarLoad, "Panitia must load alert component after topba
 assert.ok(bridgeLoad > alertLoad, "SEPHIA must mount only after the alert component is loaded.");
 assert.match(hostPage, /SEPHIA.*dashboard tetap berjalan|dashboard tetap berjalan.*SEPHIA/i);
 assert.match(topbar, /id="sephiaControlMount"/);
+assert.match(topbar, /id="sephiaAvatarMount"/);
 assert.match(alertComponent, /id="alertList"/);
 assert.match(sourceBridge, /getElementById\("alertList"\)/);
 assert.match(sourceBridge, /getElementById\("sephiaControlMount"\)/);
+assert.match(sourceBridge, /getElementById\("sephiaAvatarMount"\)/);
+assert.match(sourceBridge, /mountSephiaAvatar/);
 assert.equal(builtBridge, sourceBridge, "Built host bridge must exactly match the reviewed source bridge.");
 
 const manifestPaths = new Set();
@@ -56,6 +59,7 @@ for (const path of [
   "runtime/bind-page-lifecycle.js",
   "visual/visual-state.js",
   "visual/mount-sephia-controls.js",
+  "visual/mount-sephia-avatar.js",
   "audio/announcement.js",
   "audio/browser-local-tts.js",
   "audio/local-wake-word.js",
