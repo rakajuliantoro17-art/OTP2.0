@@ -40,5 +40,5 @@ test("Stage 10 package verifier remains wired across later staged versions", asy
   assert.match(verifier, /manifestPaths\.has/);
   assert.match(verifier, /panitia-host-fixture\.js/);
   assert.match(workflow, /npm run verify:staging/);
-  assert.match(workflow, /sephia-stage\d+-(?:host-trial-build|host-integration|local-indonesian-tts|local-wake-word)-/);
+  assert.match(workflow, /sephia-stage\d+-(?:host-trial-build|host-integration|local-indonesian-tts|local-wake-word|host-avatar-overlay)-/);
 });
