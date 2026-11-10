@@ -11,7 +11,9 @@ const CSS = `
 .sephia-avatar-head{position:absolute;z-index:1;top:22%;width:2.35rem;height:2.85rem;border-radius:48% 48% 44% 44%;background:linear-gradient(135deg,#d9b7a8,#8e7180);box-shadow:0 0 14px rgba(214,178,190,.22)}
 .sephia-avatar-hair{position:absolute;z-index:2;top:13%;width:3.1rem;height:4.6rem;border-radius:48% 48% 38% 38%;background:linear-gradient(110deg,#26334d,#111b31);clip-path:polygon(12% 0,88% 0,100% 100%,78% 82%,72% 30%,28% 30%,20% 84%,0 100%)}
 .sephia-avatar-shoulders{position:absolute;bottom:-17%;width:6.2rem;height:3.6rem;border-radius:50% 50% 0 0;background:linear-gradient(120deg,#5d7699,#293c60)}
-.sephia-avatar-eyes{position:absolute;z-index:3;top:46%;display:flex;gap:.58rem;width:1.15rem;justify-content:center}\n.sephia-avatar-eyes:before,.sephia-avatar-eyes:after{content:"";display:block;width:.12rem;height:.12rem;border-radius:50%;background:#344052}\n.sephia-avatar-mouth{position:absolute;top:57%;width:.52rem;height:.12rem;border-radius:50%;background:#754e59;z-index:2}
+.sephia-avatar-eyes{position:absolute;z-index:3;top:46%;display:flex;gap:.58rem;width:1.15rem;justify-content:center}
+.sephia-avatar-eyes:before,.sephia-avatar-eyes:after{content:"";display:block;width:.12rem;height:.12rem;border-radius:50%;background:#344052}
+.sephia-avatar-mouth{position:absolute;top:57%;width:.52rem;height:.12rem;border-radius:50%;background:#754e59;z-index:2}
 .sephia-avatar[data-speaking="true"] .sephia-avatar-mouth{animation:sephia-mouth .22s ease-in-out infinite alternate}
 .sephia-avatar-name{font-size:.78rem;font-weight:650;letter-spacing:.12em}
 .sephia-avatar-caption{font-size:.7rem;color:#a9c8dc}
@@ -75,6 +77,7 @@ export function mountSephiaAvatar({
   const hair = createElement(documentImpl, "span", "sephia-avatar-hair");
   const head = createElement(documentImpl, "span", "sephia-avatar-head");
   const mouth = createElement(documentImpl, "span", "sephia-avatar-mouth");
+  const eyes = createElement(documentImpl, "span", "sephia-avatar-eyes");
   const shoulders = createElement(documentImpl, "span", "sephia-avatar-shoulders");
   fallback.append(hair, head, eyes, mouth, shoulders);
 
