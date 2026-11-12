@@ -125,6 +125,21 @@ function listenAlerts() {
 /* =========================
    SYSTEM OTP LISTENER
 ========================= */
+/* Indikator "data terakhir": jembatan CBT menulis system/bridge tiap 10 dtk */
+let BRIDGE_TS = 0;
+function listenBridge() {
+    if (window.CBT_LOCAL) { BRIDGE_TS = Date.now(); }                 // lokal: data langsung dari server ini
+    else if (getDB()) getDB().ref("system/bridge/timestamp").on("value", snap => { BRIDGE_TS = Number(snap.val()) || 0; });
+    setInterval(() => {
+        const el = document.getElementById("bridgeAge"); if (!el) return;
+        if (window.CBT_LOCAL) { el.textContent = "LANGSUNG"; el.className = "badge safe"; return; }
+        if (!BRIDGE_TS) { el.textContent = "BELUM ADA"; el.className = "badge danger"; return; }
+        const sec = Math.max(0, Math.round((Date.now() - BRIDGE_TS) / 1000));
+        el.textContent = sec < 60 ? sec + " dtk lalu" : Math.round(sec / 60) + " mnt lalu";
+        el.className = "badge " + (sec < 30 ? "safe" : sec < 90 ? "warn" : "danger");
+    }, 1000);
+}
+
 function listenSystemOTP() {
     if (!getDB()) return;
 
@@ -230,6 +245,7 @@ function initRealtime() {
 
     listenStudents();
     listenAlerts();
+    listenBridge();
     listenSystemOTP();
     listenMasterOTP();
     listenUnlockOTP();

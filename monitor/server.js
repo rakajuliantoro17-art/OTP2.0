@@ -4,7 +4,7 @@ const PORT = process.env.PORT || 3000;
 const ROOT = path.join(__dirname, "..");               // root repo (berisi panitia/, assets/)
 const FILE = path.join(__dirname, "data.json");
 const PIN_FILE = path.join(__dirname, "pin.json");
-const FIREBASE_DB = "https://otp-2-70d6e-default-rtdb.firebaseio.com";
+const FIREBASE_DB = process.env.FIREBASE_DB || "https://otp-2-70d6e-default-rtdb.firebaseio.com";
 const OFFLINE_AFTER = 40000;          // ms tanpa heartbeat = offline
 const MIRROR_EVERY  = 10000;          // salin ke Firebase tiap 10 dtk jika ada internet
 const MIRROR_NAMA   = process.env.MIRROR_NAMA || "short";   // "full" | "short" (nama depan + inisial)
@@ -21,11 +21,26 @@ const clients = new Set();
 function push() { const d = "data: " + JSON.stringify(view()) + "\n\n"; for (const c of clients) c.write(d); }
 setInterval(push, 5000);
 
+/* ---------- alert ke Firebase (untuk Sephia/panitia online) ---------- */
+const ALERT_FROM = 26;                       // sama dengan api/violation.js (>=26)
+const ALERT_FILE = path.join(__dirname, "alerts-pending.json");
+let pendingAlerts = {}; try { pendingAlerts = JSON.parse(fs.readFileSync(ALERT_FILE, "utf8")); } catch (_) {}
+const savePending = () => fs.writeFile(ALERT_FILE, JSON.stringify(pendingAlerts), () => {});
+function queueAlert(s, n, ev) {
+  const id = String(s.uid).replace(/[.#$\[\]\/]/g, "_") + "_" + n;   // ID stabil: 1 alert per (siswa, hitungan), aman diulang
+  if (pendingAlerts[id]) return;
+  pendingAlerts[id] = { type: "violation", msg: (MIRROR_NAMA === "full" ? s.nama : shortName(s.nama)) + " — " + (ev || "pelanggaran") + " (ke-" + n + ")",
+    status: statusOf(n), uid: s.uid, violationCount: n, time: Date.now(), source: "local" };
+  savePending();
+}
+
 function upsert(b) {
   if (!b || !b.uid) return null;
   const s = students[b.uid] || { uid: b.uid, violationCount: 0, unlockCount: 0, log: [] };
   Object.assign(s, { nama: b.nama || s.nama || "-", username: b.username || s.username, kelas: b.kelas || s.kelas, exam: b.exam || s.exam, lastSeen: Date.now() });
+  const prevCount = s.violationCount;
   s.violationCount = Math.max(s.violationCount, Number(b.violation) || 0);   // monotonic
+  for (let n = Math.max(prevCount + 1, ALERT_FROM); n <= Math.min(s.violationCount, 30); n++) queueAlert(s, n, b.event);
   s.unlockCount = Math.max(s.unlockCount, Number(b.unlocks) || 0);
   s.status = statusOf(s.violationCount);
   if (b.event && b.event !== "heartbeat") { s.log.push({ t: Date.now(), e: b.event }); if (s.log.length > 50) s.log.shift(); }
@@ -49,15 +64,18 @@ async function fb(method, p, body) {
 }
 
 /* ---------- salin ke Firebase (jika laptop online) ---------- */
-let lastMirror = "", mirrorOk = false;
+let lastMirror = "", mirrorOk = false, bridgeOk = false;
 const shortName = n => { const w = String(n || "-").trim().split(/\s+/); return w[0] + (w.length > 1 ? " " + w.slice(1).map(x => x[0].toUpperCase() + ".").join("") : ""); };
 setInterval(async () => {
   const out = {};
   for (const s of view()) out[s.uid] = { uid: s.uid, nama: MIRROR_NAMA === "full" ? s.nama : shortName(s.nama), username: s.username, kelas: s.kelas,
     violationCount: s.violationCount, unlockCount: s.unlockCount, status: s.status, online: s.online, lastSeen: s.lastSeen, source: "local" };
   const sig = JSON.stringify(out);
-  if (sig === lastMirror && mirrorOk) return;
-  mirrorOk = await fb("PUT", "/students", out); if (mirrorOk) lastMirror = sig;
+  if (sig !== lastMirror || !mirrorOk) { mirrorOk = await fb("PUT", "/students", out); if (mirrorOk) lastMirror = sig; }
+  for (const id of Object.keys(pendingAlerts)) {                       // kirim alert tertunda (PUT idempoten)
+    if (await fb("PUT", "/alerts/" + id, pendingAlerts[id])) { delete pendingAlerts[id]; savePending(); } else break;
+  }
+  bridgeOk = await fb("PUT", "/system/bridge", { timestamp: Date.now(), students: out ? Object.keys(out).length : 0, pending: Object.keys(pendingAlerts).length, source: "bridge" });
 }, MIRROR_EVERY);
 
 /* ---------- static ---------- */
@@ -128,7 +146,7 @@ http.createServer((req, res) => {
     clients.add(res); res.write("data: " + JSON.stringify(view()) + "\n\n"); req.on("close", () => clients.delete(res)); return;
   }
   if (url === "/api/reset" && req.method === "POST") { if (!isLocal(req)) return json(res, 403, {}); students = {}; dirty = true; push(); res.writeHead(200, CORS); return res.end("ok"); }
-  if (url === "/api/status") return json(res, 200, { ok: true, mirror: mirrorOk, students: Object.keys(students).length });
+  if (url === "/api/status") return json(res, 200, { ok: true, mirror: mirrorOk, bridge: bridgeOk, pendingAlerts: Object.keys(pendingAlerts).length, students: Object.keys(students).length });
 
   /* halaman */
   if (url === "/pengawas") { res.writeHead(200, { "Content-Type": MIME[".html"] }); return res.end(fs.readFileSync(path.join(__dirname, "pengawas.html"))); }
