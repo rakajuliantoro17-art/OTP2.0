@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tes Firebase</title>
+<style>body{font:16px system-ui;margin:16px;max-width:520px}h1{font-size:20px}.r{padding:10px;margin:8px 0;border-radius:8px;background:#eef}.ok{background:#dfd}.no{background:#fdd}button{padding:12px 18px;font-size:16px}</style></head>
+<body><h1>Tes Koneksi Firebase</h1>
+<button id="go">Jalankan tes</button><div id="out"></div>
+<script>
+const DB="https://otp-2-70d6e-default-rtdb.firebaseio.com", NS="otp-2-70d6e-default-rtdb";
+const out=document.getElementById("out");
+function add(t,c){const d=document.createElement("div");d.className="r "+(c||"");d.textContent=t;out.appendChild(d);}
+async function rest(path){try{const r=await fetch(DB+path);const t=await r.text();add("REST "+path+" → "+r.status+" "+t.slice(0,80),r.status==200?"ok":(r.status==401?"":"no"));}catch(e){add("REST "+path+" → GAGAL "+e.message,"no");}}
+function ws(){return new Promise(res=>{let done=false;const fin=(m,c)=>{if(!done){done=true;add(m,c);res();}};
+try{const s=new WebSocket("wss://"+NS+".firebaseio.com/.ws?v=5&ns="+NS);
+s.onopen=()=>{fin("WebSocket → OPEN ✅","ok");s.close();};
+s.onerror=()=>fin("WebSocket → ERROR ❌ (diblokir jaringan/ekstensi)","no");
+s.onclose=e=>fin("WebSocket → CLOSE kode "+e.code,"no");
+setTimeout(()=>fin("WebSocket → TIMEOUT 8 detik ❌","no"),8000);}catch(e){fin("WebSocket → GAGAL "+e.message,"no");}});}
+document.getElementById("go").onclick=async()=>{out.innerHTML="";add("UA: "+navigator.userAgent.slice(0,90));
+await rest("/.json?shallow=true");await rest("/students.json");await rest("/system.json");await ws();add("Selesai. Kirim ke Pak Raka: baris REST dan WebSocket di atas.");};
+</script></body></html>
