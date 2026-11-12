@@ -4,6 +4,8 @@
 <style>body{font:16px system-ui;margin:16px;max-width:520px}h1{font-size:20px}.r{padding:10px;margin:8px 0;border-radius:8px;background:#eef}.ok{background:#dfd}.no{background:#fdd}button{padding:12px 18px;font-size:16px}</style></head>
 <body><h1>Tes Koneksi Firebase</h1>
 <button id="go">Jalankan tes</button><div id="out"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
 const DB="https://otp-2-70d6e-default-rtdb.firebaseio.com", NS="otp-2-70d6e-default-rtdb";
 const out=document.getElementById("out");
@@ -15,6 +17,18 @@ s.onopen=()=>{fin("WebSocket → OPEN ✅","ok");s.close();};
 s.onerror=()=>fin("WebSocket → ERROR ❌ (diblokir jaringan/ekstensi)","no");
 s.onclose=e=>fin("WebSocket → CLOSE kode "+e.code,"no");
 setTimeout(()=>fin("WebSocket → TIMEOUT 8 detik ❌","no"),8000);}catch(e){fin("WebSocket → GAGAL "+e.message,"no");}});}
+
+function sdkTest(){return new Promise(res=>{
+ const t0=Date.now(), el=()=>((Date.now()-t0)/1000).toFixed(1)+"s";
+ if(typeof firebase==="undefined"){add("SDK → tidak termuat (gstatic diblokir?) ❌","no");return res();}
+ const app=firebase.initializeApp({apiKey:"AIzaSyDQBar_tJy19A2ONu8DkxbZzh0Oa11ygfE",authDomain:"otp-2-70d6e.firebaseapp.com",databaseURL:DB,projectId:"otp-2-70d6e",appId:"1:430860703289:web:1faa0883b89b443b325fe8"},"diag"+Date.now());
+ const db=app.database(); let ok=false;
+ add("SDK → dimuat, menunggu koneksi (maks 20 dtk)...");
+ db.ref(".info/connected").on("value",s=>{add("SDK .info/connected = "+s.val()+" pada "+el(),s.val()?"ok":"");if(s.val()&&!ok){ok=true;
+   db.ref("system/heartbeat").once("value").then(x=>add("SDK baca system/heartbeat → OK "+JSON.stringify(x.val()).slice(0,60),"ok")).catch(e=>add("SDK baca system/heartbeat → "+e.code,"no"));
+   db.ref("students").once("value").then(x=>add("SDK baca students → OK ("+(x.numChildren())+" siswa)","ok")).catch(e=>add("SDK baca students → "+e.code,"no"));}});
+ setTimeout(()=>{if(!ok)add("SDK → TIDAK PERNAH Connected dalam 20 dtk ❌","no");res();},20000);
+});}
 document.getElementById("go").onclick=async()=>{out.innerHTML="";add("UA: "+navigator.userAgent.slice(0,90));
-await rest("/.json?shallow=true");await rest("/students.json");await rest("/system.json");await ws();add("Selesai. Kirim ke Pak Raka: baris REST dan WebSocket di atas.");};
+await rest("/.json?shallow=true");await rest("/students.json");await rest("/system.json");await ws();await sdkTest();add("Selesai. Kirim ke Pak Raka: baris REST dan WebSocket di atas.");};
 </script></body></html>
