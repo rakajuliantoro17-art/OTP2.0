@@ -7,7 +7,7 @@ const PIN_FILE = path.join(__dirname, "pin.json");
 const FIREBASE_DB = process.env.FIREBASE_DB || "https://otp-2-70d6e-default-rtdb.firebaseio.com";
 const OFFLINE_AFTER = 40000;          // ms tanpa heartbeat = offline
 const MIRROR_EVERY  = 10000;          // salin ke Firebase tiap 10 dtk jika ada internet
-const MIRROR_NAMA   = process.env.MIRROR_NAMA || "short";   // "full" | "short" (nama depan + inisial)
+const MIRROR_NAMA   = process.env.MIRROR_NAMA || "full";   // "full" | "short" (nama depan + inisial)
 
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Allow-Private-Network": "true" };
 
