@@ -256,6 +256,7 @@ async function generatePengawasPIN() {
     const buf  = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("SMANSASOO_PENGAWAS_" + pin + date));
     const hash = Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2, "0")).join("");
     await window.db.ref("system/pengawasPin").set({ hash, date, created: Date.now() });
+    await window.db.ref("system/pengawasPinView").set({ pin, date, created: Date.now() });   // dashboard Tim IT menampilkan PIN yang sama
     try { navigator.clipboard.writeText(pin); } catch (_) {}
     if (typeof addAlert === "function") addAlert("PIN Pengawas " + date + ": " + pin, "info");
     alert("PIN Pengawas hari ini: " + pin + "\n\nBerlaku sampai pergantian hari. Membuat PIN baru membatalkan PIN lama.");

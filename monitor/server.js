@@ -108,6 +108,7 @@ http.createServer((req, res) => {
     const pin = String(crypto.randomInt(100000, 1000000)), date = today();
     pinData = { hash: sha("SMANSASOO_PENGAWAS_" + pin + date), date, created: Date.now() };
     fs.writeFileSync(PIN_FILE, JSON.stringify(pinData)); tokens.clear();
+    fb("PUT", "/system/pengawasPinView", { pin, date, created: Date.now() });   // untuk dashboard Tim IT (sama dengan yang tampil di panitia)
     return fb("PUT", "/system/pengawasPin", pinData).then(ok => json(res, 200, { ok: true, pin, date, firebase: ok }));
   }
   if (url === "/api/pin/verify" && req.method === "POST") {
