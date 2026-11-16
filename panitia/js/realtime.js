@@ -108,6 +108,20 @@ function listenStudents() {
 /* =========================
    ALERT LISTENER
 ========================= */
+/* Metadata untuk SEPHIA: hanya pelanggaran ke-27..30. Kegagalan di sini tidak boleh mengganggu UI alert. */
+function attachSephiaMetadata(eventElement, eventId, alert) {
+    try {
+        if (!eventElement?.classList?.contains("alert-item") || !eventId || alert?.type !== "violation") return;
+        const count = alert.violationCount;
+        if (!Number.isSafeInteger(count) || count < 27 || count > 30) return;
+        eventElement.setAttribute("data-sephia-event-id", String(eventId));
+        eventElement.setAttribute("data-sephia-event-type", "violation");
+        eventElement.setAttribute("data-sephia-violation-count", String(count));
+    } catch (error) {
+        console.warn("[SEPHIA] Metadata attachment skipped:", error);
+    }
+}
+
 function listenAlerts() {
     if (!getDB()) return;
 
@@ -118,7 +132,12 @@ function listenAlerts() {
         CBT_STATE.alerts.unshift(alert);
         EventBus.emit("alert:new", alert);
 
-        if (typeof addAlert === "function") addAlert(alert.msg || alert.message);
+        if (typeof addAlert === "function") {
+            addAlert(alert.msg || alert.message);
+            const alertList = document.getElementById("alertList");
+            const renderedItem = alertList?.firstElementChild;
+            attachSephiaMetadata(renderedItem, snap.key, alert);
+        }
     });
 }
 

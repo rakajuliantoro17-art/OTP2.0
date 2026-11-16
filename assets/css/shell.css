@@ -212,3 +212,9 @@ body.pengawas-shell .alert { bottom: 84px; }
 body.pengawas-shell .shell-footer { width: 100%; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* SEPHIA di sidebar panitia */
+.sb-sephia { display: flex; align-items: center; gap: 10px; padding: 8px 12px; margin: 6px 0 10px; border: 1px solid var(--border, #e5e5ea); border-radius: 14px; background: rgba(255,255,255,.55); }
+.sb-sephia:empty, .sb-sephia > :empty:only-child { display: none; }
+body.sidebar-collapsed .sb-sephia { display: none; }
+@media (max-width: 1023px) { .sb-sephia { flex-wrap: wrap; } }
