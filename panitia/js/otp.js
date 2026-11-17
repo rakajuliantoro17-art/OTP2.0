@@ -66,7 +66,10 @@ function generateSystemOTP() {
 /* =========================
    OTP COUNTDOWN
 ========================= */
+let OTP_COUNTDOWN_STARTED = false;
 function startOTPCountdown() {
+    if (OTP_COUNTDOWN_STARTED) return;          // dipanggil dari otp.js dan ui.js; cukup satu pewaktu
+    OTP_COUNTDOWN_STARTED = true;
     setInterval(() => {
         const now    = Math.floor(Date.now() / 1000);
         OTP_STATE.expires = OTP_INTERVAL - (now % OTP_INTERVAL);
@@ -77,7 +80,10 @@ function startOTPCountdown() {
    AUTO REFRESH OTP
    Sinkron dengan siklus waktu TOTP
 ========================= */
+let OTP_REFRESH_STARTED = false;
 function startOTPRefresh() {
+    if (OTP_REFRESH_STARTED) return;            // cegah pencatatan "System OTP diperbarui" ganda
+    OTP_REFRESH_STARTED = true;
     // Generate pertama kali
     generateSystemOTP();
 
