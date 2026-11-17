@@ -1,6 +1,6 @@
 {
   "name": "otp2-sephia",
-  "version": "0.22.0-stage.22",
+  "version": "0.26.0-stage.26",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,6 +16,7 @@
     "verify:diagnostics": "node --test ./tests/stage16-voice-diagnostics.test.mjs",
     "verify:audio": "node --test ./tests/local-audio-announcement.test.mjs ./tests/stage19-audio-host-wiring.test.mjs",
     "verify:voice-asset": "node ./scripts/verify-voice-asset.mjs",
-    "verify:release": "node ./scripts/release-readiness.mjs"
+    "verify:release": "node ./scripts/release-readiness.mjs",
+    "verify:neural-tts": "node --test ./tests/local-neural-tts.test.mjs ./tests/neural-tts-controller.test.mjs"
   }
 }
