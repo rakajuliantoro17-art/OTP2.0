@@ -76,6 +76,13 @@ export function createLocalNeuralTtsAdapter({
     try {
       const synthesis = Promise.resolve().then(() =>
         engine.synthesize(APPROVED_NEURAL_TTS_TEXT, { signal: controller.signal }));
+      // If a runtime ignores AbortSignal and resolves late, release its output
+      // rather than leaving an unreachable audio buffer in memory.
+      synthesis.then((lateAudio) => {
+        if (lateAudio != null && (controller.signal.aborted || active !== operation)) {
+          try { player.release(lateAudio); } catch {}
+        }
+      }).catch(() => {});
       audio = await Promise.race([synthesis, cancellation, timeout]);
       if (controller.signal.aborted || disposed) throw new Error("Sintesis SEPHIA dibatalkan.");
       if (audio == null) throw new Error("Local neural TTS returned no audio.");
