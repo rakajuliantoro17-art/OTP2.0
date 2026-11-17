@@ -84,3 +84,29 @@ test("TTS failure degrades only the SEPHIA visual state to red error mode", asyn
   assert.equal(bridge.visualState.snapshot.state, "error");
   bridge.dispose();
 });
+
+test("Panitia default fails closed to visual-only instead of browser or WAV fallback", async () => {
+  let browserSpeakCalls = 0;
+  const documentImpl = { getElementById: (id) => ({ id }) };
+  const windowImpl = new FakeWindow();
+  windowImpl.speechSynthesis = { speak() { browserSpeakCalls += 1; }, cancel() {} };
+  windowImpl.SpeechSynthesisUtterance = class {};
+  const bridge = mountPanitiaSephia({
+    documentImpl,
+    windowImpl,
+    mountAvatar: null,
+    createWakeWordRecognizer: () => ({ isActive: false, start: async () => false, stop() {}, dispose() {} }),
+    createRuntime: () => ({ isActive: false, activate() {}, deactivate() {}, dispose() {} }),
+    mountControls: () => ({ dispose() {} }),
+    bindLifecycle: () => ({ dispose() {} }),
+  });
+
+  assert.equal(bridge.speechAdapter.available, false);
+  assert.equal(await bridge.speechController.announce({
+    eventId: "visual-only-27",
+    eventType: "violation",
+    violationCount: 27,
+  }), false);
+  assert.equal(browserSpeakCalls, 0);
+  bridge.dispose();
+});
