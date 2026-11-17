@@ -11,7 +11,8 @@ const checks = [];
 const add = (name, status, detail) => checks.push({ name, status, detail });
 
 const avatarExists = await exists("assets/avatar-sephia.svg");
-const voiceExists = await exists("assets/sephia-announcement.wav");
+const neuralAdapterExists = await exists("src/audio/local-neural-tts.js");
+const neuralAdapterTestsExist = await exists("tests/local-neural-tts.test.mjs") && await exists("tests/neural-tts-controller.test.mjs");
 const workflow = await read("../.github/workflows/sephia-tests.yml");
 const vercel = await read("../vercel.json");
 const host = await read("../panitia/index.html");
@@ -24,8 +25,12 @@ add("Audio activation remains opt-in", !/announcementAssetUrl\s*:/.test(host) ? 
   "Production host does not enable the WAV adapter before the approved asset is supplied.");
 add("Bundled portrait", avatarExists ? "PASS" : "BLOCKED",
   avatarExists ? "Original SVG portrait is present." : "Portrait asset is missing.");
-add("Approved voice WAV", voiceExists ? "REVIEW_REQUIRED" : "BLOCKED",
-  voiceExists ? "WAV exists; run technical and human voice acceptance." : "Final voice asset has not been supplied.");
+add("Local neural TTS adapter contract", neuralAdapterExists ? "PASS" : "BLOCKED",
+  neuralAdapterExists ? "Dependency-injected local neural adapter is present; it does not bundle or fetch a model." : "Neural adapter contract is missing.");
+add("Neural TTS contract tests", neuralAdapterTestsExist ? "PASS" : "BLOCKED",
+  neuralAdapterTestsExist ? "Adapter and controller tests use deterministic in-memory mocks." : "Neural adapter/controller tests are incomplete.");
+add("Approved neural model and feminine voice", "BLOCKED",
+  "No engine, model weights, or licensed adult feminine reference voice has passed acoustic and legal acceptance.");
 add("Panitia workstation acceptance", "MANUAL",
   "Chrome, HTTPS secure context, microphone permission, wake word, speakers, and visual fit must be tested on the target PC.");
 add("Vercel Git integration", "MANUAL",
@@ -35,7 +40,7 @@ add("Production release authorization", "MANUAL",
 
 const productionReady = checks.every((item) => item.status === "PASS");
 console.log(JSON.stringify({
-  report: "SEPHIA Stage 22 Release Readiness",
+  report: "SEPHIA Release Readiness",
   productionReady,
   note: "A successful CI build is not a production deployment or an authorization to merge.",
   checks,
