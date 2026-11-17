@@ -131,5 +131,5 @@ test("dispose cancels work and releases engine/player resources", async () => {
   await assert.rejects(pending, /dibatalkan/);
   assert.equal(adapter.available, false);
   assert.equal(calls.disposed, 2);
-  assert.throws(() => adapter.dispose(), { message: /./ });
+  assert.doesNotThrow(() => adapter.dispose());
 });
