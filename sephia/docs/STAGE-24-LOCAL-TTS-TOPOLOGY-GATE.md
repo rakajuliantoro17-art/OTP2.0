@@ -74,3 +74,9 @@ The following must be collected on the actual Panitia PC, using Chrome and the r
 ## Exit criteria
 
 Stage 25 may implement the adapter only after one topology passes the security and compatibility checks above. Until then, the neural TTS architecture is approved, but no engine, voice identity, endpoint, or production runtime is approved. The Panitia dashboard remains the source of truth; SEPHIA must not compromise its operation when speech is unavailable.
+
+## Stage 25–26 implementation follow-through
+
+The adapter contract and deterministic controller tests are now implemented. Until an approved local engine/player is provisioned, the Panitia host defaults to a fail-closed visual-only adapter. Browser/OS speech synthesis is no longer the host fallback. The legacy WAV branch is retained only for compatibility tests and must not be configured for production.
+
+The topology gate itself remains open for real runtime activation: no local service endpoint, engine, model package, voice reference, or Panitia workstation benchmark has been approved.
