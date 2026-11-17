@@ -76,5 +76,7 @@ for (const match of imports) {
   assert.ok(manifestPaths.has(rel.split(sep).join("/")), "Built host bridge dependency missing from manifest: " + rel);
 }
 
+assert.match(sourceBridge, /createUnavailableLocalNeuralTtsAdapter/);
+assert.doesNotMatch(sourceBridge, /createBrowserLocalIndonesianTts/);
 assert.doesNotMatch(sourceBridge, /firebase|fetch\s*\(|XMLHttpRequest|WebSocket|EventSource|localStorage|sessionStorage|indexedDB/i);
 console.log("SEPHIA host integration verified: Panitia load order, source/dist parity, manifest hashes, dependency closure, and isolated host bridge.");
