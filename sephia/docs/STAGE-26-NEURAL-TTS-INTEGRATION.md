@@ -15,7 +15,7 @@ The integration tests prove:
 
 ## Runtime wiring decision
 
-The host bridge's existing `createSpeechAdapter` injection seam is retained. The neural adapter is not made the default because no verified engine/player implementation or approved runtime topology exists yet. Legacy browser TTS and WAV paths remain isolated compatibility code and are not approved as final production voice paths.
+The host bridge's existing `createSpeechAdapter` injection seam is retained. The neural adapter is not made the active default because no verified engine/player implementation or approved runtime topology exists yet. The Panitia host now defaults to an unavailable neural adapter (visual-only mode) rather than browser/OS speech synthesis. The explicit WAV adapter remains isolated legacy/test code and is not an approved production voice path.
 
 No guessed localhost URL, LAN endpoint, model download, or cloud fallback is introduced. This prevents a false-positive "integrated" state where the page loads but the neural engine cannot be reached securely.
 
