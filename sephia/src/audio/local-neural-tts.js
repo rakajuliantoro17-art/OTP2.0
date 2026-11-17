@@ -114,3 +114,21 @@ export function createLocalNeuralTtsAdapter({
     },
   });
 }
+
+/**
+ * Safe host default while no verified neural runtime is provisioned.
+ * It deliberately has no browser-TTS or prerecorded-audio fallback.
+ */
+export function createUnavailableLocalNeuralTtsAdapter() {
+  let disposed = false;
+  return Object.freeze({
+    get available() { return false; },
+    get isSpeaking() { return false; },
+    async speak() {
+      throw new Error("Local neural TTS belum diprovisikan; SEPHIA berjalan dalam mode visual.");
+    },
+    cancel() {},
+    dispose() { disposed = true; },
+    get isDisposed() { return disposed; },
+  });
+}
