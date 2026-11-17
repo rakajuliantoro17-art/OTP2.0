@@ -4,7 +4,7 @@ import { createVisualState } from "../visual/visual-state.js";
 import { mountSephiaControls } from "../visual/mount-sephia-controls.js";
 import { mountSephiaAvatar } from "../visual/mount-sephia-avatar.js";
 import { createNotificationSpeechController } from "../audio/announcement.js";
-import { createBrowserLocalIndonesianTts } from "../audio/browser-local-tts.js";
+import { createUnavailableLocalNeuralTtsAdapter } from "../audio/local-neural-tts.js";
 import { createLocalAudioAnnouncementAdapter } from "../audio/local-audio-announcement.js";
 import { createLocalWakeWordRecognizer } from "../audio/local-wake-word.js";
 
@@ -27,10 +27,7 @@ export function mountPanitiaSephia({
   bindLifecycle = bindPageLifecycle,
   createSpeechAdapter = (win, assetUrl) => assetUrl
     ? createLocalAudioAnnouncementAdapter({ AudioImpl: win?.Audio, assetUrl })
-    : createBrowserLocalIndonesianTts({
-      speechSynthesisImpl: win?.speechSynthesis,
-      UtteranceImpl: win?.SpeechSynthesisUtterance,
-    }),
+    : createUnavailableLocalNeuralTtsAdapter(),
   createWakeWordRecognizer = (win, callbacks) => createLocalWakeWordRecognizer({
     windowImpl: win,
     ...callbacks,
