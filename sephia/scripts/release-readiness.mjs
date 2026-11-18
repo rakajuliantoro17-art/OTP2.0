@@ -20,6 +20,9 @@ const acceptanceHarnessExists = await exists("src/audio/neural-tts-acceptance.js
 const workflow = await read("../.github/workflows/sephia-tests.yml");
 const vercel = await read("../vercel.json");
 const host = await read("../panitia/index.html");
+const hostBridge = await read("src/host/mount-panitia-sephia.js");
+const stage27 = await read("docs/STAGE-27-LOCAL-NEURAL-RUNTIME-PROTOTYPE.md");
+const stage29Exists = await exists("docs/STAGE-29-LOCAL-CHROME-BRIDGE-SECURITY.md");
 
 add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module/.test(workflow) ? "PASS" : "BLOCKED",
   "GitHub Actions workflow listens to the feature branch and main.");
