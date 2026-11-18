@@ -104,7 +104,7 @@ export function mountSephiaControls({
   testSpeech.disabled = true;
   panel.append(explanation, toggleVisualizer, testSpeech);
   settings.append(summary, panel);
-  root.append(trigger, status, visualizer, settings);
+  root.append(trigger, visualizer, settings, status);
   container.appendChild(root);
 
   let visualizerEnabled = visualState.snapshot.visualizerEnabled;
