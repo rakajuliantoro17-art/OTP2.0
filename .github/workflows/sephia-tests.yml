@@ -25,6 +25,8 @@ jobs:
           node-version: 22
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@1.92.0
+        with:
+          components: rustfmt
       - name: Run SEPHIA unit and integration tests
         working-directory: sephia
         run: npm test
