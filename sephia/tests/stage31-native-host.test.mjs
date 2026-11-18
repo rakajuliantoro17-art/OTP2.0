@@ -39,5 +39,5 @@ test("native host documentation does not claim synthesis is ready", async () => 
   const report = await read("native-host/README.md");
   assert.match(report, /protocol-only/i);
   assert.match(report, /ENGINE_UNAVAILABLE/);
-  assert.match(report, /in-memory Laras/i);
+  assert.match(report, /Laras in-memory/i);
 });
