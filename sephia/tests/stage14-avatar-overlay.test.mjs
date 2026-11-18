@@ -11,7 +11,7 @@ test("Stage 14 host avatar overlay is included in package and CI", async () => {
   assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.match(pkg.scripts["verify:avatar"], /stage21-avatar-asset\.test\.mjs/);
   assert.match(workflow, /npm run verify:avatar/);
-  assert.match(workflow, /sephia-stage\d+-(?:host-avatar-overlay|notification-speech-pipeline|local-voice-diagnostics)-/);
+  assert.match(workflow, /sephia-stage\d+-(?:host-avatar-overlay|notification-speech-pipeline|local-voice-diagnostics|panitia-bundle)-/);
 });
 
 test("Panitia topbar mounts avatar separately from the SEPHIA control", async () => {
