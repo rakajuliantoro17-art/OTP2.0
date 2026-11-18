@@ -30,7 +30,8 @@ export function createNotificationSpeechController({
 
   return Object.freeze({
     async announce(event) {
-      if (disposed || !event?.eventId || event.eventType !== "violation" || !Number.isSafeInteger(event.violationCount) ||
+      if (disposed || adapter.available === false || !event?.eventId ||
+          event.eventType !== "violation" || !Number.isSafeInteger(event.violationCount) ||
           event.violationCount < 27 || event.violationCount > 30) return false;
 
       const token = ++activeToken;
