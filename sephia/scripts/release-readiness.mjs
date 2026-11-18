@@ -40,6 +40,8 @@ const stage34Exists = await exists("native-host/benchmark-native-host-windows.ps
 const stage35Exists = await exists("native-host/smoke-test-native-host-windows.ps1") &&
   await exists("tests/stage35-native-host-smoke.test.mjs");
 const stage36Exists = await exists("docs/STAGE-36-PRODUCTION-CANDIDATE-RUNBOOK.md");
+const stage37Exists = await exists("src/audio/chrome-native-messaging-tts.js") &&
+  await exists("extension/content-script.js") && await exists("tests/stage37-audio-unlock.test.mjs");
 
 add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module/.test(workflow) ? "PASS" : "BLOCKED",
   "GitHub Actions workflow listens to the feature branch and main.");
@@ -80,6 +82,8 @@ add("Stage 35 Windows Native Messaging process smoke test", stage35Exists ? "PAS
   stage35Exists ? "Windows process test verifies fail-closed readiness and exact extension-origin rejection." : "Native host process smoke test or regression checks are incomplete.");
 add("Stage 36 production candidate runbook", stage36Exists ? "PASS" : "BLOCKED",
   stage36Exists ? "Installation, target-PC acceptance, rollback, and release gates are documented." : "Production candidate runbook is missing.");
+add("Stage 37 Chrome Web Audio activation", stage37Exists ? "PASS" : "BLOCKED",
+  stage37Exists ? "AudioContext is unlocked synchronously on manual activation; real Chrome playback remains a manual gate." : "Explicit Web Audio unlock wiring or tests are incomplete.");
 add("Provisioned local model and consented voice", "BLOCKED",
   "No real ONNX model bundle or consented adult feminine Indonesian voice reference has been installed and accepted on the Panitia PC.");
 add("Approved neural model and feminine voice", "BLOCKED",
