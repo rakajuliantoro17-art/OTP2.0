@@ -7,13 +7,13 @@
 
 - Rust host reads Chrome Native Messaging frames from stdin and writes framed JSON only to stdout.
 - Request payload is limited to 4 KiB; response is limited to 1 MiB.
-- Caller origin is compared exactly with `SEPHIA_EXTENSION_ORIGIN`.
+- Caller origin is compared exactly with the strict `extension_origin` value in a local config file installed beside the host executable.
 - Request deserialization denies unknown properties.
 - Only protocol v1 action `synthesize-approved-announcement` is accepted.
 - A two-second rate limit is enforced.
 - No TCP/UDP listener, HTTP endpoint, shell execution, model download, or audio-file write exists.
-- Windows install/uninstall scripts register the host under the current user's Chrome Native Messaging registry key and allowlist one exact 32-character extension ID.
-- Installer writes the native-host manifest as UTF-8 without BOM and requires Chrome restart after setting the per-user extension-origin environment variable.
+- Windows install/uninstall scripts copy the executable into the per-user application directory, write its adjacent config file, register the host under the current user's Chrome Native Messaging registry key, and allowlist one exact 32-character extension ID.
+- Installer writes both host config and native-host manifest as UTF-8 without BOM. Chrome restart is required after registry registration.
 
 ## Deliberate fail-closed state
 
