@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::io::{self, Read, Write};
 use std::time::{Duration, Instant};
 
@@ -15,23 +15,6 @@ const APPROVED_ACTION: &str = "synthesize-approved-announcement";
 struct Request {
     version: u8,
     action: String,
-}
-
-#[derive(Debug, Serialize, PartialEq, Eq)]
-struct ErrorResponse {
-    version: u8,
-    ok: bool,
-    code: &'static str,
-}
-
-impl ErrorResponse {
-    fn new(code: &'static str) -> Self {
-        Self {
-            version: 1,
-            ok: false,
-            code,
-        }
-    }
 }
 
 fn validate_origin(actual: &str, expected: &str) -> bool {
@@ -151,6 +134,17 @@ impl Runtime {
         }
     }
 
+    fn is_ready(&self) -> bool {
+        #[cfg(feature = "inference")]
+        {
+            return self.engine.is_some();
+        }
+        #[cfg(not(feature = "inference"))]
+        {
+            false
+        }
+    }
+
     fn synthesize(&mut self) -> Result<serde_json::Value, &'static str> {
         #[cfg(feature = "inference")]
         {
@@ -201,6 +195,15 @@ fn run() -> io::Result<()> {
     let mut output = stdout.lock();
     let mut last_request = None;
     let mut runtime = Runtime::new(&config);
+    let ready = if runtime.is_ready() {
+        serde_json::json!({ "version": 1, "ok": true, "status": "ready" })
+    } else {
+        error_response("ENGINE_UNAVAILABLE")
+    };
+    write_frame(&mut output, &ready)?;
+    if !runtime.is_ready() {
+        return Ok(());
+    }
 
     loop {
         let payload = match read_frame(&mut input)? {
