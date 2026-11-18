@@ -4,18 +4,18 @@ let pairedTab = null;
 let nativePort = null;
 let pending = null;
 let lastRequestAt = 0;
-let intentionalDisconnect = false;
+const intentionallyClosedPorts = new WeakSet();
 
 function sendTab(tabId, message) {
   return chrome.tabs.sendMessage(tabId, message).catch(() => undefined);
 }
 
 function disconnectNative() {
-  if (!nativePort) return;
-  intentionalDisconnect = true;
-  try { nativePort.disconnect(); } catch {}
+  const port = nativePort;
+  if (!port) return;
   nativePort = null;
-  intentionalDisconnect = false;
+  intentionallyClosedPorts.add(port);
+  try { port.disconnect(); } catch {}
 }
 
 function openNativePort() {
@@ -42,8 +42,8 @@ function openNativePort() {
       });
     });
     port.onDisconnect.addListener(() => {
-      const wasIntentional = intentionalDisconnect;
-      nativePort = null;
+      const wasIntentional = intentionallyClosedPorts.has(port);
+      if (nativePort === port) nativePort = null;
       if (pending) {
         const request = pending;
         pending = null;
