@@ -27,6 +27,6 @@
     "verify:stage33": "node --test ./tests/stage33-model-provisioning.test.mjs",
     "verify:stage34": "node --test ./tests/stage34-native-benchmark.test.mjs",
     "verify:stage35": "node --test ./tests/stage35-native-host-smoke.test.mjs",
-    "verify:stage37": "node --test ./tests/stage37-audio-unlock.test.mjs"
+    "verify:stage37": "node --test ./tests/stage37-audio-unlock.test.mjs ./tests/chrome-native-messaging-tts.test.mjs"
   }
 }
