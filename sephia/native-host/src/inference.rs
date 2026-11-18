@@ -206,6 +206,27 @@ impl LocalNeuralEngine {
             sha256_file(&executable)? == expected_runtime_hash,
             "native host binary SHA-256 mismatch"
         );
+        let executable_dir = executable
+            .parent()
+            .ok_or_else(|| anyhow::anyhow!("native host directory is unavailable"))?;
+        for dependency in config.runtime_dlls.as_deref().unwrap_or_default() {
+            anyhow::ensure!(
+                dependency.file_name.to_ascii_lowercase().ends_with(".dll")
+                    && !dependency.file_name.contains('/')
+                    && !dependency.file_name.contains('\\')
+                    && dependency.file_name != ".dll",
+                "invalid native runtime dependency name"
+            );
+            anyhow::ensure!(
+                is_sha256(&dependency.sha256),
+                "native runtime dependency SHA-256 is invalid"
+            );
+            let dependency_path = executable_dir.join(&dependency.file_name);
+            anyhow::ensure!(
+                sha256_file(&dependency_path)? == dependency.sha256,
+                "native runtime dependency SHA-256 mismatch"
+            );
+        }
 
         let threads = config.threads.unwrap_or(2);
         anyhow::ensure!(
