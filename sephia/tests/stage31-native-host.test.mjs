@@ -13,7 +13,8 @@ test("Stage 31 Rust native host is a strict fail-closed protocol implementation"
   assert.match(source, /MAX_REQUEST_BYTES: usize = 4096/);
   assert.match(source, /MAX_RESPONSE_BYTES: usize = 1024 \* 1024/);
   assert.match(source, /synthesize-approved-announcement/);
-  assert.match(source, /SEPHIA_EXTENSION_ORIGIN/);
+  assert.match(source, /sephia-host-config\.json/);
+  assert.match(source, /extension_origin/);
   assert.match(source, /ENGINE_UNAVAILABLE/);
   assert.doesNotMatch(source, /TcpListener|UdpSocket|reqwest|hyper::|std::process::Command/);
   assert.doesNotMatch(source, /studentName|className|violationCount|firebase|moodle/i);
@@ -27,8 +28,10 @@ test("Windows installer allowlists one exact extension ID and registers only the
   assert.match(installer, /allowed_origins = @\(\$origin\)/);
   assert.match(installer, /NativeMessagingHosts/);
   assert.match(installer, /UTF8Encoding\(\$false\)/);
+  assert.match(installer, /Copy-Item.*installedHost/);
+  assert.doesNotMatch(installer, /SetEnvironmentVariable/);
   assert.match(uninstaller, /NativeMessagingHosts/);
-  assert.match(uninstaller, /SEPHIA_EXTENSION_ORIGIN/);
+  assert.match(uninstaller, /sephia-host-config\.json/);
 });
 
 test("native host documentation does not claim synthesis is ready", async () => {
