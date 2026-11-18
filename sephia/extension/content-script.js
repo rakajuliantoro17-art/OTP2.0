@@ -87,7 +87,7 @@
   window.addEventListener(REQUEST_EVENT, (event) => {
     const detail = event.detail;
     if (detail?.version !== 1 ||
-        detail.action !== "synthesize-approved-announcement" ||
+        !["synthesize-approved-announcement", "synthesize-approved-wake-acknowledgement"].includes(detail.action) ||
         typeof detail.requestId !== "string" ||
         !/^sephia-[0-9]{1,12}$/.test(detail.requestId) ||
         activeRequestId) return;
@@ -95,7 +95,7 @@
     activeRequestId = detail.requestId;
     chrome.runtime.sendMessage({
       type: "SEPHIA_SPEAK",
-      action: "synthesize-approved-announcement",
+      action: detail.action,
       requestId: detail.requestId,
     }).then((ack) => {
       if (!ack?.ok && activeRequestId === detail.requestId) {
