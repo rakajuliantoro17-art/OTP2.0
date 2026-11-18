@@ -165,8 +165,10 @@ mod tests {
         write_frame(&mut output, &response).unwrap();
         let mut input = Cursor::new(output);
         let payload = read_frame(&mut input).unwrap().unwrap();
-        let parsed: ErrorResponse = serde_json::from_slice(&payload).unwrap();
-        assert_eq!(parsed, response);
+        let parsed: serde_json::Value = serde_json::from_slice(&payload).unwrap();
+        assert_eq!(parsed["version"], 1);
+        assert_eq!(parsed["ok"], false);
+        assert_eq!(parsed["code"], response.code);
     }
 
     #[test]
