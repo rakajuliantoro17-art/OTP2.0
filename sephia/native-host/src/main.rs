@@ -318,6 +318,7 @@ mod tests {
             voice_consent_evidence_path: None,
             model_license_evidence_path: None,
             runtime_sha256: None,
+            runtime_dlls: None,
             threads: None,
         };
         let mut runtime = Runtime::new(&config);
