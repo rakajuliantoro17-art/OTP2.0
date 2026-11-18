@@ -136,6 +136,7 @@ export function mountPanitiaSephia({
       },
       onError(error) {
         if (visualState.snapshot.active) visualState.setState("error");
+        setControlStatus("Suara TTS gagal: " + String(error?.message || error), "error");
         report(error);
       },
     });
