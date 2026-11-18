@@ -156,7 +156,7 @@ try {
     privacy = "Audio response was decoded and cleared in memory; no audio file or transcript was written by this benchmark."
   }
   $report | ConvertTo-Json -Depth 6
-  if (-not $report.overallTechnicalPass) { exit 1 }
+  if (-not $report.overallTechnicalPass) { throw "One or more Stage 34 technical acceptance limits failed." }
 }
 finally {
   if ($started -and $process -and -not $process.HasExited) {
