@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   APPROVED_NEURAL_TTS_TEXT,
+  APPROVED_WAKE_ACK_TEXT,
   createLocalNeuralTtsAdapter,
 } from "../src/audio/local-neural-tts.js";
 
@@ -36,6 +37,15 @@ test("accepts only the exact generic approved SEPHIA announcement", async () => 
   await assert.rejects(adapter.speak("Nama siswa dan kelas"), /tidak diizinkan/);
   await assert.rejects(adapter.speak(APPROVED_NEURAL_TTS_TEXT + " Pelanggaran 29"), /tidak diizinkan/);
   assert.equal(calls.synthesized.length, 0);
+  adapter.dispose();
+});
+
+test("accepts the separate fixed wake-word acknowledgement", async () => {
+  const { adapter, calls } = fixture();
+  assert.equal(await adapter.speak(APPROVED_WAKE_ACK_TEXT), true);
+  assert.equal(calls.synthesized[0].text, APPROVED_WAKE_ACK_TEXT);
+  assert.equal(calls.played.length, 1);
+  assert.equal(calls.released.length, 1);
   adapter.dispose();
 });
 
