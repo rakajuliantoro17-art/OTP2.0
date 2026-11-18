@@ -85,13 +85,16 @@ jobs:
       - name: Verify fixed local audio announcement adapter
         working-directory: sephia
         run: npm run verify:audio
+      - name: Verify legacy WAV asset remains unselected (compatibility gate only)
+        working-directory: sephia
+        run: npm run verify:voice-asset
       - name: Print release readiness audit (no deploy)
         working-directory: sephia
         run: npm run verify:release
       - name: Upload Stage 22 SEPHIA build and diagnostic fixtures
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage32-local-neural-tts-${{ github.sha }}
+          name: sephia-stage22-local-voice-diagnostics-${{ github.sha }}
           path: |
             sephia/dist/
             sephia/staging/voice-diagnostics.html
@@ -124,5 +127,19 @@ jobs:
           path: |
             sephia/native-host/target/release/sephia-native-host.exe
             sephia/native-host/target/release/*.dll
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Stage 32 neural TTS host and extension fixtures
+        uses: actions/upload-artifact@v4
+        with:
+          name: sephia-stage32-local-neural-tts-${{ github.sha }}
+          path: |
+            sephia/dist/
+            sephia/staging/voice-diagnostics.html
+            sephia/staging/voice-diagnostics.js
+            sephia/extension/
+            sephia/native-host/
+            sephia/docs/STAGE-32-IN-MEMORY-LARAS-INFERENCE.md
           if-no-files-found: error
           retention-days: 14
