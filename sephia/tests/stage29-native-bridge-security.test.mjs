@@ -35,6 +35,7 @@ test("production Panitia host is neural-only and remains fail-closed", async () 
   assert.match(bridge, /createUnavailableLocalNeuralTtsAdapter/);
   assert.doesNotMatch(bridge, /createLocalAudioAnnouncementAdapter|announcementAssetUrl/);
   assert.doesNotMatch(bridge, /createBrowserLocalIndonesianTts/);
+  assert.match(bridge, /createChromeNativeMessagingTtsAdapter/);
 });
 
 test("Stage 29 explicitly blocks production until in-memory inference and workstation acceptance", async () => {
@@ -54,7 +55,7 @@ test("Native Messaging protocol schema is strict and has no arbitrary text or id
   assert.equal(response.additionalProperties, false);
   assert.equal(response.properties.sampleRate.const, 24000);
   assert.equal(response.properties.channels.const, 1);
-  assert.equal(response.properties.audioBase64.maxLength, 955734);
+  assert.equal(response.properties.audioBase64.maxLength, 955736);
   assert.equal("text" in request.properties, false);
   assert.equal("studentName" in request.properties, false);
   assert.equal("className" in request.properties, false);
