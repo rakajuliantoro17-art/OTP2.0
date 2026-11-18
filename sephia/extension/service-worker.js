@@ -2,6 +2,8 @@ import { NATIVE_HOST_NAME, validateNativeResponse } from "./protocol.js";
 
 let pairedTab = null;
 let nativePort = null;
+let hostReady = false;
+let hostReadyPromise = null;
 let pending = null;
 let lastRequestAt = 0;
 const intentionallyClosedPorts = new WeakSet();
@@ -14,57 +16,105 @@ function disconnectNative() {
   const port = nativePort;
   if (!port) return;
   nativePort = null;
+  hostReady = false;
+  hostReadyPromise = null;
   intentionallyClosedPorts.add(port);
   try { port.disconnect(); } catch {}
 }
 
 function openNativePort() {
-  if (nativePort) return true;
+  if (nativePort && hostReady) return Promise.resolve(true);
+  if (hostReadyPromise) return hostReadyPromise;
+
+  let port;
   try {
-    const port = chrome.runtime.connectNative(NATIVE_HOST_NAME);
-    nativePort = port;
-    port.onMessage.addListener((response) => {
-      const request = pending;
-      if (!request) return;
-      pending = null;
-      if (!validateNativeResponse(response)) {
-        void sendTab(request.tabId, {
-          type: "SEPHIA_NATIVE_RESULT",
-          requestId: request.requestId,
-          response: { version: 1, ok: false, code: "INVALID_REQUEST" },
-        });
+    port = chrome.runtime.connectNative(NATIVE_HOST_NAME);
+  } catch {
+    return Promise.resolve(false);
+  }
+
+  nativePort = port;
+  hostReady = false;
+  let settled = false;
+  let resolveReady;
+  const readyPromise = new Promise((resolve) => { resolveReady = resolve; });
+  hostReadyPromise = readyPromise;
+
+  const handshakeTimer = setTimeout(() => {
+    if (settled) return;
+    settled = true;
+    resolveReady(false);
+    disconnectNative();
+  }, 120000);
+
+  port.onMessage.addListener((response) => {
+    if (!hostReady) {
+      if (response?.version === 1 && response?.ok === true && response?.status === "ready") {
+        hostReady = true;
+        settled = true;
+        clearTimeout(handshakeTimer);
+        resolveReady(true);
         return;
       }
+      if (response?.version === 1 && response?.ok === false && response?.code) {
+        settled = true;
+        clearTimeout(handshakeTimer);
+        resolveReady(false);
+        disconnectNative();
+      }
+      return;
+    }
+
+    const request = pending;
+    if (!request) return;
+    pending = null;
+    if (request.cancelled) return;
+
+    if (!validateNativeResponse(response)) {
       void sendTab(request.tabId, {
         type: "SEPHIA_NATIVE_RESULT",
         requestId: request.requestId,
-        response,
+        response: { version: 1, ok: false, code: "INVALID_REQUEST" },
       });
+      return;
+    }
+    void sendTab(request.tabId, {
+      type: "SEPHIA_NATIVE_RESULT",
+      requestId: request.requestId,
+      response,
     });
-    port.onDisconnect.addListener(() => {
-      const wasIntentional = intentionallyClosedPorts.has(port);
-      if (nativePort === port) nativePort = null;
-      if (pending) {
-        const request = pending;
-        pending = null;
+  });
+
+  port.onDisconnect.addListener(() => {
+    const wasIntentional = intentionallyClosedPorts.has(port);
+    if (nativePort === port) nativePort = null;
+    hostReady = false;
+    if (!settled) {
+      settled = true;
+      clearTimeout(handshakeTimer);
+      resolveReady(false);
+    }
+    if (hostReadyPromise === readyPromise) hostReadyPromise = null;
+    if (pending) {
+      const request = pending;
+      pending = null;
+      if (!request.cancelled) {
         void sendTab(request.tabId, {
           type: "SEPHIA_NATIVE_RESULT",
           requestId: request.requestId,
           response: { version: 1, ok: false, code: "ENGINE_UNAVAILABLE" },
         });
       }
-      if (!wasIntentional && pairedTab) {
-        void sendTab(pairedTab.tabId, {
-          type: "SEPHIA_NATIVE_STATE",
-          state: "disconnected",
-        });
-      }
-    });
-    return true;
-  } catch {
-    nativePort = null;
-    return false;
-  }
+    }
+    if (!wasIntentional && pairedTab) {
+      void sendTab(pairedTab.tabId, {
+        type: "SEPHIA_NATIVE_STATE",
+        state: "disconnected",
+      });
+    }
+  });
+
+  return readyPromise;
 }
 
 async function pairActiveTab(message) {
@@ -83,9 +133,10 @@ async function pairActiveTab(message) {
     disconnectNative();
   }
   pairedTab = { tabId: tab.id, origin: url.origin };
-  if (!openNativePort()) {
+  const ready = await openNativePort();
+  if (!ready) {
     pairedTab = null;
-    return { ok: false, error: "Native Messaging host SEPHIA belum terpasang." };
+    return { ok: false, error: "Mesin neural lokal belum siap atau belum terpasang." };
   }
   await sendTab(tab.id, { type: "SEPHIA_NATIVE_STATE", state: "connected" });
   return { ok: true };
@@ -106,10 +157,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message?.type === "SEPHIA_SPEAK") {
     if (!validSender(sender) ||
+        !hostReady ||
+        !nativePort ||
         message.action !== "synthesize-approved-announcement" ||
         typeof message.requestId !== "string" ||
         !/^sephia-[0-9]{1,12}$/.test(message.requestId)) {
-      sendResponse({ ok: false, error: "Permintaan speech tidak valid." });
+      sendResponse({ ok: false, error: "Permintaan speech tidak valid atau mesin lokal belum siap." });
       return false;
     }
     if (pending) {
@@ -120,12 +173,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ ok: false, error: "Permintaan speech terlalu cepat." });
       return false;
     }
-    if (!openNativePort()) {
-      sendResponse({ ok: false, error: "Native host tidak tersedia." });
-      return false;
-    }
     lastRequestAt = Date.now();
-    pending = { tabId: pairedTab.tabId, requestId: message.requestId };
+    pending = { tabId: pairedTab.tabId, requestId: message.requestId, cancelled: false };
     try {
       nativePort.postMessage({ version: 1, action: "synthesize-approved-announcement" });
       sendResponse({ ok: true, accepted: true });
@@ -138,8 +187,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message?.type === "SEPHIA_CANCEL") {
     if (validSender(sender) && pending && pending.requestId === message.requestId) {
-      pending = null;
-      disconnectNative();
+      // The host currently runs one synchronous inference call. Suppress its
+      // eventual response while keeping the loaded model resident for reuse.
+      pending.cancelled = true;
     }
     sendResponse({ ok: true });
     return false;
