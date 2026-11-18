@@ -1,6 +1,6 @@
 # SEPHIA Stage 31 — Native Messaging Host Protocol
 
-**Status:** Rust protocol host and Windows registration scripts implemented; speech inference deliberately unavailable.  
+**Status:** Rust protocol host and Windows registration scripts implemented; Stage 32 adds an optional pinned in-memory Laras inference feature. Production remains blocked until model/voice provisioning and target-PC acceptance.  
 **Native host name:** `com.smansasoo.sephia`.
 
 ## Implemented
@@ -17,12 +17,12 @@
 
 ## Deliberate fail-closed state
 
-The Rust host currently returns `ENGINE_UNAVAILABLE` for every valid synthesis request. It is a protocol implementation, not a speech engine. This allows the framing, origin check, and extension installer to be validated without falsely claiming that TTS works.
+The default Rust build (without `--features inference`) returns `ENGINE_UNAVAILABLE`. The optional inference build is implemented in Stage 32 and uses Laras' in-memory Engine API. It still returns `ENGINE_UNAVAILABLE` if model files, the voice reference, consent evidence, license evidence, or binary hash are missing or invalid.
 
 ## Build and tests
 
     cargo test --manifest-path sephia/native-host/Cargo.toml
-    cargo build --release --manifest-path sephia/native-host/Cargo.toml
+    cargo build --release --features inference --manifest-path sephia/native-host/Cargo.toml
 
 The Node regression gate checks the source and installer policy. CI separately runs Rust unit tests.
 
