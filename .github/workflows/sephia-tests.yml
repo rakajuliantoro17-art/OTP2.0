@@ -89,6 +89,9 @@ jobs:
       - name: Verify Stage 40 native speech contract integrity
         working-directory: sephia
         run: npm run verify:stage40
+      - name: Verify Stage 41 reproducible release integrity
+        working-directory: sephia
+        run: npm run verify:stage41
       - name: Run Rust Native Messaging host unit tests
         run: cargo test --manifest-path sephia/native-host/Cargo.toml
       - name: Build and test local neural inference feature
@@ -133,7 +136,7 @@ jobs:
       - name: Upload Stage 22 SEPHIA build and diagnostic fixtures
         uses: actions/upload-artifact@v4
         with:
-          name: sephia-stage22-local-voice-diagnostics-${{ github.sha }}
+          name: sephia-stage41-panitia-bundle-${{ github.sha }}
           path: |
             sephia/dist/
             sephia/staging/voice-diagnostics.html
@@ -160,6 +163,8 @@ jobs:
             sephia/docs/STAGE-38-AUDIO-READINESS-DIAGNOSTICS.md
             sephia/docs/STAGE-39-WAKE-WORD-VOICE-ACKNOWLEDGEMENT.md
             sephia/docs/STAGE-40-NATIVE-CONTRACT-INTEGRITY.md
+            sephia/docs/STAGE-41-REPRODUCIBLE-RELEASE-INTEGRITY.md
+            sephia/docs/POCKET-TTS-INDONESIAN-ONNX-PROVENANCE.json
           if-no-files-found: error
           retention-days: 14
 
