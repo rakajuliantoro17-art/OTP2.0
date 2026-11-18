@@ -1,6 +1,6 @@
 {
   "name": "otp2-sephia",
-  "version": "0.34.0-stage.34",
+  "version": "0.35.0-stage.35",
   "private": true,
   "type": "module",
   "scripts": {
@@ -25,6 +25,7 @@
     "verify:stage31": "node --test ./tests/stage31-native-host.test.mjs",
     "verify:stage32": "node --test ./tests/stage32-inference.test.mjs",
     "verify:stage33": "node --test ./tests/stage33-model-provisioning.test.mjs",
-    "verify:stage34": "node --test ./tests/stage34-native-benchmark.test.mjs"
+    "verify:stage34": "node --test ./tests/stage34-native-benchmark.test.mjs",
+    "verify:stage35": "node --test ./tests/stage35-native-host-smoke.test.mjs"
   }
 }
