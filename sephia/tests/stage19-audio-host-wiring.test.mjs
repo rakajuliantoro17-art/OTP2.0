@@ -2,11 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { mountPanitiaSephia } from "../src/host/mount-panitia-sephia.js";
 
+class FakeAudio {
+  static constructed = 0;
+  constructor() { FakeAudio.constructed += 1; }
+}
 class FakeWindow {
-  Audio = class {
-    static constructed = 0;
-    constructor() { this.constructor.constructed += 1; }
-  };
+  Audio = FakeAudio;
   listeners = new Map();
   addEventListener(type, fn) { this.listeners.set(type, fn); }
   removeEventListener(type, fn) { this.listeners.delete(type); }
@@ -38,7 +39,7 @@ test("Panitia host never selects legacy WAV even when an old asset option is sup
     eventType: "violation",
     violationCount: 27,
   }), false);
-  assert.equal(FakeWindow.Audio.constructed, 0);
+  assert.equal(FakeAudio.constructed, 0);
   bridge.dispose();
 });
 
