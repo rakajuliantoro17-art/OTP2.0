@@ -83,6 +83,9 @@ jobs:
       - name: Verify Stage 38 audio readiness diagnostics
         working-directory: sephia
         run: npm run verify:stage38
+      - name: Verify Stage 39 spoken wake acknowledgement
+        working-directory: sephia
+        run: npm run verify:stage39
       - name: Run Rust Native Messaging host unit tests
         run: cargo test --manifest-path sephia/native-host/Cargo.toml
       - name: Build and test local neural inference feature
@@ -152,6 +155,7 @@ jobs:
             sephia/docs/STAGE-36-PRODUCTION-CANDIDATE-RUNBOOK.md
             sephia/docs/STAGE-37-CHROME-AUDIO-ACTIVATION.md
             sephia/docs/STAGE-38-AUDIO-READINESS-DIAGNOSTICS.md
+            sephia/docs/STAGE-39-WAKE-WORD-VOICE-ACKNOWLEDGEMENT.md
           if-no-files-found: error
           retention-days: 14
 
