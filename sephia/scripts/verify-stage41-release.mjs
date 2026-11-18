@@ -86,7 +86,7 @@ assert.equal(provenance.files.reduce((sum, file) => sum + file.bytes, 0), proven
 assert.equal(provenance.voiceReference.included, false, "A user voice reference must never be bundled.");
 assert.match(notices, /Pocket TTS Indonesian oleh anak10thn, CC-BY-4.0/);
 assert.match(notices, new RegExp(provenance.runtimeRevision));
-assert.match(runbook, /exact commit/i);
+assert.match(runbook, /same commit/i);
 assert.match(workflow, /Verify Stage 41 reproducible release integrity/);
 assert.match(workflow, /STAGE-41-REPRODUCIBLE-RELEASE-INTEGRITY\.md/);
 assert.match(workflow, /sephia-stage41-panitia-bundle/);
