@@ -27,6 +27,9 @@ const stage29TestsExist = await exists("tests/stage29-native-bridge-security.tes
 const stage30Exists = await exists("extension/manifest.json") &&
   await exists("extension/service-worker.js") && await exists("extension/content-script.js") &&
   await exists("extension/protocol.js") && await exists("tests/stage30-extension.test.mjs");
+const stage31Exists = await exists("native-host/Cargo.toml") &&
+  await exists("native-host/src/main.rs") && await exists("native-host/install-windows.ps1") &&
+  await exists("tests/stage31-native-host.test.mjs");
 
 add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module/.test(workflow) ? "PASS" : "BLOCKED",
   "GitHub Actions workflow listens to the feature branch and main.");
@@ -55,8 +58,10 @@ add("Stage 29 security decision and tests", stage29Exists && stage29TestsExist ?
   "Native Messaging topology decision and security regression tests are present.");
 add("Stage 30 Chrome extension bridge", stage30Exists ? "PASS" : "BLOCKED",
   stage30Exists ? "Manual active-tab pairing, fixed-action transport, response validation, in-memory playback, and disconnect handling are present." : "Chrome extension bridge files or tests are incomplete.");
-add("Native Messaging host and in-memory inference", "BLOCKED",
-  "Native host executable, in-memory Laras API, installer, and real local model runtime are not yet implemented.");
+add("Stage 31 Rust Native Messaging protocol host", stage31Exists ? "PASS" : "BLOCKED",
+  stage31Exists ? "Framing, exact origin check, strict request schema, rate limit, and Windows registration scripts are present." : "Native host protocol files or tests are incomplete.");
+add("Local neural inference engine", "BLOCKED",
+  "The native host is a protocol stub. In-memory Laras integration, local model runtime, voice reference, and real synthesis are not yet implemented.");
 add("Approved neural model and feminine voice", "BLOCKED",
   "No real engine, model weights, or licensed adult feminine reference voice has passed acoustic and legal acceptance.");
 add("Panitia workstation acceptance", "MANUAL",
