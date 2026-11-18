@@ -161,7 +161,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!validSender(sender) ||
         !hostReady ||
         !nativePort ||
-        message.action !== "synthesize-approved-announcement" ||
+        !["synthesize-approved-announcement", "synthesize-approved-wake-acknowledgement"].includes(message.action) ||
         typeof message.requestId !== "string" ||
         !/^sephia-[0-9]{1,12}$/.test(message.requestId)) {
       sendResponse({ ok: false, error: "Permintaan speech tidak valid atau mesin lokal belum siap." });
@@ -178,7 +178,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     lastRequestAt = Date.now();
     pending = { tabId: pairedTab.tabId, requestId: message.requestId, cancelled: false };
     try {
-      nativePort.postMessage({ version: 1, action: "synthesize-approved-announcement" });
+      nativePort.postMessage({ version: 1, action: message.action });
       sendResponse({ ok: true, accepted: true });
     } catch {
       pending = null;
