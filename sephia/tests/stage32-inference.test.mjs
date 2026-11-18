@@ -44,7 +44,7 @@ test("pinned Pocket TTS bundle manifest has nine files and a reproducible aggreg
   assert.equal(manifest.files.length, 9);
   assert.equal(manifest.modelBundleBytes, manifest.files.reduce((sum, file) => sum + file.bytes, 0));
   const canonical = [...manifest.files]
-    .sort((a, b) => a.path.localeCompare(b.path))
+    .sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0)
     .map((file) => `${file.path}|${file.bytes}|${file.sha256}`)
     .join("\n");
   const digest = createHash("sha256").update(canonical, "utf8").digest("hex");
