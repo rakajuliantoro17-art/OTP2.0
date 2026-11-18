@@ -64,6 +64,8 @@ jobs:
         run: cargo fmt --manifest-path sephia/native-host/Cargo.toml -- --check
       - name: Run Rust Native Messaging host unit tests
         run: cargo test --manifest-path sephia/native-host/Cargo.toml
+      - name: Compile pinned local neural inference feature
+        run: cargo test --manifest-path sephia/native-host/Cargo.toml --features inference
       - name: Verify on-device Indonesian wake-word recognition
         working-directory: sephia
         run: npm run verify:wakeword
