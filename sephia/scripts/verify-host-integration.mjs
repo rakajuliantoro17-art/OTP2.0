@@ -78,5 +78,7 @@ for (const match of imports) {
 
 assert.match(sourceBridge, /createUnavailableLocalNeuralTtsAdapter/);
 assert.doesNotMatch(sourceBridge, /createBrowserLocalIndonesianTts/);
+assert.doesNotMatch(sourceBridge, /createLocalAudioAnnouncementAdapter|announcementAssetUrl/,
+  "Production Panitia host must not select the legacy WAV adapter.");
 assert.doesNotMatch(sourceBridge, /firebase|fetch\s*\(|XMLHttpRequest|WebSocket|EventSource|localStorage|sessionStorage|indexedDB/i);
 console.log("SEPHIA host integration verified: Panitia load order, source/dist parity, manifest hashes, dependency closure, and isolated host bridge.");
