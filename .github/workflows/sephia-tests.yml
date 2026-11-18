@@ -102,6 +102,12 @@ jobs:
             sephia/staging/panitia-host.html
             sephia/staging/panitia-host-fixture.js
             sephia/assets/README.md
+            sephia/extension/
+            sephia/native-host/Cargo.toml
+            sephia/native-host/src/
+            sephia/native-host/*.ps1
+            sephia/native-host/README.md
+            sephia/native-host/THIRD-PARTY-NOTICES.md
             sephia/docs/STAGE-29-LOCAL-CHROME-BRIDGE-SECURITY.md
             sephia/docs/STAGE-30-CHROME-EXTENSION-BRIDGE.md
             sephia/docs/STAGE-31-NATIVE-MESSAGING-HOST.md
@@ -127,19 +133,5 @@ jobs:
           path: |
             sephia/native-host/target/release/sephia-native-host.exe
             sephia/native-host/target/release/*.dll
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Upload Stage 32 neural TTS host and extension fixtures
-        uses: actions/upload-artifact@v4
-        with:
-          name: sephia-stage32-local-neural-tts-${{ github.sha }}
-          path: |
-            sephia/dist/
-            sephia/staging/voice-diagnostics.html
-            sephia/staging/voice-diagnostics.js
-            sephia/extension/
-            sephia/native-host/
-            sephia/docs/STAGE-32-IN-MEMORY-LARAS-INFERENCE.md
           if-no-files-found: error
           retention-days: 14
