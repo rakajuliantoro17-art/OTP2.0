@@ -120,6 +120,7 @@ jobs:
             sephia/docs/STAGE-32-IN-MEMORY-LARAS-INFERENCE.md
             sephia/docs/STAGE-33-MODEL-AND-VOICE-PROVISIONING.md
             sephia/docs/STAGE-34-TARGET-PC-BENCHMARK.md
+            sephia/docs/STAGE-34-TARGET-PC-BENCHMARK.md
           if-no-files-found: error
           retention-days: 14
 
