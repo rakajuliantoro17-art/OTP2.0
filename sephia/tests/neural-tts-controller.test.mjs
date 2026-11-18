@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createNotificationSpeechController, DEFAULT_ANNOUNCEMENT } from "../src/audio/announcement.js";
+import { createNotificationSpeechController, DEFAULT_ANNOUNCEMENT, WAKE_WORD_ACKNOWLEDGEMENT } from "../src/audio/announcement.js";
 import { createLocalNeuralTtsAdapter } from "../src/audio/local-neural-tts.js";
 
 function makeAdapter() {
@@ -119,6 +119,27 @@ test("manual speaker test speaks only the fixed approved phrase", async () => {
   assert.equal(calls.played.length, 1);
   controller.dispose();
   adapter.dispose();
+});
+
+test("wake-word acknowledgement speaks only its fixed generic phrase", async () => {
+  const { adapter, calls } = makeAdapter();
+  const controller = createNotificationSpeechController({ adapter });
+  assert.equal(await controller.acknowledgeWakeWord(), true);
+  assert.deepEqual(calls.synthesized.map((entry) => entry.text), [WAKE_WORD_ACKNOWLEDGEMENT]);
+  assert.equal(calls.played.length, 1);
+  assert.equal(calls.released.length, 1);
+  controller.dispose();
+  adapter.dispose();
+});
+
+test("wake-word acknowledgement remains silent when the local bridge is unavailable", async () => {
+  let spoken = 0;
+  const controller = createNotificationSpeechController({
+    adapter: { available: false, async speak() { spoken += 1; }, cancel() {} },
+  });
+  assert.equal(await controller.acknowledgeWakeWord(), false);
+  assert.equal(spoken, 0);
+  controller.dispose();
 });
 
 test("manual speaker test remains silent when the native bridge is unavailable", async () => {
