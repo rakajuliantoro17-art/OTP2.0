@@ -35,6 +35,8 @@ const stage32Exists = await exists("native-host/src/inference.rs") &&
   await exists("tests/stage32-inference.test.mjs");
 const stage33Exists = await exists("native-host/provision-model-windows.ps1") &&
   await exists("tests/stage33-model-provisioning.test.mjs");
+const stage34Exists = await exists("native-host/benchmark-native-host-windows.ps1") &&
+  await exists("tests/stage34-native-benchmark.test.mjs");
 
 add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module/.test(workflow) ? "PASS" : "BLOCKED",
   "GitHub Actions workflow listens to the feature branch and main.");
@@ -69,6 +71,8 @@ add("Stage 32 in-memory Laras inference implementation", stage32Exists ? "PASS" 
   stage32Exists ? "Pinned Laras Engine API, per-file model hashes, voice/runtime hash checks, and in-memory PCM response are implemented behind the inference feature." : "In-memory inference implementation or model provenance tests are incomplete.");
 add("Stage 33 pinned model provisioning workflow", stage33Exists ? "PASS" : "BLOCKED",
   stage33Exists ? "Explicit model download switch, fixed revision, per-file SHA-256 verification, and Windows install/cleanup scripts are present." : "Model provisioning scripts or tests are incomplete.");
+add("Stage 34 target PC benchmark harness", stage34Exists ? "PASS" : "BLOCKED",
+  stage34Exists ? "Cold startup, warm synthesis, CPU, memory, and in-memory PCM benchmark script is present." : "Target PC benchmark script or tests are incomplete.");
 add("Provisioned local model and consented voice", "BLOCKED",
   "No real ONNX model bundle or consented adult feminine Indonesian voice reference has been installed and accepted on the Panitia PC.");
 add("Approved neural model and feminine voice", "BLOCKED",
