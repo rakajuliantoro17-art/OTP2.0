@@ -22,5 +22,8 @@ export function validateNativeResponse(value) {
     typeof value.audioBase64 === "string" &&
     value.audioBase64.length > 0 &&
     value.audioBase64.length <= MAX_NATIVE_AUDIO_BASE64_LENGTH &&
-    /^[A-Za-z0-9+/]+={0,2}$/.test(value.audioBase64);
+    value.audioBase64.length % 4 === 0 &&
+    /^[A-Za-z0-9+/]+={0,2}$/.test(value.audioBase64) &&
+    ((value.audioBase64.length / 4) * 3 -
+      (value.audioBase64.endsWith("==") ? 2 : value.audioBase64.endsWith("=") ? 1 : 0)) <= MAX_NATIVE_AUDIO_BYTES;
 }
