@@ -72,3 +72,13 @@ test("extension remains a bridge only; it cannot change OTP or access school bac
     assert.doesNotMatch(source, /firebase|moodle|generateOTP|validateOTP|resetOTP|unlockStudent/i);
   }
 });
+
+test("extension pairs only after the native engine readiness handshake", async () => {
+  const worker = await read("extension/service-worker.js");
+  const host = await read("native-host/src/main.rs");
+  assert.match(worker, /status === "ready"/);
+  assert.match(worker, /await openNativePort\(\)/);
+  assert.match(worker, /validateNativeResponse\(response\)/);
+  assert.match(host, /"status": "ready"/);
+  assert.match(host, /if !runtime\.is_ready\(\)/);
+});
