@@ -30,6 +30,8 @@ test("installer verifies and copies model files, voice reference, and human evid
   assert.match(installer, /VoiceReferenceWav/);
   assert.match(installer, /VoiceConsentEvidencePath/);
   assert.match(installer, /ModelLicenseEvidencePath/);
+  assert.match(installer, /voiceItem\.Length/);
+  assert.match(installer, /10 MiB/);
   assert.match(installer, /Get-FileHash/);
   assert.match(installer, /runtime_dlls/);
   assert.match(installer, /allowed_origins/);
