@@ -27,7 +27,7 @@ test("Panitia host connects bridge readiness and local wake-word states to visib
 
 test("manual test uses only the fixed approved generic announcement", async () => {
   const controller = await read("src/audio/announcement.js");
-  assert.match(controller, /test:\s*speakApprovedPhrase/);
+  assert.match(controller, /test:\s*\(\)\s*=>\s*speakApprovedPhrase\(DEFAULT_ANNOUNCEMENT\)/);
   assert.match(controller, /speakApprovedPhrase\(DEFAULT_ANNOUNCEMENT\)/);
   assert.match(controller, /Ya, Panitia\. SEPHIA siap membantu\./);
   assert.doesNotMatch(controller, /studentName|className|event\.message/);
