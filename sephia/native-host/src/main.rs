@@ -106,7 +106,15 @@ struct HostConfig {
     voice_consent_evidence_path: Option<String>,
     model_license_evidence_path: Option<String>,
     runtime_sha256: Option<String>,
+    runtime_dlls: Option<Vec<RuntimeDll>>,
     threads: Option<usize>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RuntimeDll {
+    file_name: String,
+    sha256: String,
 }
 
 struct Runtime {
@@ -290,6 +298,7 @@ mod tests {
             voice_consent_evidence_path: None,
             model_license_evidence_path: None,
             runtime_sha256: None,
+            runtime_dlls: None,
             threads: None,
         };
         let mut runtime = Runtime::new(&config);
