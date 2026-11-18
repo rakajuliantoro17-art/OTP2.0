@@ -79,6 +79,7 @@ async function pairActiveTab(message) {
     return { ok: false, error: "Asal tab tidak cocok dengan halaman Panitia OTP 2.0." };
   }
   if (pairedTab && pairedTab.tabId !== tab.id) {
+    await sendTab(pairedTab.tabId, { type: "SEPHIA_NATIVE_STATE", state: "disconnected" });
     disconnectNative();
   }
   pairedTab = { tabId: tab.id, origin: url.origin };
