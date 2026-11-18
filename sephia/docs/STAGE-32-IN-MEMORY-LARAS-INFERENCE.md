@@ -30,7 +30,7 @@ Inference feature (builds the pinned Laras ONNX dependency):
     cargo test --manifest-path sephia/native-host/Cargo.toml --features inference
     cargo build --release --features inference --manifest-path sephia/native-host/Cargo.toml
 
-The model weights are not downloaded by the host or installer. Provision the exact nine files from the pinned provenance manifest before installation.
+The host and installer never download model weights. To provision them manually, run `native-host/provision-model-windows.ps1 -ModelDir <local-folder> -Download`; without `-Download`, the script only verifies files already present. The installer then copies the verified nine files into the per-user SEPHIA directory.
 
 ## Windows provisioning
 
