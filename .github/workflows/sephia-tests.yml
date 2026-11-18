@@ -75,6 +75,9 @@ jobs:
       - name: Verify Stage 35 native host process smoke test
         working-directory: sephia
         run: npm run verify:stage35
+      - name: Verify Stage 37 Chrome audio activation
+        working-directory: sephia
+        run: npm run verify:stage37
       - name: Run Rust Native Messaging host unit tests
         run: cargo test --manifest-path sephia/native-host/Cargo.toml
       - name: Build and test local neural inference feature
@@ -126,6 +129,7 @@ jobs:
             sephia/docs/STAGE-34-TARGET-PC-BENCHMARK.md
             sephia/docs/STAGE-35-NATIVE-HOST-PROTOCOL-SMOKE-TEST.md
             sephia/docs/STAGE-36-PRODUCTION-CANDIDATE-RUNBOOK.md
+            sephia/docs/STAGE-37-CHROME-AUDIO-ACTIVATION.md
             sephia/docs/STAGE-35-NATIVE-HOST-PROTOCOL-SMOKE-TEST.md
             sephia/docs/STAGE-34-TARGET-PC-BENCHMARK.md
           if-no-files-found: error
