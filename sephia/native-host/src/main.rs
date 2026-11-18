@@ -2,6 +2,9 @@ use serde::{Deserialize, Serialize};
 use std::io::{self, Read, Write};
 use std::time::{Duration, Instant};
 
+#[cfg(feature = "inference")]
+mod inference;
+
 const MAX_REQUEST_BYTES: usize = 4096;
 const MAX_RESPONSE_BYTES: usize = 1024 * 1024;
 const MIN_REQUEST_INTERVAL: Duration = Duration::from_secs(2);
@@ -60,19 +63,18 @@ fn parse_request(bytes: &[u8]) -> Result<Request, ()> {
 fn handle_request(
     request: Result<Request, ()>,
     last_request: &mut Option<Instant>,
-) -> ErrorResponse {
+    runtime: &mut Runtime,
+) -> serde_json::Value {
     if request.is_err() {
-        return ErrorResponse::new("INVALID_REQUEST");
+        return error_response("INVALID_REQUEST");
     }
     let now = Instant::now();
     if last_request.is_some_and(|last| now.duration_since(last) < MIN_REQUEST_INTERVAL) {
-        return ErrorResponse::new("RATE_LIMITED");
+        return error_response("RATE_LIMITED");
     }
     *last_request = Some(now);
 
-    // Deliberately fail closed until the audited in-memory Laras runtime is
-    // integrated. Never write WAV files or call an HTTP sidecar from this host.
-    ErrorResponse::new("ENGINE_UNAVAILABLE")
+    runtime.synthesize().unwrap_or_else(error_response)
 }
 
 fn read_frame<R: Read>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {
@@ -95,7 +97,7 @@ fn read_frame<R: Read>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {
     Ok(Some(payload))
 }
 
-fn write_frame<W: Write>(writer: &mut W, response: &ErrorResponse) -> io::Result<()> {
+fn write_frame<W: Write>(writer: &mut W, response: &serde_json::Value) -> io::Result<()> {
     let payload = serde_json::to_vec(response)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     if payload.len() > MAX_RESPONSE_BYTES {
@@ -115,9 +117,59 @@ fn write_frame<W: Write>(writer: &mut W, response: &ErrorResponse) -> io::Result
 #[serde(deny_unknown_fields)]
 struct HostConfig {
     extension_origin: String,
+    model_dir: Option<String>,
+    voice_reference_wav: Option<String>,
+    voice_reference_sha256: Option<String>,
+    voice_consent_evidence_path: Option<String>,
+    model_license_evidence_path: Option<String>,
+    runtime_sha256: Option<String>,
+    threads: Option<usize>,
 }
 
-fn load_expected_origin() -> io::Result<String> {
+struct Runtime {
+    #[cfg(feature = "inference")]
+    engine: Option<inference::LocalNeuralEngine>,
+}
+
+impl Runtime {
+    fn new(config: &HostConfig) -> Self {
+        #[cfg(feature = "inference")]
+        {
+            let engine = match inference::LocalNeuralEngine::load(config) {
+                Ok(engine) => Some(engine),
+                Err(error) => {
+                    eprintln!("SEPHIA local inference is not ready: {error}");
+                    None
+                }
+            };
+            Self { engine }
+        }
+        #[cfg(not(feature = "inference"))]
+        {
+            let _ = config;
+            Self {}
+        }
+    }
+
+    fn synthesize(&mut self) -> Result<serde_json::Value, &'static str> {
+        #[cfg(feature = "inference")]
+        {
+            let engine = self.engine.as_mut().ok_or("ENGINE_UNAVAILABLE")?;
+            let response = engine.synthesize()?;
+            return serde_json::to_value(response).map_err(|_| "SYNTHESIS_FAILED");
+        }
+        #[cfg(not(feature = "inference"))]
+        {
+            Err("ENGINE_UNAVAILABLE")
+        }
+    }
+}
+
+fn error_response(code: &'static str) -> serde_json::Value {
+    serde_json::json!({ "version": 1, "ok": false, "code": code })
+}
+
+fn load_config() -> io::Result<HostConfig> {
     let executable = std::env::current_exe()?;
     let directory = executable.parent().ok_or_else(|| {
         io::Error::new(
@@ -127,16 +179,15 @@ fn load_expected_origin() -> io::Result<String> {
     })?;
     let config_path = directory.join("sephia-host-config.json");
     let config_text = std::fs::read_to_string(config_path)?;
-    let config: HostConfig = serde_json::from_str(&config_text)
-        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
-    Ok(config.extension_origin)
+    serde_json::from_str(&config_text)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))
 }
 
 fn run() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let actual_origin = args.get(1).map(String::as_str).unwrap_or("");
-    let expected_origin = load_expected_origin()?;
-    if !validate_origin(actual_origin, &expected_origin) {
+    let config = load_config()?;
+    if !validate_origin(actual_origin, &config.extension_origin) {
         eprintln!("SEPHIA native host rejected an unpaired extension origin.");
         return Err(io::Error::new(
             io::ErrorKind::PermissionDenied,
@@ -149,6 +200,7 @@ fn run() -> io::Result<()> {
     let mut input = stdin.lock();
     let mut output = stdout.lock();
     let mut last_request = None;
+    let mut runtime = Runtime::new(&config);
 
     loop {
         let payload = match read_frame(&mut input)? {
@@ -156,7 +208,7 @@ fn run() -> io::Result<()> {
             None => return Ok(()),
         };
         let request = parse_request(&payload);
-        let response = handle_request(request, &mut last_request);
+        let response = handle_request(request, &mut last_request, &mut runtime);
         write_frame(&mut output, &response)?;
     }
 }
@@ -211,7 +263,7 @@ mod tests {
 
     #[test]
     fn native_message_frame_round_trips_without_text_logging() {
-        let response = ErrorResponse::new("ENGINE_UNAVAILABLE");
+        let response = error_response("ENGINE_UNAVAILABLE");
         let mut output = Vec::new();
         write_frame(&mut output, &response).unwrap();
         let mut input = Cursor::new(output);
@@ -219,7 +271,7 @@ mod tests {
         let parsed: serde_json::Value = serde_json::from_slice(&payload).unwrap();
         assert_eq!(parsed["version"], 1);
         assert_eq!(parsed["ok"], false);
-        assert_eq!(parsed["code"], response.code);
+        assert_eq!(parsed["code"], response["code"]);
     }
 
     #[test]
@@ -227,17 +279,39 @@ mod tests {
         let mut last = None;
         let request =
             parse_request(br#"{"version":1,"action":"synthesize-approved-announcement"}"#);
-        let response = handle_request(request, &mut last);
-        assert_eq!(response, ErrorResponse::new("ENGINE_UNAVAILABLE"));
+        let config = HostConfig {
+            extension_origin: "chrome-extension://abcdefghijklmnopabcdefghijklmnop/".to_string(),
+            model_dir: None,
+            voice_reference_wav: None,
+            voice_reference_sha256: None,
+            voice_consent_evidence_path: None,
+            model_license_evidence_path: None,
+            runtime_sha256: None,
+            threads: None,
+        };
+        let mut runtime = Runtime::new(&config);
+        let response = handle_request(request, &mut last, &mut runtime);
+        assert_eq!(response["code"], "ENGINE_UNAVAILABLE");
     }
 
     #[test]
     fn rate_limit_rejects_a_second_request_in_the_same_window() {
         let mut last = None;
         let payload = br#"{"version":1,"action":"synthesize-approved-announcement"}"#;
-        let first = handle_request(parse_request(payload), &mut last);
-        let second = handle_request(parse_request(payload), &mut last);
-        assert_eq!(first, ErrorResponse::new("ENGINE_UNAVAILABLE"));
-        assert_eq!(second, ErrorResponse::new("RATE_LIMITED"));
+        let config = HostConfig {
+            extension_origin: "chrome-extension://abcdefghijklmnopabcdefghijklmnop/".to_string(),
+            model_dir: None,
+            voice_reference_wav: None,
+            voice_reference_sha256: None,
+            voice_consent_evidence_path: None,
+            model_license_evidence_path: None,
+            runtime_sha256: None,
+            threads: None,
+        };
+        let mut runtime = Runtime::new(&config);
+        let first = handle_request(parse_request(payload), &mut last, &mut runtime);
+        let second = handle_request(parse_request(payload), &mut last, &mut runtime);
+        assert_eq!(first["code"], "ENGINE_UNAVAILABLE");
+        assert_eq!(second["code"], "RATE_LIMITED");
     }
 }
