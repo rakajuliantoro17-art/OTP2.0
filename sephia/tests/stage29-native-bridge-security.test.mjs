@@ -6,6 +6,8 @@ import {
   NATIVE_TTS_CANCEL_EVENT,
   NATIVE_TTS_STATE_EVENT,
   NATIVE_TTS_RESULT_EVENT,
+  NATIVE_TTS_UNLOCK_EVENT,
+  NATIVE_TTS_UNLOCK_RESULT_EVENT,
 } from "../src/audio/chrome-native-messaging-tts.js";
 import { APPROVED_NEURAL_TTS_TEXT } from "../src/audio/local-neural-tts.js";
 import { readFile } from "node:fs/promises";
@@ -84,11 +86,33 @@ class FakeWindowEvents {
   }
 }
 
+
+async function unlockAdapter(adapter, windowImpl) {
+  const unlock = adapter.prepare();
+  const request = windowImpl.dispatched?.find((event) => event.type === NATIVE_TTS_UNLOCK_EVENT);
+  if (request) {
+    windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_UNLOCK_RESULT_EVENT, {
+      detail: { requestId: request.detail.requestId, ok: true },
+    }));
+  } else {
+    const listeners = windowImpl.listeners.get(NATIVE_TTS_UNLOCK_EVENT) || [];
+    assert.ok(listeners.length >= 0);
+  }
+  assert.equal(await unlock, true);
+}
+
 test("page adapter sends only fixed action and receives completion without audio bytes", async () => {
   const windowImpl = new FakeWindowEvents();
   const adapter = createChromeNativeMessagingTtsAdapter({ windowImpl, CustomEventImpl: FakeCustomEvent });
   assert.equal(adapter.available, false);
   windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_STATE_EVENT, { detail: { state: "connected" } }));
+  assert.equal(adapter.available, false);
+  const unlock = adapter.prepare();
+  const unlockRequest = windowImpl.dispatched?.find((event) => event.type === NATIVE_TTS_UNLOCK_EVENT);
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_UNLOCK_RESULT_EVENT, {
+    detail: { requestId: unlockRequest.detail.requestId, ok: true },
+  }));
+  assert.equal(await unlock, true);
   assert.equal(adapter.available, true);
   windowImpl.addEventListener(NATIVE_TTS_REQUEST_EVENT, (event) => {
     assert.equal(event.detail.action, "synthesize-approved-announcement");
@@ -109,6 +133,12 @@ test("page adapter rejects arbitrary speech and cancels on bridge disconnect", a
   const windowImpl = new FakeWindowEvents();
   const adapter = createChromeNativeMessagingTtsAdapter({ windowImpl, CustomEventImpl: FakeCustomEvent });
   windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_STATE_EVENT, { detail: { state: "connected" } }));
+  const unlock = adapter.prepare();
+  const unlockRequest = windowImpl.dispatched?.find((event) => event.type === NATIVE_TTS_UNLOCK_EVENT);
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_UNLOCK_RESULT_EVENT, {
+    detail: { requestId: unlockRequest.detail.requestId, ok: true },
+  }));
+  await unlock;
   await assert.rejects(adapter.speak("nama siswa"), /fixed generic/);
   const request = adapter.speak(APPROVED_NEURAL_TTS_TEXT);
   windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_STATE_EVENT, { detail: { state: "disconnected" } }));
@@ -121,6 +151,12 @@ test("page adapter emits cancellation without sending text or event identity", a
   const windowImpl = new FakeWindowEvents();
   const adapter = createChromeNativeMessagingTtsAdapter({ windowImpl, CustomEventImpl: FakeCustomEvent });
   windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_STATE_EVENT, { detail: { state: "connected" } }));
+  const unlock = adapter.prepare();
+  const unlockRequest = windowImpl.dispatched?.find((event) => event.type === NATIVE_TTS_UNLOCK_EVENT);
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_UNLOCK_RESULT_EVENT, {
+    detail: { requestId: unlockRequest.detail.requestId, ok: true },
+  }));
+  await unlock;
   let cancelDetail;
   windowImpl.addEventListener(NATIVE_TTS_CANCEL_EVENT, (event) => { cancelDetail = event.detail; });
   const request = adapter.speak(APPROVED_NEURAL_TTS_TEXT);
