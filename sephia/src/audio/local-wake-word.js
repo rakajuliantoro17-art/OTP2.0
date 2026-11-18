@@ -34,6 +34,7 @@ export function createLocalWakeWordRecognizer({
   onError = () => {},
   confidenceThreshold = 0.88,
   restartDelayMs = 350,
+  onHeard = () => {},
   requireLocal = true,
   wakeWords = [WAKE_WORD],
 } = {}) {
@@ -93,6 +94,7 @@ export function createLocalWakeWordRecognizer({
       if (requireLocal && (!Number.isFinite(alternative.confidence) ||
           alternative.confidence < confidenceThreshold)) continue;
       const transcript = normalizeTranscript(alternative.transcript);
+      try { onHeard(transcript); } catch {}
       const matched = requireLocal
         ? accepted.has(transcript)
         : transcript.split(" ").some((word) => accepted.has(word));

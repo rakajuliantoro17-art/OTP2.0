@@ -35,6 +35,7 @@ export function mountPanitiaSephia({
   createWakeWordRecognizer = (win, callbacks) => createLocalWakeWordRecognizer({
     windowImpl: win,
     requireLocal: false,
+    onHeard(text) { showDiag("terdengar: \u201c" + text + "\u201d"); },
     wakeWords: ["sephia", "sefia", "sofia", "sepia", "sefiya", "sepiya", "sephie", "sephya"],
     ...callbacks,
   }),
@@ -63,7 +64,22 @@ export function mountPanitiaSephia({
   let disposed = false;
 
   const report = (error) => {
+    try { showDiag("masalah — " + (error?.message || error)); } catch {}
     try { onError(error); } catch {}
+  };
+
+  const diagEl = documentImpl.createElement?.("div");
+  if (diagEl) {
+    diagEl.id = "sephiaDiag";
+    diagEl.setAttribute("aria-live", "polite");
+    diagEl.style.cssText = "font-size:.72rem;opacity:.8;margin-top:.35rem;word-break:break-word";
+    controlsMount.appendChild(diagEl);
+  }
+  const showDiag = (text) => { if (diagEl) diagEl.textContent = "Mic: " + text; };
+  const STATE_TEXT = {
+    "checking-local-language": "memeriksa mikrofon…", "listening": "mendengarkan (ucapkan “Sephia”)",
+    "wake-word-detected": "kata panggil terdeteksi", "standby": "siaga", "paused": "dijeda (Sephia bicara)",
+    "limited": "tidak tersedia", "error": "error", "stopped": "mati",
   };
 
   try {
@@ -81,6 +97,7 @@ export function mountPanitiaSephia({
         } catch (error) { report(error); }
       },
       onStateChange(snapshot) {
+        showDiag((STATE_TEXT[snapshot.state] || snapshot.state) + (snapshot.error ? " [" + snapshot.error + "]" : ""));
         if (!visualState.snapshot.active) return;
         if (snapshot.state === "error") {
           visualState.setState("error");
