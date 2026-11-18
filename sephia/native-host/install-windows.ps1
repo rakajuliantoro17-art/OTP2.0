@@ -25,6 +25,8 @@ $resolvedLicense = (Resolve-Path -LiteralPath $ModelLicenseEvidencePath).Path
 if (-not (Test-Path -LiteralPath $resolvedHost -PathType Leaf)) { throw "Native host executable not found." }
 if (-not (Test-Path -LiteralPath $resolvedModelDir -PathType Container)) { throw "Model directory not found." }
 if ([System.IO.Path]::GetExtension($resolvedVoice).ToLowerInvariant() -ne ".wav") { throw "Voice reference must be a WAV file." }
+$voiceItem = Get-Item -LiteralPath $resolvedVoice
+if ($voiceItem.Length -lt 1024 -or $voiceItem.Length -gt (10MB)) { throw "Voice reference WAV must be between 1 KiB and 10 MiB." }
 foreach ($evidence in @($resolvedConsent, $resolvedLicense)) {
   if (-not (Test-Path -LiteralPath $evidence -PathType Leaf)) { throw "Required evidence file not found: $evidence" }
 }
