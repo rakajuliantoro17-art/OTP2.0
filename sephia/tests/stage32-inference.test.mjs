@@ -35,6 +35,8 @@ test("runtime pins model files, voice reference, native binary, and consent evid
     "runtime_sha256",
     "runtime_dlls",
     "native runtime dependency SHA-256 mismatch",
+    "MAX_VOICE_REFERENCE_BYTES: u64 = 10 * 1024 * 1024",
+    "MAX_VOICE_REFERENCE_DURATION_MS: u64 = 20_000",
     "LARAS_DUMP_PCM",
     "LARAS_DUMP_VOICE",
     "LARAS_DUMP_LATENTS",
