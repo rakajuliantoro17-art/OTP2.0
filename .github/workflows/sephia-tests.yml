@@ -58,6 +58,8 @@ jobs:
       - name: Verify Stage 31 native host security gates
         working-directory: sephia
         run: npm run verify:stage31
+      - name: Check Rust Native Messaging host formatting
+        run: cargo fmt --manifest-path sephia/native-host/Cargo.toml -- --check
       - name: Run Rust Native Messaging host unit tests
         run: cargo test --manifest-path sephia/native-host/Cargo.toml
       - name: Verify on-device Indonesian wake-word recognition
