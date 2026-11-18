@@ -93,7 +93,10 @@ jobs:
             git add sephia/native-host/Cargo.lock
             git commit -m "chore(sephia): pin native host dependency graph"
             git fetch origin "${GITHUB_REF_NAME}"
-            git rebase "origin/${GITHUB_REF_NAME}"
+            if [ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/${GITHUB_REF_NAME}")" ]; then
+              echo "Feature branch advanced during CI; a newer run will pin Cargo.lock."
+              exit 0
+            fi
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
       - name: Verify on-device Indonesian wake-word recognition
