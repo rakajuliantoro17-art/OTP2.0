@@ -47,6 +47,9 @@ jobs:
       - name: Verify Stage 28 neural TTS acceptance benchmark
         working-directory: sephia
         run: npm run verify:acceptance
+      - name: Verify Stage 29 secure local Chrome bridge decision
+        working-directory: sephia
+        run: npm run verify:stage29
       - name: Verify on-device Indonesian wake-word recognition
         working-directory: sephia
         run: npm run verify:wakeword
