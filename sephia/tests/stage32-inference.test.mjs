@@ -17,7 +17,9 @@ test("Stage 32 pins Laras source and enables inference only as an explicit build
 test("inference uses Laras Engine API and in-memory PCM, never its WAV file writer", async () => {
   const source = await read("native-host/src/inference.rs");
   assert.match(source, /Engine as LarasEngine/);
-  assert.match(source, /\.synthesize\(APPROVED_PHRASE/);
+  assert.match(source, /\.synthesize\(phrase/);
+  assert.match(source, /synthesize-approved-announcement/);
+  assert.match(source, /synthesize-approved-wake-acknowledgement/);
   assert.match(source, /wav::read_mono/);
   assert.match(source, /engine\.set_voice/);
   assert.match(source, /pcm\.extend_from_slice\(&value\.to_le_bytes\(\)\)/);
