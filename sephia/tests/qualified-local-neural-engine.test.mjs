@@ -21,10 +21,12 @@ const manifest = () => ({
   },
 });
 const pins = { modelSha256: modelHash, voiceReferenceSha256: voiceHash };
+const verifyProvisioning = async ({ modelSha256, voiceReferenceSha256 }) =>
+  modelSha256 === modelHash && voiceReferenceSha256 === voiceHash;
 
-test("qualifies only a pinned local-only engine with license and consent evidence", async () => {
-  const engine = createQualifiedLocalNeuralEngine({
-    manifest: manifest(), pins,
+test("qualifies only checksum-verified local engine with license and consent evidence", async () => {
+  const engine = await createQualifiedLocalNeuralEngine({
+    manifest: manifest(), pins, verifyProvisioning,
     createEngine: () => ({
       localOnly: true, available: true,
       async synthesize(text) {
@@ -40,31 +42,40 @@ test("qualifies only a pinned local-only engine with license and consent evidenc
   assert.equal(engine.available, false);
 });
 
-test("rejects mismatched model and voice hashes before loading runtime", () => {
+test("rejects mismatched pins before provisioning verification or engine load", async () => {
   let loaded = false;
-  assert.throws(() => createQualifiedLocalNeuralEngine({
+  await assert.rejects(createQualifiedLocalNeuralEngine({
     manifest: manifest(), pins: { ...pins, modelSha256: "c".repeat(64) },
-    createEngine: () => { loaded = true; return {}; },
+    verifyProvisioning, createEngine: () => { loaded = true; return {}; },
   }), /checksum/);
   assert.equal(loaded, false);
 });
 
-test("rejects missing consent and non-local runtime", () => {
+test("requires actual byte verification before loading runtime", async () => {
+  let loaded = false;
+  await assert.rejects(createQualifiedLocalNeuralEngine({
+    manifest: manifest(), pins, verifyProvisioning: async () => false,
+    createEngine: () => { loaded = true; return {}; },
+  }), /checksum verification/);
+  assert.equal(loaded, false);
+});
+
+test("rejects missing consent and non-local runtime", async () => {
   const noConsent = manifest();
   noConsent.voice.consent.granted = false;
-  assert.throws(() => createQualifiedLocalNeuralEngine({
-    manifest: noConsent, pins, createEngine: () => ({}),
+  await assert.rejects(createQualifiedLocalNeuralEngine({
+    manifest: noConsent, pins, verifyProvisioning, createEngine: () => ({}),
   }), /consent/);
   const remote = manifest();
   remote.execution = "remote";
-  assert.throws(() => createQualifiedLocalNeuralEngine({
-    manifest: remote, pins, createEngine: () => ({}),
+  await assert.rejects(createQualifiedLocalNeuralEngine({
+    manifest: remote, pins, verifyProvisioning, createEngine: () => ({}),
   }), /local-only/);
 });
 
 test("rejects arbitrary text and audio buffers over the in-memory limit", async () => {
-  const engine = createQualifiedLocalNeuralEngine({
-    manifest: manifest(), pins,
+  const engine = await createQualifiedLocalNeuralEngine({
+    manifest: manifest(), pins, verifyProvisioning,
     createEngine: () => ({
       localOnly: true, available: true,
       async synthesize() {

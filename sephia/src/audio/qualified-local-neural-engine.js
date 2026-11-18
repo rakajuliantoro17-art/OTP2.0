@@ -9,21 +9,13 @@ function isSha256(value) {
 }
 
 function validateManifest(manifest, pins) {
-  if (!manifest || manifest.schemaVersion !== 1) {
-    throw new TypeError("A version 1 local neural model manifest is required.");
-  }
-  if (manifest.execution !== "local-only") {
-    throw new Error("Only a local-only neural runtime is permitted.");
-  }
-  if (manifest.engineId !== "laras-pocket-tts") {
-    throw new Error("The selected engine is not the qualified SEPHIA prototype candidate.");
-  }
-  if (!manifest.model || !isSha256(manifest.model.sha256) ||
-      manifest.model.sha256 !== pins.modelSha256) {
+  if (!manifest || manifest.schemaVersion !== 1) throw new TypeError("A version 1 local neural model manifest is required.");
+  if (manifest.execution !== "local-only") throw new Error("Only a local-only neural runtime is permitted.");
+  if (manifest.engineId !== "laras-pocket-tts") throw new Error("The selected engine is not the qualified SEPHIA prototype candidate.");
+  if (!manifest.model || !isSha256(manifest.model.sha256) || manifest.model.sha256 !== pins.modelSha256) {
     throw new Error("Model checksum is missing or does not match the pinned checksum.");
   }
-  if (!Number.isSafeInteger(manifest.model.bytes) ||
-      manifest.model.bytes < 1 || manifest.model.bytes > MAX_LOCAL_MODEL_BYTES) {
+  if (!Number.isSafeInteger(manifest.model.bytes) || manifest.model.bytes < 1 || manifest.model.bytes > MAX_LOCAL_MODEL_BYTES) {
     throw new RangeError("Local model bundle size is outside the approved prototype limit.");
   }
   if (typeof manifest.model.license !== "string" || !manifest.model.license.trim() ||
@@ -31,13 +23,11 @@ function validateManifest(manifest, pins) {
     throw new Error("Model license and its evidence reference must be documented.");
   }
   if (!manifest.voice || manifest.voice.profile !== "adult-feminine-indonesian" ||
-      !isSha256(manifest.voice.referenceSha256) ||
-      manifest.voice.referenceSha256 !== pins.voiceReferenceSha256) {
+      !isSha256(manifest.voice.referenceSha256) || manifest.voice.referenceSha256 !== pins.voiceReferenceSha256) {
     throw new Error("A pinned adult feminine Indonesian voice reference is required.");
   }
   if (manifest.voice.consent?.granted !== true ||
-      typeof manifest.voice.consent.evidenceRef !== "string" ||
-      !manifest.voice.consent.evidenceRef.trim()) {
+      typeof manifest.voice.consent.evidenceRef !== "string" || !manifest.voice.consent.evidenceRef.trim()) {
     throw new Error("Documented voice-reference consent is required.");
   }
   if (manifest.voice.consent.scope !== "SEPHIA local announcement synthesis") {
@@ -55,30 +45,40 @@ function audioByteLength(audio) {
 }
 
 /**
- * Qualification wrapper for a pre-provisioned, offline engine.
+ * Qualification wrapper for a pre-provisioned offline engine.
+ * verifyProvisioning must hash the actual local model and voice-reference bytes.
  * No endpoint, download, storage, or browser speech API is accepted here.
- * createEngine must load only the checksum-pinned local bundle.
  */
-export function createQualifiedLocalNeuralEngine({
+export async function createQualifiedLocalNeuralEngine({
   manifest,
   pins,
+  verifyProvisioning,
   createEngine,
 } = {}) {
   if (!pins || !isSha256(pins.modelSha256) || !isSha256(pins.voiceReferenceSha256)) {
     throw new TypeError("Pinned model and voice-reference SHA-256 values are required.");
   }
   validateManifest(manifest, pins);
+  if (typeof verifyProvisioning !== "function") {
+    throw new TypeError("A local model and voice-reference checksum verifier is required.");
+  }
   if (typeof createEngine !== "function") {
     throw new TypeError("A trusted pre-provisioned local engine factory is required.");
   }
+  const verified = await verifyProvisioning(Object.freeze({
+    manifest,
+    modelSha256: pins.modelSha256,
+    voiceReferenceSha256: pins.voiceReferenceSha256,
+  }));
+  if (verified !== true) throw new Error("Actual local model/voice bytes did not pass checksum verification.");
 
   const engine = createEngine(Object.freeze({
     modelSha256: pins.modelSha256,
     voiceReferenceSha256: pins.voiceReferenceSha256,
     runtimeVersion: manifest.runtimeVersion,
   }));
-  if (!engine || engine.localOnly !== true ||
-      engine.available !== true || typeof engine.synthesize !== "function") {
+  if (!engine || engine.localOnly !== true || engine.available !== true ||
+      typeof engine.synthesize !== "function") {
     try { engine?.dispose?.(); } catch {}
     throw new Error("The provisioned engine did not declare a ready local-only runtime.");
   }
@@ -90,9 +90,7 @@ export function createQualifiedLocalNeuralEngine({
     async synthesize(text, { signal } = {}) {
       if (disposed) throw new Error("Qualified neural engine has been disposed.");
       if (active) throw new Error("Qualified neural engine is busy.");
-      if (text !== APPROVED_NEURAL_TTS_TEXT) {
-        throw new Error("Only the fixed generic SEPHIA announcement may be synthesized.");
-      }
+      if (text !== APPROVED_NEURAL_TTS_TEXT) throw new Error("Only the fixed generic SEPHIA announcement may be synthesized.");
       if (signal?.aborted) throw new Error("Neural synthesis was aborted.");
       active = true;
       try {
@@ -102,20 +100,13 @@ export function createQualifiedLocalNeuralEngine({
         if (bytes < 1 || bytes > MAX_NEURAL_AUDIO_BYTES) {
           throw new RangeError("Generated audio must be an in-memory buffer within the 8 MiB limit.");
         }
-        if (!Number.isSafeInteger(result.sampleRate) ||
-            result.sampleRate < 16000 || result.sampleRate > 48000) {
+        if (!Number.isSafeInteger(result.sampleRate) || result.sampleRate < 16000 || result.sampleRate > 48000) {
           throw new RangeError("Generated audio sample rate must be between 16 and 48 kHz.");
         }
-        if (!Number.isFinite(result.durationMs) ||
-            result.durationMs < 250 || result.durationMs > MAX_NEURAL_AUDIO_DURATION_MS) {
+        if (!Number.isFinite(result.durationMs) || result.durationMs < 250 || result.durationMs > MAX_NEURAL_AUDIO_DURATION_MS) {
           throw new RangeError("Generated audio duration is outside the 0.25–15 second limit.");
         }
-        return Object.freeze({
-          audio: result.audio,
-          byteLength: bytes,
-          sampleRate: result.sampleRate,
-          durationMs: result.durationMs,
-        });
+        return Object.freeze({ audio: result.audio, byteLength: bytes, sampleRate: result.sampleRate, durationMs: result.durationMs });
       } finally {
         active = false;
       }
