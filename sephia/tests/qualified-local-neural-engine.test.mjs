@@ -8,21 +8,31 @@ import { APPROVED_NEURAL_TTS_TEXT } from "../src/audio/local-neural-tts.js";
 
 const modelHash = "a".repeat(64);
 const voiceHash = "b".repeat(64);
+const runtimeHash = "c".repeat(64);
 const manifest = () => ({
   schemaVersion: 1,
   engineId: "laras-pocket-tts",
   execution: "local-only",
-  runtimeVersion: "prototype-0.1.0",
-  model: { sha256: modelHash, bytes: 160000000, license: "CC-BY-4.0", licenseEvidence: "MODEL-LICENSE-REVIEW-01" },
+  runtime: { version: "0.2.1", sourceRevision: "e4ab05ca53a8cbf749405de5b1ac902b76880768", sha256: runtimeHash },
+  model: {
+    sha256: modelHash,
+    bytes: 160000000,
+    sourceRevision: "17257664e384561c957b02ac92edd1a24807f0e5",
+    license: "CC-BY-4.0",
+    attribution: "Pocket TTS Indonesian oleh anak10thn, CC-BY-4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    licenseEvidence: "MODEL-LICENSE-REVIEW-01",
+    files: [{ path: "flow_lm_main_int8.onnx", bytes: 160000000, sha256: "d".repeat(64) }],
+  },
   voice: {
     profile: "adult-feminine-indonesian",
     referenceSha256: voiceHash,
     consent: { granted: true, scope: "SEPHIA local announcement synthesis", evidenceRef: "VOICE-CONSENT-REVIEW-01" },
   },
 });
-const pins = { modelSha256: modelHash, voiceReferenceSha256: voiceHash };
-const verifyProvisioning = async ({ modelSha256, voiceReferenceSha256 }) =>
-  modelSha256 === modelHash && voiceReferenceSha256 === voiceHash;
+const pins = { modelSha256: modelHash, voiceReferenceSha256: voiceHash, runtimeSha256: runtimeHash };
+const verifyProvisioning = async ({ modelSha256, voiceReferenceSha256, runtimeSha256 }) =>
+  modelSha256 === modelHash && voiceReferenceSha256 === voiceHash && runtimeSha256 === runtimeHash;
 
 test("qualifies only checksum-verified local engine with license and consent evidence", async () => {
   const engine = await createQualifiedLocalNeuralEngine({
