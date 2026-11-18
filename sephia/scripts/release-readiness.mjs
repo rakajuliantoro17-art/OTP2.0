@@ -43,6 +43,9 @@ const stage35Exists = await exists("native-host/smoke-test-native-host-windows.p
 const stage36Exists = await exists("docs/STAGE-36-PRODUCTION-CANDIDATE-RUNBOOK.md");
 const stage37Exists = await exists("src/audio/chrome-native-messaging-tts.js") &&
   await exists("extension/content-script.js") && await exists("tests/stage37-audio-unlock.test.mjs");
+const stage38Exists = await exists("src/visual/mount-sephia-controls.js") &&
+  await exists("tests/stage38-audio-diagnostics.test.mjs") &&
+  await exists("docs/STAGE-38-AUDIO-READINESS-DIAGNOSTICS.md");
 
 add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module/.test(workflow) ? "PASS" : "BLOCKED",
   "GitHub Actions workflow listens to the feature branch and main.");
@@ -87,6 +90,8 @@ add("Stage 36 production candidate runbook", stage36Exists ? "PASS" : "BLOCKED",
   stage36Exists ? "Installation, target-PC acceptance, rollback, and release gates are documented." : "Production candidate runbook is missing.");
 add("Stage 37 Chrome Web Audio activation", stage37Exists ? "PASS" : "BLOCKED",
   stage37Exists ? "AudioContext is unlocked synchronously on manual activation; real Chrome playback remains a manual gate." : "Explicit Web Audio unlock wiring or tests are incomplete.");
+add("Stage 38 visible audio diagnostics and speaker test", stage38Exists ? "PASS" : "BLOCKED",
+  stage38Exists ? "Panitia UI exposes bridge/wake/audio status and a user-initiated test using only the approved generic phrase." : "Visible audio diagnostics, manual speaker test, or target-PC runbook is incomplete.");
 add("Provisioned local model and consented voice", "BLOCKED",
   "No real ONNX model bundle or consented adult feminine Indonesian voice reference has been installed and accepted on the Panitia PC.");
 add("Approved neural model and feminine voice", "BLOCKED",
