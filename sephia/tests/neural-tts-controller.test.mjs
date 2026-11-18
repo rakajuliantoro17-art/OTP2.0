@@ -93,3 +93,20 @@ test("controller stop cancels pending neural playback and suppresses completion"
   controller.dispose();
   adapter.dispose();
 });
+
+test("controller stays silent without an unlocked local audio bridge", async () => {
+  let spoken = 0;
+  const adapter = {
+    available: false,
+    async speak() { spoken += 1; },
+    cancel() {},
+  };
+  const controller = createNotificationSpeechController({ adapter });
+  assert.equal(await controller.announce({
+    eventId: "synthetic-event-unavailable",
+    eventType: "violation",
+    violationCount: 27,
+  }), false);
+  assert.equal(spoken, 0);
+  controller.dispose();
+});
