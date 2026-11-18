@@ -128,9 +128,29 @@ export function mountPanitiaSephia({
       documentImpl,
       onError: report,
       onActivated() {
-        return wakeRecognizer.start().then((started) => {
-          if (!started && visualState.snapshot.active) visualState.setState("limited");
-          return started;
+        // Unlock Web Audio synchronously from the real activation click before
+        // awaiting microphone permission or any other asynchronous operation.
+        let audioReady;
+        try {
+          audioReady = typeof speechAdapter?.prepare === "function"
+            ? speechAdapter.prepare()
+            : Promise.resolve(false);
+        } catch (error) {
+          report(error);
+          audioReady = Promise.resolve(false);
+        }
+        let wakeReady;
+        try {
+          wakeReady = wakeRecognizer.start();
+        } catch (error) {
+          report(error);
+          wakeReady = Promise.resolve(false);
+        }
+        return Promise.all([audioReady, wakeReady]).then(([audioUnlocked, wakeStarted]) => {
+          if ((!audioUnlocked || !wakeStarted) && visualState.snapshot.active) {
+            visualState.setState("limited");
+          }
+          return audioUnlocked && wakeStarted;
         }).catch((error) => {
           if (visualState.snapshot.active) visualState.setState("limited");
           report(error);
