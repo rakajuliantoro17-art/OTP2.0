@@ -1,5 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import {
+  createChromeNativeMessagingTtsAdapter,
+  NATIVE_TTS_REQUEST_EVENT,
+  NATIVE_TTS_CANCEL_EVENT,
+  NATIVE_TTS_STATE_EVENT,
+  NATIVE_TTS_RESULT_EVENT,
+} from "../src/audio/chrome-native-messaging-tts.js";
+import { APPROVED_NEURAL_TTS_TEXT } from "../src/audio/local-neural-tts.js";
 import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
@@ -51,4 +59,71 @@ test("Native Messaging protocol schema is strict and has no arbitrary text or id
   assert.equal("studentName" in request.properties, false);
   assert.equal("className" in request.properties, false);
   assert.equal("eventId" in request.properties, false);
+});
+
+class FakeCustomEvent {
+  constructor(type, options = {}) { this.type = type; this.detail = options.detail; }
+}
+class FakeWindowEvents {
+  listeners = new Map();
+  addEventListener(type, fn) {
+    const list = this.listeners.get(type) || [];
+    list.push(fn);
+    this.listeners.set(type, list);
+  }
+  removeEventListener(type, fn) {
+    this.listeners.set(type, (this.listeners.get(type) || []).filter((item) => item !== fn));
+  }
+  dispatchEvent(event) {
+    for (const listener of this.listeners.get(event.type) || []) listener(event);
+    return true;
+  }
+}
+
+test("page adapter sends only fixed action and receives completion without audio bytes", async () => {
+  const windowImpl = new FakeWindowEvents();
+  const adapter = createChromeNativeMessagingTtsAdapter({ windowImpl, CustomEventImpl: FakeCustomEvent });
+  assert.equal(adapter.available, false);
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_STATE_EVENT, { detail: { state: "connected" } }));
+  assert.equal(adapter.available, true);
+  windowImpl.addEventListener(NATIVE_TTS_REQUEST_EVENT, (event) => {
+    assert.equal(event.detail.action, "synthesize-approved-announcement");
+    assert.equal("text" in event.detail, false);
+    assert.equal("eventId" in event.detail, false);
+    assert.equal("studentName" in event.detail, false);
+    windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_RESULT_EVENT, {
+      detail: { requestId: event.detail.requestId, ok: true },
+    }));
+  });
+  assert.equal(await adapter.speak(APPROVED_NEURAL_TTS_TEXT), true);
+  assert.equal(adapter.isSpeaking, false);
+  adapter.dispose();
+  assert.equal(adapter.available, false);
+});
+
+test("page adapter rejects arbitrary speech and cancels on bridge disconnect", async () => {
+  const windowImpl = new FakeWindowEvents();
+  const adapter = createChromeNativeMessagingTtsAdapter({ windowImpl, CustomEventImpl: FakeCustomEvent });
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_STATE_EVENT, { detail: { state: "connected" } }));
+  await assert.rejects(adapter.speak("nama siswa"), /fixed generic/);
+  const request = adapter.speak(APPROVED_NEURAL_TTS_TEXT);
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_STATE_EVENT, { detail: { state: "disconnected" } }));
+  await assert.rejects(request, /disconnected/);
+  assert.equal(adapter.available, false);
+  adapter.dispose();
+});
+
+test("page adapter emits cancellation without sending text or event identity", async () => {
+  const windowImpl = new FakeWindowEvents();
+  const adapter = createChromeNativeMessagingTtsAdapter({ windowImpl, CustomEventImpl: FakeCustomEvent });
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_STATE_EVENT, { detail: { state: "connected" } }));
+  let cancelDetail;
+  windowImpl.addEventListener(NATIVE_TTS_CANCEL_EVENT, (event) => { cancelDetail = event.detail; });
+  const request = adapter.speak(APPROVED_NEURAL_TTS_TEXT);
+  adapter.cancel();
+  await assert.rejects(request, /cancelled/);
+  assert.equal(cancelDetail.version, 1);
+  assert.equal("text" in cancelDetail, false);
+  assert.equal("eventId" in cancelDetail, false);
+  adapter.dispose();
 });
