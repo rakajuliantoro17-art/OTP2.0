@@ -230,4 +230,14 @@ mod tests {
         let response = handle_request(request, &mut last);
         assert_eq!(response, ErrorResponse::new("ENGINE_UNAVAILABLE"));
     }
+
+    #[test]
+    fn rate_limit_rejects_a_second_request_in_the_same_window() {
+        let mut last = None;
+        let payload = br#"{"version":1,"action":"synthesize-approved-announcement"}"#;
+        let first = handle_request(parse_request(payload), &mut last);
+        let second = handle_request(parse_request(payload), &mut last);
+        assert_eq!(first, ErrorResponse::new("ENGINE_UNAVAILABLE"));
+        assert_eq!(second, ErrorResponse::new("RATE_LIMITED"));
+    }
 }
