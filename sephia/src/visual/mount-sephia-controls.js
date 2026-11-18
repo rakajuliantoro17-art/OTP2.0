@@ -116,6 +116,7 @@ export function mountSephiaControls({
     statusLevel = level;
     status.textContent = statusMessage;
     status.dataset.level = statusLevel;
+    testSpeech.disabled = !Boolean(isSpeechReady());
   };
 
   const render = (snapshot) => {
