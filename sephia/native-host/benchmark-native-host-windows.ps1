@@ -25,22 +25,26 @@ if ($origin -notmatch '^chrome-extension://[a-p]{32}/$') {
   throw "Native host config does not contain a valid exact Chrome extension origin."
 }
 
-function Read-ExactBytes([System.IO.Stream]$Stream, [int]$Count) {
+function Read-ExactBytes([System.IO.Stream]$Stream, [int]$Count, [int]$TimeoutMs) {
   $buffer = New-Object byte[] $Count
   $offset = 0
+  $timer = [System.Diagnostics.Stopwatch]::StartNew()
   while ($offset -lt $Count) {
-    $read = $Stream.Read($buffer, $offset, $Count - $offset)
+    $remaining = [Math]::Max(1, $TimeoutMs - [int]$timer.ElapsedMilliseconds)
+    $task = $Stream.ReadAsync($buffer, $offset, $Count - $offset, [System.Threading.CancellationToken]::None)
+    if (-not $task.Wait($remaining)) { throw "Native host response timed out." }
+    $read = $task.Result
     if ($read -le 0) { throw "Native host closed the output stream unexpectedly." }
     $offset += $read
   }
   return ,$buffer
 }
 
-function Read-NativeFrame([System.IO.Stream]$Stream) {
-  $header = Read-ExactBytes $Stream 4
+function Read-NativeFrame([System.IO.Stream]$Stream, [int]$TimeoutMs) {
+  $header = Read-ExactBytes $Stream 4 $TimeoutMs
   $length = [System.BitConverter]::ToUInt32($header, 0)
   if ($length -lt 1 -or $length -gt 1048576) { throw "Native host response frame length is invalid." }
-  $payload = Read-ExactBytes $Stream ([int]$length)
+  $payload = Read-ExactBytes $Stream ([int]$length) $TimeoutMs
   return [System.Text.Encoding]::UTF8.GetString($payload) | ConvertFrom-Json
 }
 
@@ -60,7 +64,6 @@ $startInfo.WorkingDirectory = $hostDir
 $startInfo.UseShellExecute = $false
 $startInfo.RedirectStandardInput = $true
 $startInfo.RedirectStandardOutput = $true
-$startInfo.RedirectStandardError = $true
 $startInfo.CreateNoWindow = $true
 $startInfo.ArgumentList.Add($origin)
 
@@ -68,15 +71,17 @@ $process = New-Object System.Diagnostics.Process
 $process.StartInfo = $startInfo
 $warmTimes = @()
 $cpuSamples = @()
+$started = $false
 $peakMemoryMb = 0
 $maxAudioBytesSeen = 0
 $startupTimer = [System.Diagnostics.Stopwatch]::StartNew()
 
 try {
   if (-not $process.Start()) { throw "Native host process did not start." }
+  $started = $true
   $inputStream = $process.StandardInput.BaseStream
   $outputStream = $process.StandardOutput.BaseStream
-  $ready = Read-NativeFrame $outputStream
+  $ready = Read-NativeFrame $outputStream $MaxStartupMs
   $startupTimer.Stop()
   $startupMs = [int]$startupTimer.ElapsedMilliseconds
   if ($ready.version -ne 1 -or $ready.ok -ne $true -or $ready.status -ne "ready") {
@@ -91,7 +96,7 @@ try {
       version = 1
       action = "synthesize-approved-announcement"
     }
-    $response = Read-NativeFrame $outputStream
+    $response = Read-NativeFrame $outputStream ($MaxWarmSynthesisMs + 5000)
     $timer.Stop()
     $process.Refresh()
     $cpuAfter = $process.TotalProcessorTime
@@ -154,7 +159,7 @@ try {
   if (-not $report.overallTechnicalPass) { exit 1 }
 }
 finally {
-  if ($process -and -not $process.HasExited) {
+  if ($started -and $process -and -not $process.HasExited) {
     try { $process.Kill($true) } catch { try { $process.Kill() } catch {} }
     $process.WaitForExit(5000) | Out-Null
   }
