@@ -82,6 +82,13 @@ Copy-Item -LiteralPath $resolvedLicense -Destination $installedLicense -Force
 
 $voiceHash = (Get-FileHash -LiteralPath $installedVoice -Algorithm SHA256).Hash.ToLowerInvariant()
 $runtimeHash = (Get-FileHash -LiteralPath $installedHost -Algorithm SHA256).Hash.ToLowerInvariant()
+$runtimeDlls = @()
+Get-ChildItem -LiteralPath $installDir -Filter "*.dll" -File | ForEach-Object {
+  $runtimeDlls += @{
+    file_name = $_.Name
+    sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+  }
+}
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $configPath = Join-Path $installDir "sephia-host-config.json"
 $config = @{
@@ -92,6 +99,7 @@ $config = @{
   voice_consent_evidence_path = $installedConsent
   model_license_evidence_path = $installedLicense
   runtime_sha256 = $runtimeHash
+  runtime_dlls = $runtimeDlls
   threads = $Threads
 }
 $configJson = $config | ConvertTo-Json -Depth 5
