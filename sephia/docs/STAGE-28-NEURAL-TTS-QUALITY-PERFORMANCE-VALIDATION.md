@@ -15,6 +15,7 @@
 
 Default prototype limits:
 - 3 iterations (configurable up to 10);
+- cold synthesis ≤ 15 seconds;
 - warm synthesis p95 ≤ 8 seconds;
 - playback-start p95 ≤ 1.2 seconds;
 - generated audio ≤ 8 MiB;
@@ -22,7 +23,7 @@ Default prototype limits:
 - memory ≤ 1,024 MiB;
 - each synthesis/playback phase bounded by a 20-second timeout.
 
-The player supplied to the harness must return `{ started, finished, cancel() }`. The harness releases audio through `player.release(audio)` and returns numeric measurements only. It does not save audio or transcripts.
+The player supplied to the harness must return `{ started, finished, cancel() }`. The harness releases audio through `player.release(audio)` and returns numeric measurements only. If a runtime ignores cancellation and returns audio after a synthesis timeout, the harness releases that late buffer when it arrives. Playback is cancelled on timeout. It does not save audio or transcripts.
 
 ## Manual acceptance gates
 
@@ -33,4 +34,4 @@ The report remains **not accepted** until all are verified:
 4. Model/runtime licenses and reference-voice consent are documented for this operational use.
 5. The actual Panitia PC passes Chrome secure-context, activation, cancellation, and resource checks.
 
-A successful mock benchmark is not evidence of real voice quality or target-device performance. CPU/RAM metrics must come from a trusted local sampler on the target workstation; missing metrics fail the technical gate. No audio file or voice sample is committed to this repository.
+A successful mock benchmark is not evidence of real voice quality or target-device performance. The Stage 28 benchmark is now an explicit GitHub Actions step as well as part of the complete test suite. CPU/RAM metrics must come from a trusted local sampler on the target workstation; missing metrics fail the technical gate. No audio file or voice sample is committed to this repository.
