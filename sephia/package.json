@@ -21,6 +21,6 @@
     "verify:runtime-prototype": "node --test ./tests/qualified-local-neural-engine.test.mjs",
     "verify:acceptance": "node --test ./tests/neural-tts-acceptance.test.mjs",
     "verify:stage29": "node --test ./tests/stage29-native-bridge-security.test.mjs",
-    "verify:stage30": "node --test ./tests/stage30-extension.test.mjs"
+    "verify:stage30": "node --check ./extension/service-worker.js && node --check ./extension/popup.js && node --check ./extension/content-script.js && node --check ./extension/protocol.js && node --test ./tests/stage30-extension.test.mjs"
   }
 }
