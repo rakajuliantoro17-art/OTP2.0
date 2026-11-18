@@ -8,7 +8,7 @@ import {
   NATIVE_TTS_REQUEST_EVENT,
   NATIVE_TTS_RESULT_EVENT,
 } from "../src/audio/chrome-native-messaging-tts.js";
-import { APPROVED_NEURAL_TTS_TEXT } from "../src/audio/local-neural-tts.js";
+import { APPROVED_NEURAL_TTS_TEXT, APPROVED_WAKE_ACK_TEXT } from "../src/audio/local-neural-tts.js";
 
 class FakeCustomEvent {
   constructor(type, init = {}) {
@@ -122,5 +122,25 @@ test("adapter publishes bridge and audio readiness transitions", async () => {
   assert.ok(statuses.some((status) => status.reason === "bridge-waiting"));
   assert.ok(statuses.some((status) => status.reason === "connected" && status.connected));
   assert.ok(statuses.some((status) => status.reason === "audio-unlocked" && status.available));
+  adapter.dispose();
+});
+
+test("wake acknowledgement is mapped to its own fixed native action", async () => {
+  const { adapter, windowImpl } = createAdapter();
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_STATE_EVENT, { detail: { state: "connected" } }));
+  const unlock = adapter.prepare();
+  const unlockEvent = windowImpl.dispatched.find((event) => event.type === NATIVE_TTS_UNLOCK_EVENT);
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_UNLOCK_RESULT_EVENT, {
+    detail: { requestId: unlockEvent.detail.requestId, ok: true },
+  }));
+  assert.equal(await unlock, true);
+
+  const speaking = adapter.speak(APPROVED_WAKE_ACK_TEXT);
+  const request = windowImpl.dispatched.find((event) => event.type === NATIVE_TTS_REQUEST_EVENT);
+  assert.equal(request.detail.action, "synthesize-approved-wake-acknowledgement");
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_RESULT_EVENT, {
+    detail: { requestId: request.detail.requestId, ok: true },
+  }));
+  assert.equal(await speaking, true);
   adapter.dispose();
 });
