@@ -28,9 +28,13 @@ impl ErrorResponse {
 }
 
 fn validate_origin(actual: &str, expected: &str) -> bool {
-    !expected.is_empty()
-        && expected.starts_with("chrome-extension://")
-        && expected.ends_with('/')
+    let Some(extension_id) = expected
+        .strip_prefix("chrome-extension://")
+        .and_then(|value| value.strip_suffix('/')) else {
+        return false;
+    };
+    extension_id.len() == 32
+        && extension_id.bytes().all(|byte| (b'a'..=b'p').contains(&byte))
         && actual == expected
 }
 
@@ -147,9 +151,10 @@ mod tests {
 
     #[test]
     fn accepts_only_the_exact_extension_origin() {
-        let origin = "chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef/";
+        let origin = "chrome-extension://abcdefghijklmnopabcdefghijklmnop/";
         assert!(validate_origin(origin, origin));
         assert!(!validate_origin("chrome-extension://attacker/", origin));
+        assert!(!validate_origin("chrome-extension://qrstuvwxyzabcdefghijklmnop/", "chrome-extension://qrstuvwxyzabcdefghijklmnop/"));
         assert!(!validate_origin(origin, ""));
         assert!(!validate_origin("https://example.com/", origin));
     }
