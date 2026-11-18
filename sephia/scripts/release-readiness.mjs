@@ -30,6 +30,7 @@ const stage30Exists = await exists("extension/manifest.json") &&
 const stage31Exists = await exists("native-host/Cargo.toml") &&
   await exists("native-host/src/main.rs") && await exists("native-host/install-windows.ps1") &&
   await exists("tests/stage31-native-host.test.mjs");
+const nativeCargoLockExists = await exists("native-host/Cargo.lock");
 const stage32Exists = await exists("native-host/src/inference.rs") &&
   await exists("docs/POCKET-TTS-INDONESIAN-ONNX-PROVENANCE.json") &&
   await exists("tests/stage32-inference.test.mjs");
@@ -72,6 +73,8 @@ add("Stage 30 Chrome extension bridge", stage30Exists ? "PASS" : "BLOCKED",
   stage30Exists ? "Manual active-tab pairing, fixed-action transport, response validation, in-memory playback, and disconnect handling are present." : "Chrome extension bridge files or tests are incomplete.");
 add("Stage 31 Rust Native Messaging protocol host", stage31Exists ? "PASS" : "BLOCKED",
   stage31Exists ? "Framing, exact origin check, strict request schema, rate limit, and Windows registration scripts are present." : "Native host protocol files or tests are incomplete.");
+add("Pinned native host Cargo dependency lock", nativeCargoLockExists ? "PASS" : "BLOCKED",
+  nativeCargoLockExists ? "Cargo.lock is generated and included in the Windows build artifact." : "Native host dependency graph is not locked.");
 add("Stage 32 in-memory Laras inference implementation", stage32Exists ? "PASS" : "BLOCKED",
   stage32Exists ? "Pinned Laras Engine API, per-file model hashes, voice/runtime hash checks, and in-memory PCM response are implemented behind the inference feature." : "In-memory inference implementation or model provenance tests are incomplete.");
 add("Stage 33 pinned model provisioning workflow", stage33Exists ? "PASS" : "BLOCKED",
