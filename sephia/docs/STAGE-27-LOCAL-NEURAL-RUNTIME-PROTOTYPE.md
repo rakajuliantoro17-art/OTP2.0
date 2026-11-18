@@ -6,6 +6,9 @@
 
 ## Implemented
 
+The pinned ONNX file provenance reference is `docs/POCKET-TTS-INDONESIAN-ONNX-PROVENANCE.json`: 9 files, 164,385,066 bytes total, with per-file SHA-256 values and an aggregate manifest digest. Laras source is pinned to `e4ab05ca53a8cbf749405de5b1ac902b76880768`. This is a provenance reference only; it is not proof that the model/runtime has been provisioned on the Panitia PC.
+
+
 - A versioned manifest pins each ONNX model file's path, exact byte size, SHA-256, aggregate model digest, model source revision, voice-reference SHA-256, runtime version/source revision/binary SHA-256, model license evidence, and explicit voice-reference consent.
 - Only the laras-pocket-tts candidate identifier and local-only execution are accepted. The current Laras source candidate is pinned to commit `e4ab05ca53a8cbf749405de5b1ac902b76880768`; the Indonesian model config reference is pinned to `17257664e384561c957b02ac92edd1a24807f0e5` and every provisioned ONNX file must independently match its SHA-256.
 - A mandatory provisioning verifier must independently hash the actual local model files, voice-reference bytes, and runtime binary before the engine factory is called. A manifest string alone is not treated as proof of file integrity.
