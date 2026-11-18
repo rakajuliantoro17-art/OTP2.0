@@ -40,7 +40,7 @@ test("production Panitia host is neural-only and remains fail-closed", async () 
 
 test("Stage 29 explicitly blocks production until in-memory inference and workstation acceptance", async () => {
   const report = await read("docs/STAGE-29-LOCAL-CHROME-BRIDGE-SECURITY.md");
-  assert.match(report, /in-memory API/);
+  assert.match(report, /in-memory Laras API/);
   assert.match(report, /Windows packaging is reproducible/);
   assert.match(report, /actual Panitia PC/);
 });
