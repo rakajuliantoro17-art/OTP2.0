@@ -22,7 +22,7 @@ Requires Rust toolchain 1.92 or newer:
        .\sephia\native-host\install-windows.ps1 -ExtensionId <32-character-id> -HostExePath <absolute-path-to-exe>
 
 4. Restart Chrome so it inherits `SEPHIA_EXTENSION_ORIGIN`.
-5. The installer registers only the supplied extension ID in `allowed_origins`.
+5. The installer copies the host into `%LOCALAPPDATA%\\SMANSASOO\\SEPHIA`, writes a strict `sephia-host-config.json` beside it, and registers only the supplied extension ID in `allowed_origins`.
 
 Uninstall:
 
