@@ -69,6 +69,9 @@ jobs:
       - name: Verify Stage 33 model and voice provisioning
         working-directory: sephia
         run: npm run verify:stage33
+      - name: Verify Stage 34 target PC benchmark
+        working-directory: sephia
+        run: npm run verify:stage34
       - name: Run Rust Native Messaging host unit tests
         run: cargo test --manifest-path sephia/native-host/Cargo.toml
       - name: Build and test local neural inference feature
@@ -116,6 +119,7 @@ jobs:
             sephia/docs/STAGE-31-NATIVE-MESSAGING-HOST.md
             sephia/docs/STAGE-32-IN-MEMORY-LARAS-INFERENCE.md
             sephia/docs/STAGE-33-MODEL-AND-VOICE-PROVISIONING.md
+            sephia/docs/STAGE-34-TARGET-PC-BENCHMARK.md
           if-no-files-found: error
           retention-days: 14
 
@@ -134,7 +138,8 @@ jobs:
           $scripts = @(
             "sephia/native-host/provision-model-windows.ps1",
             "sephia/native-host/install-windows.ps1",
-            "sephia/native-host/uninstall-windows.ps1"
+            "sephia/native-host/uninstall-windows.ps1",
+            "sephia/native-host/benchmark-native-host-windows.ps1"
           )
           foreach ($script in $scripts) {
             $tokens = $null
