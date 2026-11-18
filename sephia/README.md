@@ -10,7 +10,7 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 - Stage 27 adds a qualified offline-engine wrapper and checksum/consent manifest contract. It does not bundle model weights, start a sidecar, download files, or activate a speech engine. The Laras/Pocket candidate remains unqualified until real files and evidence are reviewed.
 - Stage 28 adds an in-memory benchmark and acceptance report for cold/warm synthesis latency, playback-start latency, buffer size, CPU, and memory. Acoustic, network, license, and target-PC evidence remain manual gates. Mock tests are not proof of real voice quality or workstation performance.
 - Stage 24 topology security gate remains open. No localhost or school-LAN inference endpoint is enabled. No unauthenticated LAN service, cloud TTS, browser speech fallback, or production WAV fallback is permitted.
-- Stages 18–20 remain isolated legacy/validation components. The Panitia host must not select announcementAssetUrl in production.
+- Stage 18 records the local audio adapter contract; Stage 20 records the legacy WAV asset validation contract. Stages 18–20 remain isolated legacy/validation components. The Panitia host must not select announcementAssetUrl in production.
 - The intended voice remains adult feminine Indonesian: natural, warm, calm, gentle, clear, and professional. Voice-reference consent and acoustic approval are mandatory.
 - The dashboard has no account login; access through a dedicated URL is not authentication.
 - SEPHIA host integration remains on feature/sephia-module; it is not deployed. It starts OFF and requires manual activation after every page load.
