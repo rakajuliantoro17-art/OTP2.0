@@ -15,6 +15,7 @@
 - The local WAV voice reference is bounded to 1 KiB–10 MiB and 1–20 seconds after resampling. Generated `Vec<f32>` samples are converted directly to 24 kHz mono PCM16 little-endian bytes in memory.
 - The response is rejected if silent/invalid, shorter than 250 ms, longer than 15 seconds, or larger than 700 KiB.
 - No generated WAV, temporary audio file, transcript, or audio cache is written.
+- The current Laras call is synchronous and cannot be preempted mid-inference. STOP immediately suppresses playback and discards the eventual response; the CPU inference may finish in the background. The loaded model remains resident for the next alert. Closing/navigating away closes the Native Messaging pipe; the host exits after the active call returns.
 - Inherited Laras dump/trace environment variables are removed during single-threaded startup before ONNX Runtime workers are created.
 - Native host verifies the nine pinned ONNX files, aggregate bundle digest, voice-reference SHA-256, native executable SHA-256, and presence of model-license and voice-consent evidence files before engine readiness.
 - Chrome receives a strict `ready` handshake only after local engine initialization succeeds. Missing or mismatched assets return `ENGINE_UNAVAILABLE`; the extension does not mark the bridge available.
