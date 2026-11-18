@@ -33,7 +33,6 @@ assert.equal(WAKE_WORD_ACKNOWLEDGEMENT, "Ya, Panitia. SEPHIA siap membantu.");
 for (const action of actions) {
   for (const [name, source] of [
     ["page adapter", adapter],
-    ["local TTS allowlist", localTts],
     ["extension content script", contentScript],
     ["extension service worker", worker],
     ["Rust Native Host", nativeMain],
@@ -43,6 +42,9 @@ for (const action of actions) {
   }
 }
 
+assert.match(localTts, /APPROVED_NEURAL_TTS_TEXTS = Object\.freeze\(\[/);
+assert.match(localTts, /APPROVED_NEURAL_TTS_TEXT,/);
+assert.match(localTts, /APPROVED_WAKE_ACK_TEXT,/);
 assert.match(adapter, /text === APPROVED_NEURAL_TTS_TEXT/);
 assert.match(adapter, /text === APPROVED_WAKE_ACK_TEXT/);
 assert.match(nativeMain, /APPROVED_ACTION/);
