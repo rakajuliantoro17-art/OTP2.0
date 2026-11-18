@@ -55,7 +55,7 @@
         "audioBase64": {
           "type": "string",
           "contentEncoding": "base64",
-          "maxLength": 955734
+          "maxLength": 955736
         }
       }
     },
