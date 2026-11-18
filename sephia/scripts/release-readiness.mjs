@@ -13,6 +13,10 @@ const add = (name, status, detail) => checks.push({ name, status, detail });
 const avatarExists = await exists("assets/avatar-sephia.svg");
 const neuralAdapterExists = await exists("src/audio/local-neural-tts.js");
 const neuralAdapterTestsExist = await exists("tests/local-neural-tts.test.mjs") && await exists("tests/neural-tts-controller.test.mjs");
+const runtimePrototypeExists = await exists("src/audio/qualified-local-neural-engine.js") &&
+  await exists("tests/qualified-local-neural-engine.test.mjs");
+const acceptanceHarnessExists = await exists("src/audio/neural-tts-acceptance.js") &&
+  await exists("tests/neural-tts-acceptance.test.mjs");
 const workflow = await read("../.github/workflows/sephia-tests.yml");
 const vercel = await read("../vercel.json");
 const host = await read("../panitia/index.html");
@@ -29,10 +33,14 @@ add("Local neural TTS adapter contract", neuralAdapterExists ? "PASS" : "BLOCKED
   neuralAdapterExists ? "Dependency-injected local neural adapter is present; it does not bundle or fetch a model." : "Neural adapter contract is missing.");
 add("Neural TTS contract tests", neuralAdapterTestsExist ? "PASS" : "BLOCKED",
   neuralAdapterTestsExist ? "Adapter and controller tests use deterministic in-memory mocks." : "Neural adapter/controller tests are incomplete.");
+add("Stage 27 offline runtime qualification wrapper", runtimePrototypeExists ? "PASS" : "BLOCKED",
+  runtimePrototypeExists ? "Pinned manifest, local-only runtime contract, consent gate, and output bounds are present." : "Runtime qualification wrapper or tests are missing.");
+add("Stage 28 acceptance benchmark", acceptanceHarnessExists ? "PASS" : "BLOCKED",
+  acceptanceHarnessExists ? "In-memory latency/resource harness and deterministic tests are present." : "Acceptance harness or tests are missing.");
 add("Approved neural model and feminine voice", "BLOCKED",
-  "No engine, model weights, or licensed adult feminine reference voice has passed acoustic and legal acceptance.");
+  "No real engine, model weights, or licensed adult feminine reference voice has passed acoustic and legal acceptance.");
 add("Panitia workstation acceptance", "MANUAL",
-  "Chrome, HTTPS secure context, microphone permission, wake word, speakers, and visual fit must be tested on the target PC.");
+  "Chrome, HTTPS secure context, microphone permission, wake word, speakers, CPU/RAM, and visual fit must be tested on the target PC.");
 add("Vercel Git integration", "MANUAL",
   "Verify the resumed Vercel project is linked to this repository and Production Branch is main.");
 add("Production release authorization", "MANUAL",
