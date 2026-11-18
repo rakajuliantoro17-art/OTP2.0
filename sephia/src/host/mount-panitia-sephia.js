@@ -80,10 +80,21 @@ export function mountPanitiaSephia({
     visualState = createState();
     wakeRecognizer = createWakeWordRecognizer(windowImpl, {
       onWakeWord() {
-        if (visualState.snapshot.active) {
-          visualState.setState("listening");
-          setControlStatus("Panggilan SEPHIA terdeteksi. Respons suara panggilan belum diaktifkan; uji suara tersedia dari menu kontrol.", "ready");
+        if (!visualState.snapshot.active) return;
+        visualState.setState("listening");
+        if (speechAdapter?.available !== true) {
+          setControlStatus("Panggilan SEPHIA terdeteksi. Audio lokal belum siap; periksa koneksi ekstensi dan Native Host.", "error");
+          return;
         }
+        setControlStatus("Panggilan terdeteksi. SEPHIA sedang merespons…", "ready");
+        void speechController?.acknowledgeWakeWord?.().then((spoken) => {
+          if (!visualState.snapshot.active) return;
+          if (spoken) {
+            setControlStatus("SEPHIA siap membantu.", "ready");
+          } else if (speechAdapter?.available !== true) {
+            setControlStatus("Panggilan terdeteksi, tetapi audio lokal terputus. Periksa status koneksi.", "error");
+          }
+        });
       },
       onStateChange(snapshot) {
         if (!visualState.snapshot.active) return;
@@ -202,7 +213,7 @@ export function mountPanitiaSephia({
               "error",
             );
           } else if (audioUnlocked && wakeStarted) {
-            setControlStatus("SEPHIA siap. Ucapkan “SEPHIA”; uji speaker tersedia di menu kontrol.", "ready");
+            setControlStatus("SEPHIA siap. Ucapkan “SEPHIA” untuk memanggil asisten.", "ready");
           }
           return audioUnlocked && wakeStarted;
         }).catch((error) => {
