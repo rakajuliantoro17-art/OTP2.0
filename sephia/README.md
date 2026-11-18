@@ -9,9 +9,9 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 - Stages 25–26 implement the local neural TTS adapter contract and controller integration tests. Exact generic announcement only, bounded timeout, abort/cancel, one operation at a time, and in-memory audio release. Host default remains fail-closed visual-only.
 - Stage 27 adds a qualified offline-engine wrapper and checksum/consent manifest contract. It does not bundle model weights, start a sidecar, download files, or activate a speech engine. The Laras/Pocket candidate remains unqualified until real files and evidence are reviewed.
 - Stage 28 adds an in-memory benchmark and acceptance report for cold/warm synthesis latency, playback-start latency, buffer size, CPU, and memory. Acoustic, network, license, and target-PC evidence remain manual gates. Mock tests are not proof of real voice quality or workstation performance.
-- Stage 24 topology security gate remains open. No localhost or school-LAN inference endpoint is enabled. No unauthenticated LAN service, cloud TTS, browser speech fallback, or production WAV fallback is permitted.
-- Stage 18 records the local audio adapter contract; Stage 20 records the legacy WAV asset validation contract. Stages 18–20 remain isolated legacy/validation components. The Panitia host must not select announcementAssetUrl in production.
-- The intended voice remains adult feminine Indonesian: natural, warm, calm, gentle, clear, and professional. Voice-reference consent and acoustic approval are mandatory.
+- Stage 24 rejected localhost/LAN HTTP inference as the default topology. Stage 29 records Chrome Native Messaging as the preferred local bridge; extension, native host, in-memory Laras API, installer, and target-PC acceptance are still blocked. No localhost/LAN inference endpoint is enabled.
+- Stage 18 records the local audio adapter contract; Stage 20 records legacy WAV asset validation. Stages 18–20 remain isolated legacy/validation components. The production Panitia host no longer imports or selects the WAV adapter.
+- The intended voice remains adult feminine Indonesian: natural, warm, calm, gentle, clear, and professional. Voice-reference consent and acoustic approval are mandatory. Pocket TTS Indonesian weights require CC-BY-4.0 attribution; this is separate from Laras source-code licensing.
 - The dashboard has no account login; access through a dedicated URL is not authentication.
 - SEPHIA host integration remains on feature/sephia-module; it is not deployed. It starts OFF and requires manual activation after every page load.
 - No merge to main or production deployment is authorized.
@@ -44,6 +44,6 @@ From the sephia folder, run with Node.js 22:
 
 Stage 28 benchmark requires an explicitly injected local-only engine, local player, and workstation CPU/RAM sampler. It returns numeric metrics only; it does not create audio files. The report cannot pass overall until voice, network, and license reviews are explicitly recorded.
 
-See docs/STAGE-28-NEURAL-TTS-QUALITY-PERFORMANCE-VALIDATION.md, docs/STAGE-27-LOCAL-NEURAL-RUNTIME-PROTOTYPE.md, docs/STAGE-26-NEURAL-TTS-INTEGRATION.md, docs/STAGE-25-LOCAL-NEURAL-TTS-ADAPTER.md, docs/STAGE-24-LOCAL-TTS-TOPOLOGY-GATE.md, and docs/STAGE-23-LOCAL-NEURAL-TTS-DECISION.md.
+See docs/STAGE-29-LOCAL-CHROME-BRIDGE-SECURITY.md, docs/STAGE-28-NEURAL-TTS-QUALITY-PERFORMANCE-VALIDATION.md, docs/STAGE-27-LOCAL-NEURAL-RUNTIME-PROTOTYPE.md, docs/STAGE-26-NEURAL-TTS-INTEGRATION.md, docs/STAGE-25-LOCAL-NEURAL-TTS-ADAPTER.md, docs/STAGE-24-LOCAL-TTS-TOPOLOGY-GATE.md, and docs/STAGE-23-LOCAL-NEURAL-TTS-DECISION.md.
 
 The build output is an artifact, not a production deployment. Nothing in this folder self-activates or changes production OTP behavior.
