@@ -30,6 +30,9 @@ const stage30Exists = await exists("extension/manifest.json") &&
 const stage31Exists = await exists("native-host/Cargo.toml") &&
   await exists("native-host/src/main.rs") && await exists("native-host/install-windows.ps1") &&
   await exists("tests/stage31-native-host.test.mjs");
+const stage32Exists = await exists("native-host/src/inference.rs") &&
+  await exists("docs/POCKET-TTS-INDONESIAN-ONNX-PROVENANCE.json") &&
+  await exists("tests/stage32-inference.test.mjs");
 
 add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module/.test(workflow) ? "PASS" : "BLOCKED",
   "GitHub Actions workflow listens to the feature branch and main.");
@@ -60,8 +63,10 @@ add("Stage 30 Chrome extension bridge", stage30Exists ? "PASS" : "BLOCKED",
   stage30Exists ? "Manual active-tab pairing, fixed-action transport, response validation, in-memory playback, and disconnect handling are present." : "Chrome extension bridge files or tests are incomplete.");
 add("Stage 31 Rust Native Messaging protocol host", stage31Exists ? "PASS" : "BLOCKED",
   stage31Exists ? "Framing, exact origin check, strict request schema, rate limit, and Windows registration scripts are present." : "Native host protocol files or tests are incomplete.");
-add("Local neural inference engine", "BLOCKED",
-  "The native host is a protocol stub. In-memory Laras integration, local model runtime, voice reference, and real synthesis are not yet implemented.");
+add("Stage 32 in-memory Laras inference implementation", stage32Exists ? "PASS" : "BLOCKED",
+  stage32Exists ? "Pinned Laras Engine API, per-file model hashes, voice/runtime hash checks, and in-memory PCM response are implemented behind the inference feature." : "In-memory inference implementation or model provenance tests are incomplete.");
+add("Provisioned local model and consented voice", "BLOCKED",
+  "No real ONNX model bundle or consented adult feminine Indonesian voice reference has been installed and accepted on the Panitia PC.");
 add("Approved neural model and feminine voice", "BLOCKED",
   "No real engine, model weights, or licensed adult feminine reference voice has passed acoustic and legal acceptance.");
 add("Panitia workstation acceptance", "MANUAL",
