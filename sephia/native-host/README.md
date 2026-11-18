@@ -1,22 +1,22 @@
 # SEPHIA Native Messaging Host (Stage 31)
 
-This crate implements the Chrome Native Messaging framing, exact extension-origin check, strict request schema, size bounds, and fail-closed error response.
+This crate implements Chrome Native Messaging framing, exact extension-origin checking, strict request schema, size bounds, and an optional pinned Laras in-memory inference feature.
 
 ## Current behavior
 
-The executable is a **protocol stub**, not a speech engine. Every valid request returns `ENGINE_UNAVAILABLE`. This is intentional until the in-memory Laras inference adapter is audited and integrated. It does not download models, write audio, open a port, or invoke shell commands.
+The default executable (without `--features inference`) is protocol-only and returns `ENGINE_UNAVAILABLE`. The inference feature calls the pinned Laras `Engine::synthesize` API and converts returned samples directly to PCM16 in memory. It does not call `Native::synth_to`, write generated WAV files, download models, open a TCP/UDP port, or invoke shell commands.
 
 ## Build
 
 Requires Rust toolchain 1.92 or newer:
 
     cargo test --manifest-path sephia/native-host/Cargo.toml
-    cargo build --release --manifest-path sephia/native-host/Cargo.toml
+    cargo build --release --features inference --manifest-path sephia/native-host/Cargo.toml
 
 ## Install on Windows
 
 1. Package the Chrome extension and obtain its exact 32-character extension ID.
-2. Build the native host executable and place it in a controlled, user-readable installation directory.
+2. Build the native host with `--features inference`. Provision the pinned model files, a consented adult feminine Indonesian WAV voice reference, and both evidence files.
 3. Run PowerShell as the installing Windows user:
 
        .\sephia\native-host\install-windows.ps1 -ExtensionId <32-character-id> -HostExePath <absolute-path-to-exe>
@@ -35,6 +35,6 @@ Uninstall:
 - Output frame maximum: Chrome's 1 MiB host-to-extension limit.
 - Only request: `{ "version": 1, "action": "synthesize-approved-announcement" }`.
 - Caller origin must exactly match `extension_origin` in the adjacent `sephia-host-config.json` file.
-- Current response: `{ "version": 1, "ok": false, "code": "ENGINE_UNAVAILABLE" }`.
+- Startup handshake is sent only after the configured model, voice reference, evidence files, and runtime hash pass validation. Missing or invalid assets return `ENGINE_UNAVAILABLE`.
 
 The host must never accept free-form speech text, student identity, OTP, event IDs, file paths, URLs, or shell commands.
