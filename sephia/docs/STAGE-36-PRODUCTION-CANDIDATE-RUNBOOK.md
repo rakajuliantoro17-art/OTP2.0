@@ -55,11 +55,12 @@ The installer re-verifies the model files, copies the voice reference and eviden
 2. Open the SEPHIA extension popup and pair the active tab.
 3. Confirm the popup reports successful pairing only after the native engine readiness handshake.
 4. Confirm SEPHIA remains OFF until manually activated from the dashboard.
-5. In a non-production staging fixture, trigger one synthetic eligible notification.
-6. Confirm only the approved generic sentence is spoken once; no student identity or violation details are spoken.
-7. Test STOP, duplicate events, timeout, disconnect, page reload, navigation, tab close, Chrome restart, host crash, and missing/mismatched model/voice hashes.
-8. Run the Stage 34 benchmark and save its JSON result.
-9. Obtain two independent listener approvals and complete privacy/network inspection.
+5. Confirm the activation click unlocks Web Audio successfully; wait at least 60 seconds before testing playback.
+6. In a non-production staging fixture, trigger one synthetic eligible notification.
+7. Confirm only the approved generic sentence is spoken once; no student identity or violation details are spoken.
+8. Test STOP, duplicate events, timeout, disconnect, page reload, navigation, tab close, Chrome restart, host crash, and missing/mismatched model/voice hashes.
+9. Run the Stage 34 benchmark and save its JSON result.
+10. Obtain two independent listener approvals and complete privacy/network inspection.
 
 Do not generate test violations in the live OTP system. Do not change OTP rules or Firebase/Moodle behavior for acceptance.
 
