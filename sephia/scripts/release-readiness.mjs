@@ -37,6 +37,8 @@ const stage33Exists = await exists("native-host/provision-model-windows.ps1") &&
   await exists("tests/stage33-model-provisioning.test.mjs");
 const stage34Exists = await exists("native-host/benchmark-native-host-windows.ps1") &&
   await exists("tests/stage34-native-benchmark.test.mjs");
+const stage35Exists = await exists("native-host/smoke-test-native-host-windows.ps1") &&
+  await exists("tests/stage35-native-host-smoke.test.mjs");
 
 add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module/.test(workflow) ? "PASS" : "BLOCKED",
   "GitHub Actions workflow listens to the feature branch and main.");
@@ -73,6 +75,8 @@ add("Stage 33 pinned model provisioning workflow", stage33Exists ? "PASS" : "BLO
   stage33Exists ? "Explicit model download switch, fixed revision, per-file SHA-256 verification, and Windows install/cleanup scripts are present." : "Model provisioning scripts or tests are incomplete.");
 add("Stage 34 target PC benchmark harness", stage34Exists ? "PASS" : "BLOCKED",
   stage34Exists ? "Cold startup, warm synthesis, CPU, memory, and in-memory PCM benchmark script is present." : "Target PC benchmark script or tests are incomplete.");
+add("Stage 35 Windows Native Messaging process smoke test", stage35Exists ? "PASS" : "BLOCKED",
+  stage35Exists ? "Windows process test verifies fail-closed readiness and exact extension-origin rejection." : "Native host process smoke test or regression checks are incomplete.");
 add("Provisioned local model and consented voice", "BLOCKED",
   "No real ONNX model bundle or consented adult feminine Indonesian voice reference has been installed and accepted on the Panitia PC.");
 add("Approved neural model and feminine voice", "BLOCKED",
