@@ -23,6 +23,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@1.92.0
       - name: Run SEPHIA unit and integration tests
         working-directory: sephia
         run: npm test
@@ -53,6 +55,11 @@ jobs:
       - name: Verify Stage 30 Chrome extension bridge
         working-directory: sephia
         run: npm run verify:stage30
+      - name: Verify Stage 31 native host security gates
+        working-directory: sephia
+        run: npm run verify:stage31
+      - name: Run Rust Native Messaging host unit tests
+        run: cargo test --manifest-path sephia/native-host/Cargo.toml
       - name: Verify on-device Indonesian wake-word recognition
         working-directory: sephia
         run: npm run verify:wakeword
