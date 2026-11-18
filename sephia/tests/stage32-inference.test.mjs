@@ -59,3 +59,13 @@ test("native host sends ready only after local engine initialization succeeds", 
   assert.match(host, /"status": "ready"/);
   assert.match(host, /ENGINE_UNAVAILABLE/);
 });
+
+test("model download is a separate explicit provisioning action, never a runtime behavior", async () => {
+  const provisioner = await read("native-host/provision-model-windows.ps1");
+  const host = await read("native-host/src/inference.rs");
+  assert.match(provisioner, /\[switch\]\s*\$Download/);
+  assert.match(provisioner, /17257664e384561c957b02ac92edd1a24807f0e5/);
+  assert.match(provisioner, /if \(-not \$Download\)/);
+  assert.match(provisioner, /Invoke-WebRequest/);
+  assert.doesNotMatch(host, /Invoke-WebRequest|reqwest|https:\/\//i);
+});
