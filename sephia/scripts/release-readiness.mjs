@@ -43,6 +43,9 @@ add("Stage 28 acceptance benchmark", acceptanceHarnessExists ? "PASS" : "BLOCKED
   acceptanceHarnessExists ? "In-memory latency/resource harness and deterministic tests are present." : "Acceptance harness or tests are missing.");
 add("Neural-only production host", !/createLocalAudioAnnouncementAdapter|announcementAssetUrl/.test(hostBridge) ? "PASS" : "BLOCKED",
   "Production Panitia bridge cannot select the legacy WAV adapter.");
+add("Page-side Chrome Native Messaging adapter", /createChromeNativeMessagingTtsAdapter/.test(hostBridge) &&
+  await exists("src/audio/chrome-native-messaging-tts.js") ? "PASS" : "BLOCKED",
+  "Panitia host has a fail-closed page adapter for the separately installed Chrome extension.");
 add("Stage 27 model attribution", /CC-BY-4.0/.test(stage27) && /anak10thn/.test(stage27) ? "PASS" : "BLOCKED",
   "Pocket TTS Indonesian attribution is recorded separately from Laras source-code licensing.");
 add("Stage 29 security decision and tests", stage29Exists && stage29TestsExist ? "PASS" : "BLOCKED",
