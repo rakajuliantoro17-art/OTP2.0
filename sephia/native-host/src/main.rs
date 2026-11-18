@@ -38,8 +38,12 @@ fn parse_request(bytes: &[u8]) -> Result<Request, ()> {
         return Err(());
     }
     let request: Request = serde_json::from_slice(bytes).map_err(|_| ())?;
-    if request.version != 1 ||
-        !matches!(request.action.as_str(), APPROVED_ACTION | APPROVED_WAKE_ACTION) {
+    if request.version != 1
+        || !matches!(
+            request.action.as_str(),
+            APPROVED_ACTION | APPROVED_WAKE_ACTION
+        )
+    {
         return Err(());
     }
     Ok(request)
@@ -60,7 +64,9 @@ fn handle_request(
     }
     *last_request = Some(now);
 
-    runtime.synthesize(&request.action).unwrap_or_else(error_response)
+    runtime
+        .synthesize(&request.action)
+        .unwrap_or_else(error_response)
 }
 
 fn read_frame<R: Read>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {
