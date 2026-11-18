@@ -12,7 +12,7 @@ const actions = [
   "synthesize-approved-wake-acknowledgement",
 ];
 
-const [pkg, adapter, localTts, contentScript, worker, nativeMain, inference, workflow, manifest] =
+const [pkgText, adapter, localTts, contentScript, worker, nativeMain, inference, workflow, manifest] =
   await Promise.all([
     read("package.json"),
     read("src/audio/chrome-native-messaging-tts.js"),
@@ -25,6 +25,7 @@ const [pkg, adapter, localTts, contentScript, worker, nativeMain, inference, wor
     read("extension/manifest.json"),
   ]);
 
+const pkg = JSON.parse(pkgText);
 assert.equal(pkg.version, "0.40.0-stage.40", "Stage 40 package version must be pinned.");
 assert.equal(DEFAULT_ANNOUNCEMENT,
   "Perhatian, Panitia. Ada notifikasi pelanggaran OTP baru. Silakan periksa notifikasinya di dashboard, ya.");
