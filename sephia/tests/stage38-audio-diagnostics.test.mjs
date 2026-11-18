@@ -20,18 +20,23 @@ test("Panitia host connects bridge readiness and local wake-word states to visib
   assert.match(host, /bridge-waiting/);
   assert.match(host, /audio-unlock-failed/);
   assert.match(host, /wake word belum aktif/i);
+  assert.match(host, /acknowledgeWakeWord/);
+  assert.match(host, /Panggilan terdeteksi\. SEPHIA sedang merespons/);
   assert.match(host, /onTestSpeech: \(\) => speechController\.test\(\)/);
 });
 
 test("manual test uses only the fixed approved generic announcement", async () => {
   const controller = await read("src/audio/announcement.js");
   assert.match(controller, /test:\s*speakApprovedPhrase/);
-  assert.match(controller, /adapter\.speak\(DEFAULT_ANNOUNCEMENT\)/);
+  assert.match(controller, /speakApprovedPhrase\(DEFAULT_ANNOUNCEMENT\)/);
+  assert.match(controller, /Ya, Panitia\. SEPHIA siap membantu\./);
   assert.doesNotMatch(controller, /studentName|className|event\.message/);
 });
 
-test("wake-word invocation remains visual-only until a separate spoken acknowledgement is approved", async () => {
+test("wake-word invocation triggers fixed spoken acknowledgement and visual speaking state", async () => {
   const host = await read("src/host/mount-panitia-sephia.js");
-  assert.match(host, /Respons suara panggilan belum diaktifkan/);
-  assert.match(host, /Panggilan SEPHIA terdeteksi/);
+  const controller = await read("src/audio/announcement.js");
+  assert.match(host, /acknowledgeWakeWord/);
+  assert.match(host, /visualState\.setState\("listening"\)/);
+  assert.match(controller, /acknowledgeWakeWord:\s*\(\)\s*=>\s*speakApprovedPhrase\(WAKE_WORD_ACKNOWLEDGEMENT\)/);
 });
