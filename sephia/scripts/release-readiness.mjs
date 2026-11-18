@@ -24,6 +24,9 @@ const hostBridge = await read("src/host/mount-panitia-sephia.js");
 const stage27 = await read("docs/STAGE-27-LOCAL-NEURAL-RUNTIME-PROTOTYPE.md");
 const stage29Exists = await exists("docs/STAGE-29-LOCAL-CHROME-BRIDGE-SECURITY.md");
 const stage29TestsExist = await exists("tests/stage29-native-bridge-security.test.mjs");
+const stage30Exists = await exists("extension/manifest.json") &&
+  await exists("extension/service-worker.js") && await exists("extension/content-script.js") &&
+  await exists("extension/protocol.js") && await exists("tests/stage30-extension.test.mjs");
 
 add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module/.test(workflow) ? "PASS" : "BLOCKED",
   "GitHub Actions workflow listens to the feature branch and main.");
@@ -50,8 +53,10 @@ add("Stage 27 model attribution", /CC-BY-4.0/.test(stage27) && /anak10thn/.test(
   "Pocket TTS Indonesian attribution is recorded separately from Laras source-code licensing.");
 add("Stage 29 security decision and tests", stage29Exists && stage29TestsExist ? "PASS" : "BLOCKED",
   "Native Messaging topology decision and security regression tests are present.");
-add("Native Messaging bridge implementation", "BLOCKED",
-  "Extension, native host executable, in-memory Laras API, installer, and protocol integration are not yet implemented.");
+add("Stage 30 Chrome extension bridge", stage30Exists ? "PASS" : "BLOCKED",
+  stage30Exists ? "Manual active-tab pairing, fixed-action transport, response validation, in-memory playback, and disconnect handling are present." : "Chrome extension bridge files or tests are incomplete.");
+add("Native Messaging host and in-memory inference", "BLOCKED",
+  "Native host executable, in-memory Laras API, installer, and real local model runtime are not yet implemented.");
 add("Approved neural model and feminine voice", "BLOCKED",
   "No real engine, model weights, or licensed adult feminine reference voice has passed acoustic and legal acceptance.");
 add("Panitia workstation acceptance", "MANUAL",
