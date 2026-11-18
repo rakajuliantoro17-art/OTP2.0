@@ -34,7 +34,9 @@ test("extension pairing requires a user click and the HTTPS Panitia tab identity
 test("native bridge forwards only fixed action and never sends arbitrary text or identity", async () => {
   const worker = await read("extension/service-worker.js");
   const content = await read("extension/content-script.js");
-  assert.match(worker, /nativePort\.postMessage\(\{ version: 1, action: "synthesize-approved-announcement" \}\)/);
+  assert.match(worker, /nativePort\.postMessage\(\{ version: 1, action: message\.action \}\)/);
+  assert.match(worker, /synthesize-approved-wake-acknowledgement/);
+  assert.match(content, /synthesize-approved-wake-acknowledgement/);
   assert.doesNotMatch(worker, /studentName|className|violationCount|eventId|text:/i);
   assert.doesNotMatch(content, /fetch\s*\(|XMLHttpRequest|WebSocket|EventSource|localStorage|sessionStorage|indexedDB/);
   assert.match(content, /createBuffer\(1, pcm\.length, 24000\)/);
