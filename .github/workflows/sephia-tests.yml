@@ -62,6 +62,9 @@ jobs:
         run: npm run verify:stage31
       - name: Check Rust Native Messaging host formatting
         run: cargo fmt --manifest-path sephia/native-host/Cargo.toml -- --check
+      - name: Verify Stage 32 in-memory inference integration
+        working-directory: sephia
+        run: npm run verify:stage32
       - name: Run Rust Native Messaging host unit tests
         run: cargo test --manifest-path sephia/native-host/Cargo.toml
       - name: Build and test local neural inference feature
