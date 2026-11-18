@@ -24,10 +24,14 @@ export function mountPanitiaSephia({
   mountControls = mountSephiaControls,
   mountAvatar = mountSephiaAvatar,
   bindLifecycle = bindPageLifecycle,
-  createSpeechAdapter = (win) => {
+  createSpeechAdapter = (win, callbacks = {}) => {
     const EventImpl = win?.CustomEvent || globalThis.CustomEvent;
     return typeof win?.dispatchEvent === "function" && typeof EventImpl === "function"
-      ? createChromeNativeMessagingTtsAdapter({ windowImpl: win, CustomEventImpl: EventImpl })
+      ? createChromeNativeMessagingTtsAdapter({
+          windowImpl: win,
+          CustomEventImpl: EventImpl,
+          onStatusChange: callbacks.onStatusChange,
+        })
       : createUnavailableLocalNeuralTtsAdapter();
   },
   createWakeWordRecognizer = (win, callbacks) => createLocalWakeWordRecognizer({
@@ -57,6 +61,16 @@ export function mountPanitiaSephia({
   let avatar;
   let lifecycle;
   let disposed = false;
+  let latestSpeechStatus = {
+    reason: "bridge-waiting",
+    connected: false,
+    audioUnlocked: false,
+    available: false,
+  };
+
+  const setControlStatus = (message, level = "info") => {
+    try { controls?.setStatus?.(message, level); } catch {}
+  };
 
   const report = (error) => {
     try { onError(error); } catch {}
@@ -66,7 +80,10 @@ export function mountPanitiaSephia({
     visualState = createState();
     wakeRecognizer = createWakeWordRecognizer(windowImpl, {
       onWakeWord() {
-        if (visualState.snapshot.active) visualState.setState("listening");
+        if (visualState.snapshot.active) {
+          visualState.setState("listening");
+          setControlStatus("Panggilan SEPHIA terdeteksi. Respons suara panggilan belum diaktifkan; uji suara tersedia dari menu kontrol.", "ready");
+        }
       },
       onStateChange(snapshot) {
         if (!visualState.snapshot.active) return;
@@ -76,11 +93,38 @@ export function mountPanitiaSephia({
           visualState.setState("limited");
         } else if (snapshot.state === "standby" || snapshot.state === "listening") {
           if (!speechController?.isSpeaking) visualState.setState("standby");
+          if (snapshot.state === "listening") setControlStatus("Mikrofon aktif. Ucapkan “SEPHIA”.");
+          if (snapshot.state === "standby") setControlStatus("Mendengarkan panggilan SEPHIA.");
+        } else if (snapshot.state === "checking-local-language") {
+          setControlStatus("Memeriksa pengenalan suara lokal Bahasa Indonesia…");
+        } else if (snapshot.state === "installing-local-language") {
+          setControlStatus("Menyiapkan paket bahasa lokal id-ID…");
         }
       },
-      onError: report,
+      onError(error) {
+        setControlStatus("Wake word belum siap: " + String(error?.message || error), "error");
+        report(error);
+      },
     });
-    speechAdapter = createSpeechAdapter(windowImpl);
+    speechAdapter = createSpeechAdapter(windowImpl, {
+      onStatusChange(status) {
+        latestSpeechStatus = status;
+        const messages = {
+          "bridge-waiting": ["Belum terhubung. Buka ekstensi SEPHIA lalu pilih Hubungkan tab Panitia.", "error"],
+          connected: ["Ekstensi dan Native Host tersambung. Aktifkan SEPHIA untuk membuka audio.", "ready"],
+          disconnected: ["Jembatan audio terputus. Hubungkan ulang melalui ekstensi SEPHIA.", "error"],
+          "audio-unlock-pending": ["Membuka audio Chrome dari aktivasi manual…", "info"],
+          "audio-unlocked": ["Audio Chrome siap. Memeriksa mesin TTS lokal…", "ready"],
+          "audio-unlock-failed": ["Chrome menolak aktivasi audio. Klik Aktifkan SEPHIA lagi.", "error"],
+          "audio-unlock-timeout": ["Aktivasi audio tidak mendapat respons dari ekstensi. Hubungkan ulang.", "error"],
+          synthesizing: ["Mesin TTS lokal sedang membuat suara…", "info"],
+          ready: ["Jembatan TTS lokal siap.", "ready"],
+        };
+        const [message, level] = messages[status.reason] ||
+          ["Status audio SEPHIA: " + status.reason, "info"];
+        setControlStatus(message, level);
+      },
+    });
     speechController = createNotificationSpeechController({
       adapter: speechAdapter,
       onStateChange(state) {
@@ -127,6 +171,8 @@ export function mountPanitiaSephia({
       visualState,
       documentImpl,
       onError: report,
+      isSpeechReady: () => speechAdapter?.available === true,
+      onTestSpeech: () => speechController.test(),
       onActivated() {
         // Unlock Web Audio synchronously from the real activation click before
         // awaiting microphone permission or any other asynchronous operation.
@@ -149,6 +195,13 @@ export function mountPanitiaSephia({
         return Promise.all([audioReady, wakeReady]).then(([audioUnlocked, wakeStarted]) => {
           if ((!audioUnlocked || !wakeStarted) && visualState.snapshot.active) {
             visualState.setState("limited");
+            if (!wakeStarted) setControlStatus(
+              "TTS " + (speechAdapter?.available ? "siap" : "belum siap") +
+              "; wake word belum aktif. Periksa dukungan SpeechRecognition lokal, paket id-ID, dan izin mikrofon.",
+              "error",
+            );
+          } else if (audioUnlocked && wakeStarted) {
+            setControlStatus("SEPHIA siap. Ucapkan “SEPHIA”; uji speaker tersedia di menu kontrol.", "ready");
           }
           return audioUnlocked && wakeStarted;
         }).catch((error) => {
@@ -161,6 +214,9 @@ export function mountPanitiaSephia({
         wakeRecognizer.stop();
       },
     });
+    if (latestSpeechStatus.reason === "bridge-waiting") {
+      setControlStatus("Belum terhubung. Buka ekstensi SEPHIA lalu pilih Hubungkan tab Panitia.", "error");
+    }
     lifecycle = bindLifecycle({ windowImpl, runtime, visualState });
   } catch (error) {
     try { lifecycle?.dispose(); } catch {}
