@@ -23,6 +23,7 @@ const host = await read("../panitia/index.html");
 const hostBridge = await read("src/host/mount-panitia-sephia.js");
 const stage27 = await read("docs/STAGE-27-LOCAL-NEURAL-RUNTIME-PROTOTYPE.md");
 const stage29Exists = await exists("docs/STAGE-29-LOCAL-CHROME-BRIDGE-SECURITY.md");
+const stage29TestsExist = await exists("tests/stage29-native-bridge-security.test.mjs");
 
 add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module/.test(workflow) ? "PASS" : "BLOCKED",
   "GitHub Actions workflow listens to the feature branch and main.");
@@ -40,6 +41,14 @@ add("Stage 27 offline runtime qualification wrapper", runtimePrototypeExists ? "
   runtimePrototypeExists ? "Pinned manifest, local-only runtime contract, consent gate, and output bounds are present." : "Runtime qualification wrapper or tests are missing.");
 add("Stage 28 acceptance benchmark", acceptanceHarnessExists ? "PASS" : "BLOCKED",
   acceptanceHarnessExists ? "In-memory latency/resource harness and deterministic tests are present." : "Acceptance harness or tests are missing.");
+add("Neural-only production host", !/createLocalAudioAnnouncementAdapter|announcementAssetUrl/.test(hostBridge) ? "PASS" : "BLOCKED",
+  "Production Panitia bridge cannot select the legacy WAV adapter.");
+add("Stage 27 model attribution", /CC-BY-4.0/.test(stage27) && /anak10thn/.test(stage27) ? "PASS" : "BLOCKED",
+  "Pocket TTS Indonesian attribution is recorded separately from Laras source-code licensing.");
+add("Stage 29 security decision and tests", stage29Exists && stage29TestsExist ? "PASS" : "BLOCKED",
+  "Native Messaging topology decision and security regression tests are present.");
+add("Native Messaging bridge implementation", "BLOCKED",
+  "Extension, native host executable, in-memory Laras API, installer, and protocol integration are not yet implemented.");
 add("Approved neural model and feminine voice", "BLOCKED",
   "No real engine, model weights, or licensed adult feminine reference voice has passed acoustic and legal acceptance.");
 add("Panitia workstation acceptance", "MANUAL",
