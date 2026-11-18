@@ -9,6 +9,7 @@ const MAX_REQUEST_BYTES: usize = 4096;
 const MAX_RESPONSE_BYTES: usize = 1024 * 1024;
 const MIN_REQUEST_INTERVAL: Duration = Duration::from_secs(2);
 const APPROVED_ACTION: &str = "synthesize-approved-announcement";
+const APPROVED_WAKE_ACTION: &str = "synthesize-approved-wake-acknowledgement";
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -37,7 +38,8 @@ fn parse_request(bytes: &[u8]) -> Result<Request, ()> {
         return Err(());
     }
     let request: Request = serde_json::from_slice(bytes).map_err(|_| ())?;
-    if request.version != 1 || request.action != APPROVED_ACTION {
+    if request.version != 1 ||
+        !matches!(request.action.as_str(), APPROVED_ACTION | APPROVED_WAKE_ACTION) {
         return Err(());
     }
     Ok(request)
@@ -48,16 +50,17 @@ fn handle_request(
     last_request: &mut Option<Instant>,
     runtime: &mut Runtime,
 ) -> serde_json::Value {
-    if request.is_err() {
-        return error_response("INVALID_REQUEST");
-    }
+    let request = match request {
+        Ok(request) => request,
+        Err(()) => return error_response("INVALID_REQUEST"),
+    };
     let now = Instant::now();
     if last_request.is_some_and(|last| now.duration_since(last) < MIN_REQUEST_INTERVAL) {
         return error_response("RATE_LIMITED");
     }
     *last_request = Some(now);
 
-    runtime.synthesize().unwrap_or_else(error_response)
+    runtime.synthesize(&request.action).unwrap_or_else(error_response)
 }
 
 fn read_frame<R: Read>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {
@@ -153,15 +156,16 @@ impl Runtime {
         }
     }
 
-    fn synthesize(&mut self) -> Result<serde_json::Value, &'static str> {
+    fn synthesize(&mut self, action: &str) -> Result<serde_json::Value, &'static str> {
         #[cfg(feature = "inference")]
         {
             let engine = self.engine.as_mut().ok_or("ENGINE_UNAVAILABLE")?;
-            let response = engine.synthesize()?;
+            let response = engine.synthesize(action)?;
             return serde_json::to_value(response).map_err(|_| "SYNTHESIS_FAILED");
         }
         #[cfg(not(feature = "inference"))]
         {
+            let _ = action;
             Err("ENGINE_UNAVAILABLE")
         }
     }
@@ -253,6 +257,9 @@ mod tests {
     fn request_schema_rejects_arbitrary_text_and_unknown_properties() {
         let valid = br#"{"version":1,"action":"synthesize-approved-announcement"}"#;
         assert!(parse_request(valid).is_ok());
+
+        let wake_ack = br#"{"version":1,"action":"synthesize-approved-wake-acknowledgement"}"#;
+        assert!(parse_request(wake_ack).is_ok());
 
         let with_text =
             br#"{"version":1,"action":"synthesize-approved-announcement","text":"hello"}"#;
