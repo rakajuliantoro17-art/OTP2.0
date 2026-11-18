@@ -72,6 +72,7 @@ class FakeCustomEvent {
 }
 class FakeWindowEvents {
   listeners = new Map();
+  dispatched = [];
   addEventListener(type, fn) {
     const list = this.listeners.get(type) || [];
     list.push(fn);
@@ -81,25 +82,12 @@ class FakeWindowEvents {
     this.listeners.set(type, (this.listeners.get(type) || []).filter((item) => item !== fn));
   }
   dispatchEvent(event) {
+    this.dispatched.push(event);
     for (const listener of this.listeners.get(event.type) || []) listener(event);
     return true;
   }
 }
 
-
-async function unlockAdapter(adapter, windowImpl) {
-  const unlock = adapter.prepare();
-  const request = windowImpl.dispatched?.find((event) => event.type === NATIVE_TTS_UNLOCK_EVENT);
-  if (request) {
-    windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_UNLOCK_RESULT_EVENT, {
-      detail: { requestId: request.detail.requestId, ok: true },
-    }));
-  } else {
-    const listeners = windowImpl.listeners.get(NATIVE_TTS_UNLOCK_EVENT) || [];
-    assert.ok(listeners.length >= 0);
-  }
-  assert.equal(await unlock, true);
-}
 
 test("page adapter sends only fixed action and receives completion without audio bytes", async () => {
   const windowImpl = new FakeWindowEvents();
