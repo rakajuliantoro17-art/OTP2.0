@@ -28,12 +28,12 @@ The Node regression gate checks the source and installer policy. CI separately r
 
 ## Remaining production blockers
 
-1. Add a pinned, audited in-memory PCM API to Laras; do not use the existing `Native::synth_to(..., out: &Path)` file-writing API.
-2. Integrate the local ONNX model bundle and verify every file against the pinned provenance manifest.
-3. Supply an adult feminine Indonesian voice reference with written consent and hash it.
-4. Implement host-side synthesis and return PCM16 24 kHz mono within the 700 KiB extension transport limit.
-5. Add end-to-end protocol tests with a real native process, including cancellation, rate limit, malformed frames, host crash, and buffer release.
+1. Provision the nine pinned ONNX model files on the Panitia PC and verify the installer and host both accept their hashes.
+2. Supply an adult feminine Indonesian WAV reference with explicit written voice-cloning consent and hash it.
+3. Supply and review the voice-consent and model-license evidence files.
+4. Build the host with `--features inference`, package the required ONNX Runtime DLLs, and install with the exact extension ID.
+5. Add end-to-end tests with the real extension and native process, including host startup, synthesis, cancel, rate limit, malformed frames, host crash, and buffer release.
 6. Build/sign the Windows installer and package the extension so the final extension ID can be allowlisted.
-7. Run voice, security, latency, CPU/RAM, and Chrome audio-activation acceptance on the actual Panitia PC.
+7. Run voice, security, cold/warm latency, CPU/RAM, and Chrome audio-activation acceptance on the actual Panitia PC.
 
 No merge, production deployment, or OTP behavior change is authorized by this stage.
