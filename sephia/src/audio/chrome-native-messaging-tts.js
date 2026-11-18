@@ -1,4 +1,4 @@
-import { APPROVED_NEURAL_TTS_TEXT } from "./local-neural-tts.js";
+import { APPROVED_NEURAL_TTS_TEXT, APPROVED_WAKE_ACK_TEXT } from "./local-neural-tts.js";
 
 export const NATIVE_TTS_REQUEST_EVENT = "sephia:native-tts-request";
 export const NATIVE_TTS_CANCEL_EVENT = "sephia:native-tts-cancel";
@@ -137,8 +137,13 @@ export function createChromeNativeMessagingTtsAdapter({
     if (!connected || !audioUnlocked) {
       throw new Error("SEPHIA local audio bridge is not connected or unlocked.");
     }
-    if (text !== APPROVED_NEURAL_TTS_TEXT) {
-      throw new Error("Only the fixed generic SEPHIA announcement may be spoken.");
+    const action = text === APPROVED_NEURAL_TTS_TEXT
+      ? "synthesize-approved-announcement"
+      : text === APPROVED_WAKE_ACK_TEXT
+        ? "synthesize-approved-wake-acknowledgement"
+        : null;
+    if (!action) {
+      throw new Error("Only fixed generic SEPHIA phrases may be spoken.");
     }
     if (active) throw new Error("SEPHIA native speech is busy.");
 
@@ -165,7 +170,7 @@ export function createChromeNativeMessagingTtsAdapter({
       publishStatus("synthesizing");
       emit(NATIVE_TTS_REQUEST_EVENT, {
         version: 1,
-        action: "synthesize-approved-announcement",
+        action,
         requestId,
       });
       return await result;
