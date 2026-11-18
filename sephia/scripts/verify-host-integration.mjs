@@ -62,6 +62,7 @@ for (const path of [
   "visual/mount-sephia-avatar.js",
   "audio/announcement.js",
   "audio/local-neural-tts.js",
+  "audio/chrome-native-messaging-tts.js",
   "audio/browser-local-tts.js",
   "audio/local-wake-word.js",
   "adapters/dom-alert-observer.js",
