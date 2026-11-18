@@ -17,23 +17,28 @@ $origin = "chrome-extension://$ExtensionId/"
 $installDir = Join-Path $env:LOCALAPPDATA "SMANSASOO\SEPHIA"
 New-Item -ItemType Directory -Path $installDir -Force | Out-Null
 
+$installedHost = Join-Path $installDir "sephia-native-host.exe"
+Copy-Item -LiteralPath $resolvedHost -Destination $installedHost -Force
+
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+$configPath = Join-Path $installDir "sephia-host-config.json"
+$configJson = @{ extension_origin = $origin } | ConvertTo-Json -Depth 3
+[System.IO.File]::WriteAllText($configPath, $configJson, $utf8NoBom)
+
 $manifestPath = Join-Path $installDir "$hostName.json"
 $manifest = @{
   name = $hostName
   description = "SEPHIA local-only neural speech host"
-  path = $resolvedHost
+  path = $installedHost
   type = "stdio"
   allowed_origins = @($origin)
 }
 $manifestJson = $manifest | ConvertTo-Json -Depth 5
-$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText($manifestPath, $manifestJson, $utf8NoBom)
 
 $registryPath = "HKCU:\Software\Google\Chrome\NativeMessagingHosts\$hostName"
 New-Item -Path $registryPath -Force | Out-Null
 Set-Item -Path $registryPath -Value $manifestPath
-
-[Environment]::SetEnvironmentVariable("SEPHIA_EXTENSION_ORIGIN", $origin, "User")
 Write-Host "SEPHIA Native Messaging manifest registered."
 Write-Host "Allowed extension: $origin"
 Write-Host "Restart Chrome before testing."
