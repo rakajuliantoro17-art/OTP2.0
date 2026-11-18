@@ -19,7 +19,7 @@ Requires Rust toolchain 1.92 or newer:
 2. Build the native host with `--features inference`. Provision the pinned model files, a consented adult feminine Indonesian WAV voice reference, and both evidence files.
 3. Run PowerShell as the installing Windows user:
 
-       .\sephia\native-host\install-windows.ps1 -ExtensionId <32-character-id> -HostExePath <absolute-path-to-exe>
+       .\sephia\native-host\install-windows.ps1 -ExtensionId <32-character-id> -HostExePath <absolute-path-to-exe> -ModelDir <model-dir> -VoiceReferenceWav <voice.wav> -VoiceConsentEvidencePath <consent-file> -ModelLicenseEvidencePath <license-notice-file>
 
 4. Restart Chrome so it reloads the Native Messaging registry registration.
 5. The installer copies the host into `%LOCALAPPDATA%\\SMANSASOO\\SEPHIA`, writes a strict `sephia-host-config.json` beside it, and registers only the supplied extension ID in `allowed_origins`.
