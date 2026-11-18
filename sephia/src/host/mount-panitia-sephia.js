@@ -74,7 +74,7 @@ export function mountPanitiaSephia({
       },
       onError: report,
     });
-    speechAdapter = createSpeechAdapter(windowImpl, announcementAssetUrl);
+    speechAdapter = createSpeechAdapter(windowImpl);
     speechController = createNotificationSpeechController({
       adapter: speechAdapter,
       onStateChange(state) {
