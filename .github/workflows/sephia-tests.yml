@@ -115,6 +115,7 @@ jobs:
             sephia/docs/STAGE-30-CHROME-EXTENSION-BRIDGE.md
             sephia/docs/STAGE-31-NATIVE-MESSAGING-HOST.md
             sephia/docs/STAGE-32-IN-MEMORY-LARAS-INFERENCE.md
+            sephia/docs/STAGE-33-MODEL-AND-VOICE-PROVISIONING.md
           if-no-files-found: error
           retention-days: 14
 
