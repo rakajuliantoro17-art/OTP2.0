@@ -66,6 +66,9 @@ jobs:
       - name: Verify Stage 32 in-memory inference integration
         working-directory: sephia
         run: npm run verify:stage32
+      - name: Verify Stage 33 model and voice provisioning
+        working-directory: sephia
+        run: npm run verify:stage33
       - name: Run Rust Native Messaging host unit tests
         run: cargo test --manifest-path sephia/native-host/Cargo.toml
       - name: Build and test local neural inference feature
@@ -124,6 +127,23 @@ jobs:
         uses: actions/checkout@v4
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@1.92.0
+      - name: Validate Windows provisioning scripts
+        shell: pwsh
+        run: |
+          $scripts = @(
+            "sephia/native-host/provision-model-windows.ps1",
+            "sephia/native-host/install-windows.ps1",
+            "sephia/native-host/uninstall-windows.ps1"
+          )
+          foreach ($script in $scripts) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | Format-List
+              throw "PowerShell syntax error in $script"
+            }
+          }
       - name: Build Windows native host with local inference feature
         run: cargo build --release --features inference --manifest-path sephia/native-host/Cargo.toml
       - name: Upload Windows native host build
