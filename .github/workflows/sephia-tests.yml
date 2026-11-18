@@ -72,6 +72,9 @@ jobs:
       - name: Verify Stage 34 target PC benchmark
         working-directory: sephia
         run: npm run verify:stage34
+      - name: Verify Stage 35 native host process smoke test
+        working-directory: sephia
+        run: npm run verify:stage35
       - name: Run Rust Native Messaging host unit tests
         run: cargo test --manifest-path sephia/native-host/Cargo.toml
       - name: Build and test local neural inference feature
@@ -120,6 +123,7 @@ jobs:
             sephia/docs/STAGE-32-IN-MEMORY-LARAS-INFERENCE.md
             sephia/docs/STAGE-33-MODEL-AND-VOICE-PROVISIONING.md
             sephia/docs/STAGE-34-TARGET-PC-BENCHMARK.md
+            sephia/docs/STAGE-35-NATIVE-HOST-PROTOCOL-SMOKE-TEST.md
             sephia/docs/STAGE-34-TARGET-PC-BENCHMARK.md
           if-no-files-found: error
           retention-days: 14
@@ -140,7 +144,8 @@ jobs:
             "sephia/native-host/provision-model-windows.ps1",
             "sephia/native-host/install-windows.ps1",
             "sephia/native-host/uninstall-windows.ps1",
-            "sephia/native-host/benchmark-native-host-windows.ps1"
+            "sephia/native-host/benchmark-native-host-windows.ps1",
+            "sephia/native-host/smoke-test-native-host-windows.ps1"
           )
           foreach ($script in $scripts) {
             $tokens = $null
@@ -153,6 +158,9 @@ jobs:
           }
       - name: Build Windows native host with local inference feature
         run: cargo build --release --features inference --manifest-path sephia/native-host/Cargo.toml
+      - name: Smoke test Windows Native Messaging host
+        shell: pwsh
+        run: .\sephia\native-host\smoke-test-native-host-windows.ps1 -HostExePath .\sephia\native-host\target\release\sephia-native-host.exe
       - name: Upload Windows native host build
         uses: actions/upload-artifact@v4
         with:
