@@ -14,10 +14,11 @@ test("Stage 12 package metadata and CI include the local Indonesian TTS gate", a
   assert.match(workflow, /sephia-stage\d+-(?:local-indonesian-tts|local-wake-word|host-avatar-overlay|notification-speech-pipeline|local-voice-diagnostics)-/);
 });
 
-test("browser TTS is wired through the Panitia host bridge and runtime", async () => {
+test("browser TTS remains diagnostic and is not a Panitia host fallback", async () => {
   const bridge = await read("src/host/mount-panitia-sephia.js");
   const runtime = await read("src/runtime/create-sephia-runtime.js");
-  assert.match(bridge, /createBrowserLocalIndonesianTts/);
+  assert.match(bridge, /createUnavailableLocalNeuralTtsAdapter/);
+  assert.doesNotMatch(bridge, /createBrowserLocalIndonesianTts/);
   assert.match(bridge, /createNotificationSpeechController/);
   assert.match(bridge, /speechController,/);
   assert.match(runtime, /speechController\?\.announce\(event\)/);

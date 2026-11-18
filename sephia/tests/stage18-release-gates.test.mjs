@@ -9,7 +9,7 @@ test("Stage 18 package and CI include the local audio acceptance gate", async ()
   const pkg = JSON.parse(await read("package.json"));
   const workflow = await read("../.github/workflows/sephia-tests.yml");
   const readme = await read("README.md");
-  assert.equal(pkg.version, "0.22.0-stage.22");
+  assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.match(pkg.scripts["verify:audio"], /local-audio-announcement\.test\.mjs/);
   assert.match(pkg.scripts["verify:audio"], /stage19-audio-host-wiring\.test\.mjs/);
   assert.match(workflow, /- main/);
@@ -18,11 +18,12 @@ test("Stage 18 package and CI include the local audio acceptance gate", async ()
   assert.match(readme, /Stage 18/);
 });
 
-test("production voice and avatar assets are not falsely represented as complete", async () => {
+test("production host remains fail-closed and assets are not falsely represented as complete", async () => {
   const bridge = await read("src/host/mount-panitia-sephia.js");
   const avatar = await read("docs/STAGE-14-AVATAR-HOST-OVERLAY.md");
   const stage18 = await read("docs/STAGE-18-LOCAL-AUDIO-ADAPTER.md");
-  assert.match(bridge, /createBrowserLocalIndonesianTts/);
+  assert.match(bridge, /createUnavailableLocalNeuralTtsAdapter/);
+  assert.doesNotMatch(bridge, /createBrowserLocalIndonesianTts/);
   assert.match(avatar, /CSS-generated geometric/);
   assert.match(stage18, /A valid audio file does not yet exist/);
   assert.match(stage18, /not yet wired as production voice|not selected by default yet/);

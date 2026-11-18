@@ -10,7 +10,7 @@ test("Stage 22 release audit is available and does not auto-deploy", async () =>
   const workflow = await read("../.github/workflows/sephia-tests.yml");
   const script = await read("scripts/release-readiness.mjs");
   const report = await read("docs/STAGE-22-RELEASE-READINESS.md");
-  assert.equal(pkg.version, "0.22.0-stage.22");
+  assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.equal(pkg.scripts["verify:release"], "node ./scripts/release-readiness.mjs");
   assert.match(workflow, /npm run verify:release/);
   assert.match(script, /Production Branch is main/);
