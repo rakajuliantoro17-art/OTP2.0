@@ -5,6 +5,7 @@ import { mountSephiaControls } from "../visual/mount-sephia-controls.js";
 import { mountSephiaAvatar } from "../visual/mount-sephia-avatar.js";
 import { createNotificationSpeechController } from "../audio/announcement.js";
 import { createUnavailableLocalNeuralTtsAdapter } from "../audio/local-neural-tts.js";
+import { createChromeNativeMessagingTtsAdapter } from "../audio/chrome-native-messaging-tts.js";
 import { createLocalWakeWordRecognizer } from "../audio/local-wake-word.js";
 
 /**
@@ -23,7 +24,12 @@ export function mountPanitiaSephia({
   mountControls = mountSephiaControls,
   mountAvatar = mountSephiaAvatar,
   bindLifecycle = bindPageLifecycle,
-  createSpeechAdapter = () => createUnavailableLocalNeuralTtsAdapter(),
+  createSpeechAdapter = (win) => {
+    const EventImpl = win?.CustomEvent || globalThis.CustomEvent;
+    return typeof win?.dispatchEvent === "function" && typeof EventImpl === "function"
+      ? createChromeNativeMessagingTtsAdapter({ windowImpl: win, CustomEventImpl: EventImpl })
+      : createUnavailableLocalNeuralTtsAdapter();
+  },
   createWakeWordRecognizer = (win, callbacks) => createLocalWakeWordRecognizer({
     windowImpl: win,
     ...callbacks,
