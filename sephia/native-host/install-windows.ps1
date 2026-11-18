@@ -36,7 +36,7 @@ if (-not $provenance.files -or $provenance.files.Count -ne 9) { throw "Pinned Po
 
 $totalBytes = [int64]0
 foreach ($file in $provenance.files) {
-  if ($file.path.StartsWith("/") -or $file.path.Contains("\\") -or $file.path.Split("/") -contains "..") {
+  if ($file.path.StartsWith("/") -or $file.path.Contains([char]92) -or $file.path.Split("/") -contains "..") {
     throw "Unsafe model path in pinned manifest."
   }
   $sourceFile = Join-Path $resolvedModelDir $file.path
