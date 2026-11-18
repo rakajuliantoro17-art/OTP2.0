@@ -22,13 +22,13 @@ assert.equal(build.format, "browser-esm");
 assert.equal(build.entrypoint, "host/mount-panitia-sephia.js");
 assert.ok(typeof build.buildId === "string" && build.buildId.length > 0);
 if (process.env.GITHUB_SHA) assert.equal(build.buildId, process.env.GITHUB_SHA, "Build SHA differs from workflow commit.");
-assert.match(extension.version, /^\\d+\\.\\d+\\.\\d+$/);
+assert.match(extension.version, /^\d+\.\d+\.\d+$/);
 assert.ok(Array.isArray(build.files) && build.files.length > 0);
 
 const listed = new Set();
 for (const item of build.files) {
   assert.equal(typeof item.path, "string");
-  assert.ok(!item.path.startsWith("/") && !item.path.includes("\\\\") &&
+  assert.ok(!item.path.startsWith("/") && !item.path.includes("\\") &&
     !item.path.split("/").some((part) => part === ".." || part === ""), "Unsafe build path.");
   assert.ok(Number.isSafeInteger(item.bytes) && item.bytes >= 0);
   assert.match(item.sha256, /^[a-f0-9]{64}$/);
@@ -38,6 +38,7 @@ for (const item of build.files) {
   const bytes = await readFile(absolute);
   assert.equal(bytes.byteLength, item.bytes, "Build size mismatch: " + item.path);
   assert.equal(digest(bytes), item.sha256, "Build SHA-256 mismatch: " + item.path);
+  assert.ok(!listed.has(item.path), "Duplicate release manifest path: " + item.path);
   listed.add(item.path);
 }
 const required = [
@@ -72,14 +73,14 @@ assert.match(provenance.modelRevision, /^[a-f0-9]{40}$/);
 assert.match(provenance.runtimeRevision, /^[a-f0-9]{40}$/);
 assert.match(provenance.modelBundleSha256, /^[a-f0-9]{64}$/);
 assert.ok(Array.isArray(provenance.files) && provenance.files.length > 0);
-const sorted = [...provenance.files].sort((a, b) => a.path.localeCompare(b.path, "en"));
+const sorted = [...provenance.files].sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
 const canonical = sorted.map((file) => {
-  assert.ok(!file.path.startsWith("/") && !file.path.includes("\\\\") &&
+  assert.ok(!file.path.startsWith("/") && !file.path.includes("\\") &&
     !file.path.split("/").some((part) => part === ".." || part === ""), "Unsafe model provenance path.");
   assert.ok(Number.isSafeInteger(file.bytes) && file.bytes > 0);
   assert.match(file.sha256, /^[a-f0-9]{64}$/);
   return file.path + "|" + file.bytes + "|" + file.sha256;
-}).join("\\n");
+}).join("\n");
 assert.equal(digest(canonical), provenance.modelBundleSha256, "Pinned model aggregate digest mismatch.");
 assert.equal(provenance.files.reduce((sum, file) => sum + file.bytes, 0), provenance.modelBundleBytes);
 assert.equal(provenance.voiceReference.included, false, "A user voice reference must never be bundled.");
@@ -87,7 +88,7 @@ assert.match(notices, /Pocket TTS Indonesian oleh anak10thn, CC-BY-4.0/);
 assert.match(notices, new RegExp(provenance.runtimeRevision));
 assert.match(runbook, /same commit/i);
 assert.match(workflow, /Verify Stage 41 reproducible release integrity/);
-assert.match(workflow, /STAGE-41-REPRODUCIBLE-RELEASE-INTEGRITY\\.md/);
+assert.match(workflow, /STAGE-41-REPRODUCIBLE-RELEASE-INTEGRITY\.md/);
 assert.match(workflow, /sephia-stage41-panitia-bundle/);
 assert.match(workflow, /sephia-native-host-windows-/);
 
