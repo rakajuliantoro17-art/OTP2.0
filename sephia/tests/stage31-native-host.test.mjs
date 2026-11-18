@@ -32,7 +32,8 @@ test("Windows installer allowlists one exact extension ID and registers only the
   assert.match(installer, /Copy-Item.*installedHost/);
   assert.doesNotMatch(installer, /SetEnvironmentVariable/);
   assert.match(uninstaller, /NativeMessagingHosts/);
-  assert.match(uninstaller, /sephia-host-config\.json/);
+  assert.match(uninstaller, /SMANSASOO/);
+  assert.match(uninstaller, /Remove-Item.*Recurse/);
 });
 
 test("native host documentation does not claim synthesis is ready", async () => {
