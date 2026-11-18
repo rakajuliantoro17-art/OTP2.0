@@ -97,3 +97,22 @@ test("rejects arbitrary text and audio buffers over the in-memory limit", async 
   await assert.rejects(engine.synthesize(APPROVED_NEURAL_TTS_TEXT), /8 MiB/);
   engine.dispose();
 });
+
+test("rejects model path traversal, wrong license, and unpinned runtime binary", async () => {
+  const traversal = manifest();
+  traversal.model.files[0].path = "../outside.onnx";
+  await assert.rejects(createQualifiedLocalNeuralEngine({
+    manifest: traversal, pins, verifyProvisioning, createEngine: () => ({}),
+  }), /traversal-safe/);
+
+  const wrongLicense = manifest();
+  wrongLicense.model.license = "Apache-2.0";
+  await assert.rejects(createQualifiedLocalNeuralEngine({
+    manifest: wrongLicense, pins, verifyProvisioning, createEngine: () => ({}),
+  }), /CC-BY-4.0/);
+
+  await assert.rejects(createQualifiedLocalNeuralEngine({
+    manifest: manifest(), pins: { ...pins, runtimeSha256: "e".repeat(64) },
+    verifyProvisioning, createEngine: () => ({}),
+  }), /runtime binary SHA-256/);
+});
