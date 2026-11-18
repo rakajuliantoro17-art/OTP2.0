@@ -4,7 +4,8 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 
 ## Status
 
-- Stage 41 adds reproducible release-integrity checks for source-to-dist hashes, model provenance, commit pairing, and artifact boundaries.\n- Stages 2–17 provide the host contract, security boundaries, local TTS diagnostics, on-device wake-word prototype, avatar overlay, synthetic notification-to-speech tests, and the initial natural-voice strategy.
+- Stage 41 adds reproducible release-integrity checks for source-to-dist hashes, model provenance, commit pairing, and artifact boundaries.
+- Stages 42–45 document the preset Indonesian female voice requirement, Windows installer migration, ArboTTS rejection, and offline candidate matrix. No production engine or installer is approved until female voice suitability, asset licensing, offline operation, hashes, and target-PC acceptance are verified.\n- Stages 2–17 provide the host contract, security boundaries, local TTS diagnostics, on-device wake-word prototype, avatar overlay, synthetic notification-to-speech tests, and the initial natural-voice strategy.
 - Stage 40 adds a static integrity audit that verifies both approved speech actions and fixed phrases remain consistent across the page adapter, Chrome extension, Rust Native Messaging host, and Laras inference. It does not replace Windows or workstation acceptance.
 - Stage 23 locks the final voice architecture: dynamic local neural TTS, not a prerecorded WAV.
 - Stages 25–26 implement the local neural TTS adapter contract and controller integration tests. Fixed approved phrases only, bounded timeout, abort/cancel, one operation at a time, and in-memory audio release. Host default remains fail-closed visual-only.
