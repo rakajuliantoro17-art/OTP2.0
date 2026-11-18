@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 use crate::HostConfig;
 
 const APPROVED_PHRASE: &str = "Perhatian, Panitia. Ada notifikasi pelanggaran OTP baru. Silakan periksa notifikasinya di dashboard, ya.";
+const APPROVED_WAKE_ACK: &str = "Ya, Panitia. SEPHIA siap membantu.";
 const SAMPLE_RATE: usize = 24_000;
 const MAX_AUDIO_BYTES: usize = 700 * 1024;
 const MAX_VOICE_REFERENCE_BYTES: u64 = 10 * 1024 * 1024;
@@ -254,10 +255,15 @@ impl LocalNeuralEngine {
         Ok(Self { engine })
     }
 
-    pub fn synthesize(&mut self) -> Result<SuccessResponse, &'static str> {
+    pub fn synthesize(&mut self, action: &str) -> Result<SuccessResponse, &'static str> {
+        let phrase = match action {
+            "synthesize-approved-announcement" => APPROVED_PHRASE,
+            "synthesize-approved-wake-acknowledgement" => APPROVED_WAKE_ACK,
+            _ => return Err("INVALID_REQUEST"),
+        };
         let (samples, diag, _latents) = self
             .engine
-            .synthesize(APPROVED_PHRASE, &Params::default(), None)
+            .synthesize(phrase, &Params::default(), None)
             .map_err(|_| "SYNTHESIS_FAILED")?;
 
         if samples.is_empty()
@@ -322,5 +328,8 @@ mod tests {
         assert!(!APPROVED_PHRASE.contains("nama"));
         assert!(!APPROVED_PHRASE.contains("kelas"));
         assert!(!APPROVED_PHRASE.contains("OTP siswa"));
+        assert_eq!(APPROVED_WAKE_ACK, "Ya, Panitia. SEPHIA siap membantu.");
+        assert!(!APPROVED_WAKE_ACK.contains("nama"));
+        assert!(!APPROVED_WAKE_ACK.contains("kelas"));
     }
 }
