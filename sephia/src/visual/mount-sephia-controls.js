@@ -169,7 +169,7 @@ export function mountSephiaControls({
       try { onError(error); } catch {}
     }
   };
-  const onTestSpeech = async () => {
+  const handleTestSpeech = async () => {
     if (!isSpeechReady()) {
       setStatus("Suara belum siap: hubungkan ekstensi dan aktifkan audio terlebih dahulu.", "error");
       return;
@@ -194,7 +194,7 @@ export function mountSephiaControls({
   };
   trigger.addEventListener("click", onTrigger);
   toggleVisualizer.addEventListener("click", onToggleVisualizer);
-  testSpeech.addEventListener("click", onTestSpeech);
+  testSpeech.addEventListener("click", handleTestSpeech);
 
   return Object.freeze({
     element: root,
@@ -205,7 +205,7 @@ export function mountSephiaControls({
       disposed = true;
       trigger.removeEventListener("click", onTrigger);
       toggleVisualizer.removeEventListener("click", onToggleVisualizer);
-      testSpeech.removeEventListener("click", onTestSpeech);
+      testSpeech.removeEventListener("click", handleTestSpeech);
       try { unsubscribe?.(); } catch {}
       root.remove();
     },
