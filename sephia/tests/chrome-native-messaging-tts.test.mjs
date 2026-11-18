@@ -101,3 +101,26 @@ test("disconnect removes audio readiness and rejects any pending speech", async 
   assert.equal(adapter.available, false);
   adapter.dispose();
 });
+
+test("adapter publishes bridge and audio readiness transitions", async () => {
+  const windowImpl = new FakeWindow();
+  const statuses = [];
+  const adapter = createChromeNativeMessagingTtsAdapter({
+    windowImpl,
+    CustomEventImpl: FakeCustomEvent,
+    setTimeoutImpl: (() => { let id = 0; return () => ++id; })(),
+    clearTimeoutImpl: () => {},
+    onStatusChange: (status) => statuses.push(status),
+  });
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_STATE_EVENT, { detail: { state: "connected" } }));
+  const unlock = adapter.prepare();
+  const request = windowImpl.dispatched.find((event) => event.type === NATIVE_TTS_UNLOCK_EVENT);
+  windowImpl.dispatchEvent(new FakeCustomEvent(NATIVE_TTS_UNLOCK_RESULT_EVENT, {
+    detail: { requestId: request.detail.requestId, ok: true },
+  }));
+  await unlock;
+  assert.ok(statuses.some((status) => status.reason === "bridge-waiting"));
+  assert.ok(statuses.some((status) => status.reason === "connected" && status.connected));
+  assert.ok(statuses.some((status) => status.reason === "audio-unlocked" && status.available));
+  adapter.dispose();
+});
