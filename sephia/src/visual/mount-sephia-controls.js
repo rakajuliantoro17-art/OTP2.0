@@ -147,6 +147,7 @@ export function mountSephiaControls({
 
   return Object.freeze({
     element: root,
+    activate() { if (!disposed && !runtime.isActive) onTrigger(); return runtime.isActive; },
     refresh: () => render(visualState.snapshot),
     dispose() {
       if (disposed) return;

@@ -19,6 +19,7 @@ export function mountPanitiaSephia({
   onError = () => {},
   onNotification = () => {},
   avatarAssetUrl = null,
+  autoActivate = true,
   announcementAssetUrl = null,
   createRuntime = createSephiaRuntime,
   createState = createVisualState,
@@ -143,6 +144,22 @@ export function mountPanitiaSephia({
       },
     });
     lifecycle = bindLifecycle({ windowImpl, runtime, visualState });
+
+    // Chrome only allows speechSynthesis.speak() after one user activation on the page.
+    // Prime it silently on the first interaction so later alerts are audible without
+    // clicking the SEPHIA button.
+    if (autoActivate) {
+      const prime = () => {
+        for (const ev of ["pointerdown", "keydown", "touchstart"]) windowImpl.removeEventListener?.(ev, prime, true);
+        try {
+          const synth = windowImpl.speechSynthesis;
+          const Utt = windowImpl.SpeechSynthesisUtterance;
+          if (synth && Utt) { const u = new Utt(" "); u.volume = 0; synth.speak(u); }
+        } catch (error) { report(error); }
+      };
+      for (const ev of ["pointerdown", "keydown", "touchstart"]) windowImpl.addEventListener(ev, prime, true);
+      try { controls.activate?.(); } catch (error) { report(error); }
+    }
   } catch (error) {
     try { lifecycle?.dispose(); } catch {}
     try { controls?.dispose(); } catch {}
