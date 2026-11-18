@@ -51,6 +51,10 @@ const stage39Exists = await exists("docs/STAGE-39-WAKE-WORD-VOICE-ACKNOWLEDGEMEN
   await exists("tests/chrome-native-messaging-tts.test.mjs") &&
   await exists("tests/stage38-audio-diagnostics.test.mjs") &&
   /acknowledgeWakeWord/.test(hostBridge);
+const stage40Exists = await exists("scripts/verify-stage40-contract.mjs") &&
+  await exists("tests/stage40-native-contract-integrity.test.mjs") &&
+  await exists("docs/STAGE-40-NATIVE-CONTRACT-INTEGRITY.md") &&
+  await exists("native-host/Cargo.lock");
 
 add("CI on feature and main", /- main/.test(workflow) && /feature\/sephia-module/.test(workflow) ? "PASS" : "BLOCKED",
   "GitHub Actions workflow listens to the feature branch and main.");
@@ -99,6 +103,8 @@ add("Stage 38 visible audio diagnostics and speaker test", stage38Exists ? "PASS
   stage38Exists ? "Panitia UI exposes bridge/wake/audio status and a user-initiated test using only the approved generic phrase." : "Visible audio diagnostics, manual speaker test, or target-PC runbook is incomplete.");
 add("Stage 39 spoken wake acknowledgement", stage39Exists ? "PASS" : "BLOCKED",
   stage39Exists ? "Wake word triggers the fixed generic spoken response and avatar speaking state; native bridge accepts only allowlisted actions." : "Wake acknowledgement implementation, tests, or runbook is incomplete.");
+add("Stage 40 native speech contract integrity", stage40Exists ? "PASS" : "BLOCKED",
+  stage40Exists ? "Static audit, regression test, runbook, and pinned Cargo dependency lock verify the two fixed speech actions across the local bridge." : "Stage 40 contract audit or its supporting artifacts are incomplete.");
 add("Provisioned local model and consented voice", "BLOCKED",
   "No real ONNX model bundle or consented adult feminine Indonesian voice reference has been installed and accepted on the Panitia PC.");
 add("Approved neural model and feminine voice", "BLOCKED",
