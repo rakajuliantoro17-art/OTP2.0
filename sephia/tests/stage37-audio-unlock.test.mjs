@@ -18,7 +18,7 @@ test("content script creates and resumes AudioContext only from the explicit unl
   assert.match(content, /new AudioContextImpl\(\)/);
   assert.match(content, /audioContext\.resume\(\)/);
   assert.match(content, /UNLOCK_RESULT_EVENT/);
-  assert.match(content, /audioContext\.state === "running"/);
+  assert.match(content, /audioContext\?\.state === "running"/);
   assert.match(content, /AudioContext belum dibuka/);
 });
 
