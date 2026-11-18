@@ -50,6 +50,9 @@ jobs:
       - name: Verify Stage 29 secure local Chrome bridge decision
         working-directory: sephia
         run: npm run verify:stage29
+      - name: Verify Stage 30 Chrome extension bridge
+        working-directory: sephia
+        run: npm run verify:stage30
       - name: Verify on-device Indonesian wake-word recognition
         working-directory: sephia
         run: npm run verify:wakeword
