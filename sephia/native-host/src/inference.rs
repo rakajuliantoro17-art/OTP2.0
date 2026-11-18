@@ -59,15 +59,24 @@ fn is_sha256(value: &str) -> bool {
 
 fn safe_local_path(value: &str) -> anyhow::Result<PathBuf> {
     let path = PathBuf::from(value);
-    anyhow::ensure!(path.is_absolute(), "SEPHIA runtime paths must be absolute");
+    anyhow::ensure!(
+        path.is_absolute(),
+        "SEPHIA runtime paths must be absolute"
+    );
     let text = path.to_string_lossy();
-    anyhow::ensure!(!text.starts_with("\\\\"), "UNC/network paths are not allowed");
+    anyhow::ensure!(
+        !text.starts_with("\\\\"),
+        "UNC/network paths are not allowed"
+    );
     Ok(path)
 }
 
 fn verify_model_bundle(model_dir: &Path) -> anyhow::Result<()> {
     let provenance: ModelProvenance = serde_json::from_str(MODEL_PROVENANCE_JSON)?;
-    anyhow::ensure!(!provenance.files.is_empty(), "model provenance has no files");
+    anyhow::ensure!(
+        !provenance.files.is_empty(),
+        "model provenance has no files"
+    );
 
     let mut total_bytes = 0_u64;
     let mut canonical_files: Vec<&ModelFile> = provenance.files.iter().collect();
@@ -75,21 +84,33 @@ fn verify_model_bundle(model_dir: &Path) -> anyhow::Result<()> {
         anyhow::ensure!(
             !file.path.starts_with('/')
                 && !file.path.contains('\\')
-                && !file.path.split('/').any(|part| part == ".." || part.is_empty()),
+                && !file
+                    .path
+                    .split('/')
+                    .any(|part| part == ".." || part.is_empty()),
             "unsafe model path in pinned provenance"
         );
         anyhow::ensure!(is_sha256(&file.sha256), "invalid pinned model SHA-256");
         let path = model_dir.join(&file.path);
         let metadata = fs::metadata(&path)?;
         anyhow::ensure!(metadata.is_file(), "model file is missing or not a file");
-        anyhow::ensure!(metadata.len() == file.bytes, "model file byte size mismatch");
-        anyhow::ensure!(sha256_file(&path)? == file.sha256, "model file SHA-256 mismatch");
+        anyhow::ensure!(
+            metadata.len() == file.bytes,
+            "model file byte size mismatch"
+        );
+        anyhow::ensure!(
+            sha256_file(&path)? == file.sha256,
+            "model file SHA-256 mismatch"
+        );
         total_bytes = total_bytes
             .checked_add(file.bytes)
             .ok_or_else(|| anyhow::anyhow!("model bundle byte count overflow"))?;
     }
 
-    anyhow::ensure!(total_bytes == provenance.model_bundle_bytes, "model bundle total size mismatch");
+    anyhow::ensure!(
+        total_bytes == provenance.model_bundle_bytes,
+        "model bundle total size mismatch"
+    );
     canonical_files.sort_by(|a, b| a.path.cmp(&b.path));
     let canonical = canonical_files
         .iter()
@@ -97,7 +118,10 @@ fn verify_model_bundle(model_dir: &Path) -> anyhow::Result<()> {
         .collect::<Vec<_>>()
         .join("\n");
     let digest = hex::encode(Sha256::digest(canonical.as_bytes()));
-    anyhow::ensure!(digest == provenance.model_bundle_sha256, "pinned model bundle digest mismatch");
+    anyhow::ensure!(
+        digest == provenance.model_bundle_sha256,
+        "pinned model bundle digest mismatch"
+    );
     Ok(())
 }
 
@@ -118,43 +142,79 @@ impl LocalNeuralEngine {
         ] {
             // SAFETY: this runs during single-threaded native-host startup,
             // before ONNX Runtime or any inference worker threads are created.
-            unsafe { std::env::remove_var(name); }
+            unsafe {
+                std::env::remove_var(name);
+            }
         }
 
         let model_dir = safe_local_path(
-            config.model_dir.as_deref().ok_or_else(|| anyhow::anyhow!("model_dir is not configured"))?,
+            config
+                .model_dir
+                .as_deref()
+                .ok_or_else(|| anyhow::anyhow!("model_dir is not configured"))?,
         )?;
         let voice_path = safe_local_path(
-            config.voice_reference_wav.as_deref()
+            config
+                .voice_reference_wav
+                .as_deref()
                 .ok_or_else(|| anyhow::anyhow!("voice_reference_wav is not configured"))?,
         )?;
         let consent_path = safe_local_path(
-            config.voice_consent_evidence_path.as_deref()
+            config
+                .voice_consent_evidence_path
+                .as_deref()
                 .ok_or_else(|| anyhow::anyhow!("voice consent evidence is not configured"))?,
         )?;
         let license_path = safe_local_path(
-            config.model_license_evidence_path.as_deref()
+            config
+                .model_license_evidence_path
+                .as_deref()
                 .ok_or_else(|| anyhow::anyhow!("model license evidence is not configured"))?,
         )?;
 
-        anyhow::ensure!(consent_path.is_file(), "voice consent evidence file is missing");
-        anyhow::ensure!(license_path.is_file(), "model license evidence file is missing");
+        anyhow::ensure!(
+            consent_path.is_file(),
+            "voice consent evidence file is missing"
+        );
+        anyhow::ensure!(
+            license_path.is_file(),
+            "model license evidence file is missing"
+        );
         anyhow::ensure!(voice_path.is_file(), "voice reference WAV is missing");
         verify_model_bundle(&model_dir)?;
 
-        let expected_voice_hash = config.voice_reference_sha256.as_deref()
+        let expected_voice_hash = config
+            .voice_reference_sha256
+            .as_deref()
             .ok_or_else(|| anyhow::anyhow!("voice reference SHA-256 is not configured"))?;
-        anyhow::ensure!(is_sha256(expected_voice_hash), "voice reference SHA-256 is invalid");
-        anyhow::ensure!(sha256_file(&voice_path)? == expected_voice_hash, "voice reference SHA-256 mismatch");
+        anyhow::ensure!(
+            is_sha256(expected_voice_hash),
+            "voice reference SHA-256 is invalid"
+        );
+        anyhow::ensure!(
+            sha256_file(&voice_path)? == expected_voice_hash,
+            "voice reference SHA-256 mismatch"
+        );
 
-        let expected_runtime_hash = config.runtime_sha256.as_deref()
+        let expected_runtime_hash = config
+            .runtime_sha256
+            .as_deref()
             .ok_or_else(|| anyhow::anyhow!("native host SHA-256 is not configured"))?;
-        anyhow::ensure!(is_sha256(expected_runtime_hash), "native host SHA-256 is invalid");
+        anyhow::ensure!(
+            is_sha256(expected_runtime_hash),
+            "native host SHA-256 is invalid"
+        );
         let executable = std::env::current_exe()?;
-        anyhow::ensure!(sha256_file(&executable)? == expected_runtime_hash, "native host binary SHA-256 mismatch");
+        anyhow::ensure!(
+            sha256_file(&executable)? == expected_runtime_hash,
+            "native host binary SHA-256 mismatch"
+        );
 
         let threads = config.threads.unwrap_or(2);
-        anyhow::ensure!((1..=8).contains(&threads), "ONNX thread count must be between 1 and 8");
+        anyhow::ensure!(
+            (1..=8).contains(&threads),
+            "ONNX thread count must be between 1 and 8"
+        );
         let mut engine = LarasEngine::new(&model_dir, threads)?;
         let reference = wav::read_mono(&voice_path)?;
         anyhow::ensure!(!reference.is_empty(), "voice reference WAV is empty");
@@ -169,7 +229,10 @@ impl LocalNeuralEngine {
             .synthesize(APPROVED_PHRASE, &Params::default(), None)
             .map_err(|_| "SYNTHESIS_FAILED")?;
 
-        if samples.is_empty() || diag.rms < 0.005 || samples.iter().any(|sample| !sample.is_finite()) {
+        if samples.is_empty()
+            || diag.rms < 0.005
+            || samples.iter().any(|sample| !sample.is_finite())
+        {
             return Err("SYNTHESIS_FAILED");
         }
         let duration_ms = (samples.len() as u64 * 1000) / SAMPLE_RATE as u64;
