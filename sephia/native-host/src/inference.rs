@@ -243,8 +243,7 @@ impl LocalNeuralEngine {
         );
         let mut engine = LarasEngine::new(&model_dir, threads)?;
         let reference = wav::read_mono(&voice_path)?;
-        let reference_duration_ms =
-            (reference.len() as u64 * 1000) / SAMPLE_RATE as u64;
+        let reference_duration_ms = (reference.len() as u64 * 1000) / SAMPLE_RATE as u64;
         anyhow::ensure!(
             (MIN_VOICE_REFERENCE_DURATION_MS..=MAX_VOICE_REFERENCE_DURATION_MS)
                 .contains(&reference_duration_ms),
