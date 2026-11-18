@@ -6,10 +6,13 @@
   const CANCEL_EVENT = "sephia:native-tts-cancel";
   const STATE_EVENT = "sephia:native-tts-state";
   const RESULT_EVENT = "sephia:native-tts-result";
+  const UNLOCK_EVENT = "sephia:native-tts-unlock";
+  const UNLOCK_RESULT_EVENT = "sephia:native-tts-unlock-result";
   const MAX_AUDIO_BYTES = 700 * 1024;
 
   let activeRequestId = null;
   let audioContext = null;
+  let audioUnlocked = false;
   let activeSource = null;
 
   const emit = (name, detail) => {
@@ -39,10 +42,8 @@
     for (let i = 0; i < pcm.length; i += 1) {
       pcm[i] = (binary.charCodeAt(i * 2) & 255) | ((binary.charCodeAt(i * 2 + 1) & 255) << 8);
     }
-    if (!audioContext) {
-      const AudioContextImpl = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextImpl) throw new Error("Web Audio API tidak tersedia.");
-      audioContext = new AudioContextImpl();
+    if (!audioContext || !audioUnlocked) {
+      throw new Error("AudioContext belum dibuka melalui aktivasi manual SEPHIA.");
     }
     const buffer = audioContext.createBuffer(1, pcm.length, 24000);
     const channel = buffer.getChannelData(0);
@@ -60,6 +61,28 @@
       try { source.start(0); } catch (error) { reject(error); }
     }));
   }
+
+  window.addEventListener(UNLOCK_EVENT, (event) => {
+    const detail = event.detail;
+    if (detail?.version !== 1 ||
+        typeof detail.requestId !== "string" ||
+        !/^sephia-unlock-[0-9]{1,12}$/.test(detail.requestId)) return;
+    try {
+      const AudioContextImpl = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextImpl) throw new Error("Web Audio API tidak tersedia.");
+      if (!audioContext) audioContext = new AudioContextImpl();
+      Promise.resolve(audioContext.resume()).then(() => {
+        audioUnlocked = audioContext?.state === "running";
+        emit(UNLOCK_RESULT_EVENT, { requestId: detail.requestId, ok: audioUnlocked });
+      }).catch(() => {
+        audioUnlocked = false;
+        emit(UNLOCK_RESULT_EVENT, { requestId: detail.requestId, ok: false });
+      });
+    } catch {
+      audioUnlocked = false;
+      emit(UNLOCK_RESULT_EVENT, { requestId: detail.requestId, ok: false });
+    }
+  });
 
   window.addEventListener(REQUEST_EVENT, (event) => {
     const detail = event.detail;
@@ -129,6 +152,11 @@
     if (activeRequestId) {
       void chrome.runtime.sendMessage({ type: "SEPHIA_CANCEL", requestId: activeRequestId });
       activeRequestId = null;
+    }
+    audioUnlocked = false;
+    if (audioContext) {
+      try { void audioContext.close(); } catch {}
+      audioContext = null;
     }
     emit(STATE_EVENT, { state: "disconnected" });
   }, { once: true });
