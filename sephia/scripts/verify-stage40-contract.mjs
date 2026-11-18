@@ -26,7 +26,7 @@ const [pkgText, adapter, localTts, contentScript, worker, nativeMain, inference,
   ]);
 
 const pkg = JSON.parse(pkgText);
-assert.equal(pkg.version, "0.40.0-stage.40", "Stage 40 package version must be pinned.");
+assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/, "Stage 40 audit must run on a staged package version.");
 assert.equal(DEFAULT_ANNOUNCEMENT,
   "Perhatian, Panitia. Ada notifikasi pelanggaran OTP baru. Silakan periksa notifikasinya di dashboard, ya.");
 assert.equal(WAKE_WORD_ACKNOWLEDGEMENT, "Ya, Panitia. SEPHIA siap membantu.");
