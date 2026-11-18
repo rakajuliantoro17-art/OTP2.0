@@ -1,6 +1,6 @@
 {
   "name": "otp2-sephia",
-  "version": "0.31.0-stage.31",
+  "version": "0.32.0-stage.32",
   "private": true,
   "type": "module",
   "scripts": {
@@ -22,6 +22,7 @@
     "verify:acceptance": "node --test ./tests/neural-tts-acceptance.test.mjs",
     "verify:stage29": "node --test ./tests/stage29-native-bridge-security.test.mjs",
     "verify:stage30": "node --check ./extension/service-worker.js && node --check ./extension/popup.js && node --check ./extension/content-script.js && node --check ./extension/protocol.js && node --test ./tests/stage30-extension.test.mjs",
-    "verify:stage31": "node --test ./tests/stage31-native-host.test.mjs"
+    "verify:stage31": "node --test ./tests/stage31-native-host.test.mjs",
+    "verify:stage32": "node --test ./tests/stage32-inference.test.mjs"
   }
 }
