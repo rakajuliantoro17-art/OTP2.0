@@ -23,18 +23,26 @@ struct ErrorResponse {
 
 impl ErrorResponse {
     fn new(code: &'static str) -> Self {
-        Self { version: 1, ok: false, code }
+        Self {
+            version: 1,
+            ok: false,
+            code,
+        }
     }
 }
 
 fn validate_origin(actual: &str, expected: &str) -> bool {
     let Some(extension_id) = expected
         .strip_prefix("chrome-extension://")
-        .and_then(|value| value.strip_suffix('/')) else {
+        .and_then(|value| value.strip_suffix('/'))
+    else {
         return false;
     };
+
     extension_id.len() == 32
-        && extension_id.bytes().all(|byte| (b'a'..=b'p').contains(&byte))
+        && extension_id
+            .bytes()
+            .all(|byte| (b'a'..=b'p').contains(&byte))
         && actual == expected
 }
 
@@ -49,7 +57,10 @@ fn parse_request(bytes: &[u8]) -> Result<Request, ()> {
     Ok(request)
 }
 
-fn handle_request(request: Result<Request, ()>, last_request: &mut Option<Instant>) -> ErrorResponse {
+fn handle_request(
+    request: Result<Request, ()>,
+    last_request: &mut Option<Instant>,
+) -> ErrorResponse {
     if request.is_err() {
         return ErrorResponse::new("INVALID_REQUEST");
     }
@@ -74,7 +85,10 @@ fn read_frame<R: Read>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {
     reader.read_exact(&mut header[1..])?;
     let length = u32::from_ne_bytes(header) as usize;
     if length == 0 || length > MAX_REQUEST_BYTES {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "invalid native message length"));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "invalid native message length",
+        ));
     }
     let mut payload = vec![0_u8; length];
     reader.read_exact(&mut payload)?;
@@ -85,7 +99,10 @@ fn write_frame<W: Write>(writer: &mut W, response: &ErrorResponse) -> io::Result
     let payload = serde_json::to_vec(response)
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     if payload.len() > MAX_RESPONSE_BYTES {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "native response exceeds Chrome limit"));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "native response exceeds Chrome limit",
+        ));
     }
     let length = u32::try_from(payload.len())
         .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
@@ -102,8 +119,12 @@ struct HostConfig {
 
 fn load_expected_origin() -> io::Result<String> {
     let executable = std::env::current_exe()?;
-    let directory = executable.parent()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "native host directory is unavailable"))?;
+    let directory = executable.parent().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            "native host directory is unavailable",
+        )
+    })?;
     let config_path = directory.join("sephia-host-config.json");
     let config_text = std::fs::read_to_string(config_path)?;
     let config: HostConfig = serde_json::from_str(&config_text)
@@ -117,7 +138,10 @@ fn run() -> io::Result<()> {
     let expected_origin = load_expected_origin()?;
     if !validate_origin(actual_origin, &expected_origin) {
         eprintln!("SEPHIA native host rejected an unpaired extension origin.");
-        return Err(io::Error::new(io::ErrorKind::PermissionDenied, "extension origin is not allowlisted"));
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "extension origin is not allowlisted",
+        ));
     }
 
     let stdin = io::stdin();
@@ -154,7 +178,10 @@ mod tests {
         let origin = "chrome-extension://abcdefghijklmnopabcdefghijklmnop/";
         assert!(validate_origin(origin, origin));
         assert!(!validate_origin("chrome-extension://attacker/", origin));
-        assert!(!validate_origin("chrome-extension://qrstuvwxyzabcdefghijklmnop/", "chrome-extension://qrstuvwxyzabcdefghijklmnop/"));
+        assert!(!validate_origin(
+            "chrome-extension://qrstuvwxyzabcdefghijklmnop/",
+            "chrome-extension://qrstuvwxyzabcdefghijklmnop/"
+        ));
         assert!(!validate_origin(origin, ""));
         assert!(!validate_origin("https://example.com/", origin));
     }
@@ -164,10 +191,12 @@ mod tests {
         let valid = br#"{"version":1,"action":"synthesize-approved-announcement"}"#;
         assert!(parse_request(valid).is_ok());
 
-        let with_text = br#"{"version":1,"action":"synthesize-approved-announcement","text":"hello"}"#;
+        let with_text =
+            br#"{"version":1,"action":"synthesize-approved-announcement","text":"hello"}"#;
         assert!(parse_request(with_text).is_err());
 
-        let with_identity = br#"{"version":1,"action":"synthesize-approved-announcement","studentName":"A"}"#;
+        let with_identity =
+            br#"{"version":1,"action":"synthesize-approved-announcement","studentName":"A"}"#;
         assert!(parse_request(with_identity).is_err());
 
         let wrong_action = br#"{"version":1,"action":"read-student-record"}"#;
@@ -196,7 +225,8 @@ mod tests {
     #[test]
     fn engine_unavailable_is_explicit_and_fail_closed() {
         let mut last = None;
-        let request = parse_request(br#"{"version":1,"action":"synthesize-approved-announcement"}"#);
+        let request =
+            parse_request(br#"{"version":1,"action":"synthesize-approved-announcement"}"#);
         let response = handle_request(request, &mut last);
         assert_eq!(response, ErrorResponse::new("ENGINE_UNAVAILABLE"));
     }
