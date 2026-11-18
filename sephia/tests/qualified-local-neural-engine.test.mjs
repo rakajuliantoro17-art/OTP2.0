@@ -13,7 +13,7 @@ const manifest = () => ({
   engineId: "laras-pocket-tts",
   execution: "local-only",
   runtimeVersion: "prototype-0.1.0",
-  model: { sha256: modelHash, bytes: 160000000, license: "Apache-2.0", licenseEvidence: "MODEL-LICENSE-REVIEW-01" },
+  model: { sha256: modelHash, bytes: 160000000, license: "CC-BY-4.0", licenseEvidence: "MODEL-LICENSE-REVIEW-01" },
   voice: {
     profile: "adult-feminine-indonesian",
     referenceSha256: voiceHash,
