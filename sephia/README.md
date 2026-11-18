@@ -42,10 +42,12 @@ From the sephia folder, run with Node.js 22:
     npm run verify:acceptance
     npm run verify:stage29
     npm run verify:stage30
+    npm run verify:stage31
+    cargo test --manifest-path native-host/Cargo.toml
     npm run verify:release
 
 Stage 28 benchmark requires an explicitly injected local-only engine, local player, and workstation CPU/RAM sampler. It returns numeric metrics only; it does not create audio files. The report cannot pass overall until voice, network, and license reviews are explicitly recorded.
 
-See docs/STAGE-30-CHROME-EXTENSION-BRIDGE.md, docs/STAGE-29-LOCAL-CHROME-BRIDGE-SECURITY.md, docs/POCKET-TTS-INDONESIAN-ONNX-PROVENANCE.json, native-messaging/protocol.schema.json, docs/STAGE-28-NEURAL-TTS-QUALITY-PERFORMANCE-VALIDATION.md, docs/STAGE-27-LOCAL-NEURAL-RUNTIME-PROTOTYPE.md, docs/STAGE-26-NEURAL-TTS-INTEGRATION.md, docs/STAGE-25-LOCAL-NEURAL-TTS-ADAPTER.md, docs/STAGE-24-LOCAL-TTS-TOPOLOGY-GATE.md, and docs/STAGE-23-LOCAL-NEURAL-TTS-DECISION.md.
+See docs/STAGE-31-NATIVE-MESSAGING-HOST.md, docs/STAGE-30-CHROME-EXTENSION-BRIDGE.md, docs/STAGE-29-LOCAL-CHROME-BRIDGE-SECURITY.md, docs/POCKET-TTS-INDONESIAN-ONNX-PROVENANCE.json, native-messaging/protocol.schema.json, docs/STAGE-28-NEURAL-TTS-QUALITY-PERFORMANCE-VALIDATION.md, docs/STAGE-27-LOCAL-NEURAL-RUNTIME-PROTOTYPE.md, docs/STAGE-26-NEURAL-TTS-INTEGRATION.md, docs/STAGE-25-LOCAL-NEURAL-TTS-ADAPTER.md, docs/STAGE-24-LOCAL-TTS-TOPOLOGY-GATE.md, and docs/STAGE-23-LOCAL-NEURAL-TTS-DECISION.md.
 
 The build output is an artifact, not a production deployment. Nothing in this folder self-activates or changes production OTP behavior.
