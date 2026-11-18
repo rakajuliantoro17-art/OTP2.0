@@ -68,3 +68,37 @@ test("wake-word callback changes only the SEPHIA visual state", () => {
   assert.equal(bridge.visualState.snapshot.state, "listening");
   bridge.dispose();
 });
+
+test("Panitia exposes bridge diagnostics and a manual fixed-phrase speaker test", async () => {
+  const windowImpl = new FakeWindow();
+  let options;
+  let ready = false;
+  let tests = 0;
+  const bridge = mountPanitiaSephia({
+    documentImpl: { getElementById: (id) => ({ id }) },
+    windowImpl,
+    createWakeWordRecognizer: () => ({
+      start: async () => true, stop() {}, pause() {}, resume: async () => true, dispose() {},
+    }),
+    createSpeechAdapter: (_win, callbacks) => {
+      callbacks.onStatusChange({ reason: "bridge-waiting", connected: false, audioUnlocked: false, available: false });
+      return {
+        get available() { return ready; },
+        speak: async () => {},
+        cancel() {},
+        dispose() {},
+      };
+    },
+    createRuntime: () => ({ isActive: false, activate() { this.isActive = true; }, deactivate() { this.isActive = false; }, dispose() {} }),
+    mountControls: (value) => { options = value; return { dispose() {}, setStatus() {} }; },
+    bindLifecycle: () => ({ dispose() {} }),
+  });
+  assert.equal(typeof options.onTestSpeech, "function");
+  assert.equal(options.isSpeechReady(), false);
+  await options.onTestSpeech();
+  tests += 1;
+  assert.equal(tests, 1);
+  ready = true;
+  assert.equal(options.isSpeechReady(), true);
+  bridge.dispose();
+});
