@@ -27,6 +27,9 @@ This is a transport decision, not proof that the candidate model or workstation 
 
 ## Native Messaging protocol constraints
 
+The strict request/response schema is stored at `native-messaging/protocol.schema.json`. The request has only `version` and `action`; it contains no text, event ID, student identity, or file path. The success response is mono 24 kHz PCM16 with a bounded base64 payload. The schema is checked by Stage 29 regression tests.
+
+
 Chrome's Native Messaging protocol uses UTF-8 JSON framed by a 32-bit message length over stdin/stdout. The native host receives the caller extension origin as its first argument. Chrome documents a 1 MiB maximum message from the native host and a 64 MiB maximum message to the host.
 
 Therefore:
