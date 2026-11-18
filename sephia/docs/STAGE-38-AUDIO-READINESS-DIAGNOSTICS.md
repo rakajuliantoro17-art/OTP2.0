@@ -10,7 +10,7 @@
 - The speaker test speaks only the already-approved generic sentence:
   “Perhatian, Panitia. Ada notifikasi pelanggaran OTP baru. Silakan periksa notifikasinya di dashboard, ya.”
 - The test never reads notification text, student name, class, or OTP.
-- The wake word “SEPHIA” currently gives visual confirmation only. It does not speak a greeting; no wake-response sentence has been approved.
+- Stage 39 subsequently adds a fixed spoken wake acknowledgement: “Ya, Panitia. SEPHIA siap membantu.” See the Stage 39 document for its allowlist and acceptance conditions.
 
 ## Required target-PC sequence
 
@@ -21,8 +21,8 @@
 5. Open the Panitia dashboard and use the extension popup to **Hubungkan tab Panitia**. The popup must report successful pairing only after the Native Host model-readiness handshake.
 6. Click **Aktifkan SEPHIA**. Confirm the status says the microphone is active and the local speech bridge/audio are ready.
 7. Open the control menu and click **Uji suara SEPHIA**. Confirm the approved sentence is audible from the intended speaker.
-8. Say “SEPHIA” and confirm the avatar/status shows the wake-word detection.
-9. Trigger one synthetic eligible notification in a non-production fixture. Confirm the same approved sentence is spoken once.
+8. Say “SEPHIA” and confirm the avatar appears, mouth animation runs, and the approved wake acknowledgement is audible.
+9. Trigger one synthetic eligible notification in a non-production fixture. Confirm the separate generic notification announcement is spoken once.
 10. Repeat after Chrome restart, tab reload, idle period, and temporary speaker disconnection.
 
 ## Interpreting failures
