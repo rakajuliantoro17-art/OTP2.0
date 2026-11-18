@@ -133,7 +133,7 @@ jobs:
       - name: Print release readiness audit (no deploy)
         working-directory: sephia
         run: npm run verify:release
-      - name: Upload Stage 22 SEPHIA build and diagnostic fixtures
+      - name: Upload Stage 41 SEPHIA Panitia bundle
         uses: actions/upload-artifact@v4
         with:
           name: sephia-stage41-panitia-bundle-${{ github.sha }}
