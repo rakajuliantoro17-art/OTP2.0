@@ -8,14 +8,14 @@
 
 Use only artifacts from a workflow run whose Linux verification and Windows native-host build both report success:
 
-- `sephia-stage22-local-voice-diagnostics-<commit>`: browser distribution, Chrome extension source, native-host source/scripts, and stage documentation.
+- `sephia-stage41-panitia-bundle-<commit>`: browser distribution, Chrome extension source, native-host source/scripts, and stage documentation.
 - `sephia-native-host-windows-<commit>`: Windows executable and runtime DLLs.
 
 The native-host executable and source must come from the same commit. Do not mix artifacts from different commits. CI artifacts expire after 14 days; rerun the workflow if they expire.
 
 ## 2. Model provisioning
 
-On the target Windows PC, extract the Stage 22 artifact and run PowerShell 7 from the extracted repository folder:
+On the target Windows PC, extract the Stage 41 artifact and run PowerShell 7 from the extracted repository folder:
 
     .\sephia\native-host\provision-model-windows.ps1 -ModelDir C:\SEPHIA\models -Download
 
