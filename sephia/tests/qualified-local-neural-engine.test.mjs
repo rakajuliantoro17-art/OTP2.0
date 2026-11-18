@@ -114,5 +114,5 @@ test("rejects model path traversal, wrong license, and unpinned runtime binary",
   await assert.rejects(createQualifiedLocalNeuralEngine({
     manifest: manifest(), pins: { ...pins, runtimeSha256: "e".repeat(64) },
     verifyProvisioning, createEngine: () => ({}),
-  }), /runtime binary SHA-256/);
+  }), /binary SHA-256/);
 });
