@@ -6,7 +6,7 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 
 - Stages 2–17 provide the host contract, security boundaries, local TTS diagnostics, on-device wake-word prototype, avatar overlay, synthetic notification-to-speech tests, and the initial natural-voice strategy.
 - Stage 23 locks the final voice architecture: dynamic local neural TTS, not a prerecorded WAV.
-- Stages 25–26 implement the local neural TTS adapter contract and controller integration tests. Exact generic announcement only, bounded timeout, abort/cancel, one operation at a time, and in-memory audio release. Host default remains fail-closed visual-only.
+- Stages 25–26 implement the local neural TTS adapter contract and controller integration tests. Fixed approved phrases only, bounded timeout, abort/cancel, one operation at a time, and in-memory audio release. Host default remains fail-closed visual-only.
 - Stage 27 adds a qualified offline-engine wrapper and checksum/consent manifest contract. It does not bundle model weights, start a sidecar, download files, or activate a speech engine. The Laras/Pocket candidate remains unqualified until real files and evidence are reviewed.
 - Stage 28 adds an in-memory benchmark and acceptance report for cold/warm synthesis latency, playback-start latency, buffer size, CPU, and memory. Acoustic, network, license, and target-PC evidence remain manual gates. Mock tests are not proof of real voice quality or workstation performance.
 - Stage 24 rejected localhost/LAN HTTP inference as the default topology. Stage 29 records Chrome Native Messaging as the preferred local bridge; extension, native host, in-memory Laras API, installer, and target-PC acceptance are still blocked. No localhost/LAN inference endpoint is enabled.
@@ -20,7 +20,7 @@ SEPHIA is a passive, browser-scoped notification reader for the OTP 2.0 Panitia 
 
 - Observe only the designated host notification element: #alertList.
 - Accept only visible alert items with stable event ID, event type violation, and trusted integer count 27–30.
-- Never speak a student name, class, OTP, violation count, or identifying detail. The only permitted announcement is the fixed generic phrase.
+- Never speak a student name, class, OTP, violation count, or identifying detail. The only permitted speech consists of two fixed generic phrases: the wake acknowledgement and the violation announcement.
 - Do not call Firebase, APIs, Moodle, or OTP actions.
 - Do not persist event history, generated audio, transcripts, or session memory.
 - Start inactive and require explicit manual activation after every page load.
@@ -49,12 +49,13 @@ From the sephia folder, run with Node.js 22:
     npm run verify:stage35
     npm run verify:stage37
     npm run verify:stage38
+    npm run verify:stage39
     cargo test --manifest-path native-host/Cargo.toml
     cargo test --manifest-path native-host/Cargo.toml --features inference
     npm run verify:release
 
 Stage 28 benchmark requires an explicitly injected local-only engine, local player, and workstation CPU/RAM sampler. It returns numeric metrics only; it does not create audio files. The report cannot pass overall until voice, network, and license reviews are explicitly recorded.
 
-See docs/STAGE-38-AUDIO-READINESS-DIAGNOSTICS.md, docs/STAGE-37-CHROME-AUDIO-ACTIVATION.md, docs/STAGE-36-PRODUCTION-CANDIDATE-RUNBOOK.md, docs/STAGE-35-NATIVE-HOST-PROTOCOL-SMOKE-TEST.md, docs/STAGE-34-TARGET-PC-BENCHMARK.md, docs/STAGE-33-MODEL-AND-VOICE-PROVISIONING.md, docs/STAGE-32-IN-MEMORY-LARAS-INFERENCE.md, docs/STAGE-31-NATIVE-MESSAGING-HOST.md, docs/STAGE-30-CHROME-EXTENSION-BRIDGE.md, docs/STAGE-29-LOCAL-CHROME-BRIDGE-SECURITY.md, docs/POCKET-TTS-INDONESIAN-ONNX-PROVENANCE.json, native-messaging/protocol.schema.json, docs/STAGE-28-NEURAL-TTS-QUALITY-PERFORMANCE-VALIDATION.md, docs/STAGE-27-LOCAL-NEURAL-RUNTIME-PROTOTYPE.md, docs/STAGE-26-NEURAL-TTS-INTEGRATION.md, docs/STAGE-25-LOCAL-NEURAL-TTS-ADAPTER.md, docs/STAGE-24-LOCAL-TTS-TOPOLOGY-GATE.md, and docs/STAGE-23-LOCAL-NEURAL-TTS-DECISION.md.
+See docs/STAGE-39-WAKE-WORD-VOICE-ACKNOWLEDGEMENT.md, docs/STAGE-38-AUDIO-READINESS-DIAGNOSTICS.md, docs/STAGE-37-CHROME-AUDIO-ACTIVATION.md, docs/STAGE-36-PRODUCTION-CANDIDATE-RUNBOOK.md, docs/STAGE-35-NATIVE-HOST-PROTOCOL-SMOKE-TEST.md, docs/STAGE-34-TARGET-PC-BENCHMARK.md, docs/STAGE-33-MODEL-AND-VOICE-PROVISIONING.md, docs/STAGE-32-IN-MEMORY-LARAS-INFERENCE.md, docs/STAGE-31-NATIVE-MESSAGING-HOST.md, docs/STAGE-30-CHROME-EXTENSION-BRIDGE.md, docs/STAGE-29-LOCAL-CHROME-BRIDGE-SECURITY.md, docs/POCKET-TTS-INDONESIAN-ONNX-PROVENANCE.json, native-messaging/protocol.schema.json, docs/STAGE-28-NEURAL-TTS-QUALITY-PERFORMANCE-VALIDATION.md, docs/STAGE-27-LOCAL-NEURAL-RUNTIME-PROTOTYPE.md, docs/STAGE-26-NEURAL-TTS-INTEGRATION.md, docs/STAGE-25-LOCAL-NEURAL-TTS-ADAPTER.md, docs/STAGE-24-LOCAL-TTS-TOPOLOGY-GATE.md, and docs/STAGE-23-LOCAL-NEURAL-TTS-DECISION.md.
 
 The build output is an artifact, not a production deployment. Nothing in this folder self-activates or changes production OTP behavior.
