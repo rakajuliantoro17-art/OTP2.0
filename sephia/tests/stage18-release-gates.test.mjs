@@ -14,7 +14,7 @@ test("Stage 18 package and CI include the local audio acceptance gate", async ()
   assert.match(pkg.scripts["verify:audio"], /stage19-audio-host-wiring\.test\.mjs/);
   assert.match(workflow, /- main/);
   assert.match(workflow, /npm run verify:audio/);
-  assert.match(workflow, /sephia-stage22-local-voice-diagnostics-/);
+  assert.match(workflow, /sephia-stage41-panitia-bundle-/);
   assert.match(readme, /Stage 18/);
 });
 
