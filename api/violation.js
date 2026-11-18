@@ -78,6 +78,7 @@ module.exports = async function handler(req, res) {
                 msg:    (nama || uid) + " — " + violationType + " (ke-" + newCount + ")",
                 status: safeStatus,
                 uid,
+                violationCount: newCount,
                 time:   Date.now()
             });
         }

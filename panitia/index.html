@@ -96,6 +96,18 @@ async function initializeDashboard() {
     await loadComponent("drawerMount",  "./components/drawer.html");
     await loadComponent("alertMount",   "./components/alert.html");
     console.log("[DASHBOARD] Semua component berhasil dimuat");
+
+    // SEPHIA opsional: kegagalannya tidak boleh memblokir dashboard panitia.
+    try {
+        const { mountPanitiaSephia } = await import("../sephia/src/host/mount-panitia-sephia.js");
+        window.SEPHIA = mountPanitiaSephia({
+            avatarAssetUrl: "/sephia/assets/avatar-sephia.svg",
+            onError(error) { console.warn("[SEPHIA] Modul tidak aktif; dashboard tetap berjalan.", error); }
+        });
+        console.log("[SEPHIA] Bridge tersedia; status awal OFF.");
+    } catch (error) {
+        console.warn("[SEPHIA] Gagal dimuat; dashboard tetap berjalan.", error);
+    }
 }
 
 /* =====================================================
