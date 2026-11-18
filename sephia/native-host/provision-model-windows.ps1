@@ -16,7 +16,7 @@ $repo = "anak10thn/pocket-tts-indonesian"
 $totalBytes = [int64]0
 
 foreach ($file in $manifest.files) {
-  if ($file.path.StartsWith("/") -or $file.path.Contains("\\") -or $file.path.Split("/") -contains "..") {
+  if ($file.path.StartsWith("/") -or $file.path.Contains([char]92) -or $file.path.Split("/") -contains "..") {
     throw "Unsafe path in pinned model manifest."
   }
   $destination = Join-Path $resolvedDir $file.path
@@ -42,7 +42,7 @@ foreach ($file in $manifest.files) {
 }
 
 if ($totalBytes -ne [int64]$manifest.modelBundleBytes) { throw "Model bundle total size mismatch." }
-$canonical = ($manifest.files | Sort-Object -Property path | ForEach-Object {
+$canonical = ($manifest.files | ForEach-Object {
   "$($_.path)|$($_.bytes)|$($_.sha256)"
 }) -join "`n"
 $sha = [System.Security.Cryptography.SHA256]::Create()
