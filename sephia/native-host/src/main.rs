@@ -90,10 +90,27 @@ fn write_frame<W: Write>(writer: &mut W, response: &ErrorResponse) -> io::Result
     writer.flush()
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct HostConfig {
+    extension_origin: String,
+}
+
+fn load_expected_origin() -> io::Result<String> {
+    let executable = std::env::current_exe()?;
+    let directory = executable.parent()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "native host directory is unavailable"))?;
+    let config_path = directory.join("sephia-host-config.json");
+    let config_text = std::fs::read_to_string(config_path)?;
+    let config: HostConfig = serde_json::from_str(&config_text)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    Ok(config.extension_origin)
+}
+
 fn run() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let actual_origin = args.get(1).map(String::as_str).unwrap_or("");
-    let expected_origin = std::env::var("SEPHIA_EXTENSION_ORIGIN").unwrap_or_default();
+    let expected_origin = load_expected_origin()?;
     if !validate_origin(actual_origin, &expected_origin) {
         eprintln!("SEPHIA native host rejected an unpaired extension origin.");
         return Err(io::Error::new(io::ErrorKind::PermissionDenied, "extension origin is not allowlisted"));
