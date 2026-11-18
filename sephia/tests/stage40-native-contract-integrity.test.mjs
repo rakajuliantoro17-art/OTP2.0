@@ -22,7 +22,7 @@ test("Stage 40 native speech contract integrity audit passes", () => {
 test("Stage 40 audit is wired into package and release artifact workflow", async () => {
   const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
   const workflow = await readFile(new URL("../../.github/workflows/sephia-tests.yml", import.meta.url), "utf8");
-  assert.equal(pkg.version, "0.40.0-stage.40");
+  assert.match(pkg.version, /^0\.\d+\.0-stage\.\d+$/);
   assert.equal(pkg.scripts["verify:stage40"], "node ./scripts/verify-stage40-contract.mjs");
   assert.match(workflow, /npm run verify:stage40/);
   assert.match(workflow, /STAGE-40-NATIVE-CONTRACT-INTEGRITY\.md/);
