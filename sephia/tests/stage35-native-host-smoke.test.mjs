@@ -24,7 +24,7 @@ test("native host smoke test uses temporary config and removes it after executio
 
 test("smoke test validates PowerShell process protocol without changing OTP or Firebase", async () => {
   const script = await read("native-host/smoke-test-native-host-windows.ps1");
-  assert.match(script, /StandardInput\.BaseStream/);
   assert.match(script, /StandardOutput\.BaseStream/);
+  assert.match(script, /ArgumentList\.Add/);
   assert.doesNotMatch(script, /firebase|moodle|generateOTP|validateOTP|resetOTP/i);
 });
