@@ -1,6 +1,9 @@
 export const DEFAULT_ANNOUNCEMENT =
   "Perhatian, Panitia. Ada notifikasi pelanggaran OTP baru. Silakan periksa notifikasinya di dashboard, ya.";
 
+export const WAKE_WORD_ACKNOWLEDGEMENT =
+  "Ya, Panitia. SEPHIA siap membantu.";
+
 export function createNotificationSpeechController({
   adapter,
   onStateChange = () => {},
@@ -28,7 +31,7 @@ export function createNotificationSpeechController({
     setSpeaking(false);
   };
 
-  const speakApprovedPhrase = async () => {
+  const speakApprovedPhrase = async (phrase) => {
     if (disposed || adapter.available === false) return false;
     const token = ++activeToken;
     try { adapter.cancel(); } catch (error) {
@@ -38,7 +41,7 @@ export function createNotificationSpeechController({
 
     setSpeaking(true);
     try {
-      await adapter.speak(DEFAULT_ANNOUNCEMENT);
+      await adapter.speak(phrase);
       if (disposed || token !== activeToken) return false;
       setSpeaking(false);
       return true;
@@ -56,12 +59,14 @@ export function createNotificationSpeechController({
       if (disposed || !event?.eventId ||
           event.eventType !== "violation" || !Number.isSafeInteger(event.violationCount) ||
           event.violationCount < 27 || event.violationCount > 30) return false;
-      return speakApprovedPhrase();
+      return speakApprovedPhrase(DEFAULT_ANNOUNCEMENT);
     },
 
-    // Explicit, user-initiated audio check. It speaks the same approved
-    // generic sentence and never reads notification metadata or identity.
-    test: speakApprovedPhrase,
+    // Explicit, user-initiated audio check speaks the generic notification phrase.
+    test: () => speakApprovedPhrase(DEFAULT_ANNOUNCEMENT),
+
+    // Wake-word response is a separate fixed phrase; no event metadata is accepted.
+    acknowledgeWakeWord: () => speakApprovedPhrase(WAKE_WORD_ACKNOWLEDGEMENT),
 
     stop,
 
