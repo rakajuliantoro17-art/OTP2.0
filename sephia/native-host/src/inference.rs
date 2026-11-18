@@ -59,10 +59,7 @@ fn is_sha256(value: &str) -> bool {
 
 fn safe_local_path(value: &str) -> anyhow::Result<PathBuf> {
     let path = PathBuf::from(value);
-    anyhow::ensure!(
-        path.is_absolute(),
-        "SEPHIA runtime paths must be absolute"
-    );
+    anyhow::ensure!(path.is_absolute(), "SEPHIA runtime paths must be absolute");
     let text = path.to_string_lossy();
     anyhow::ensure!(
         !text.starts_with("\\\\"),
