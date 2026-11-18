@@ -15,12 +15,34 @@ function validateManifest(manifest, pins) {
   if (!manifest.model || !isSha256(manifest.model.sha256) || manifest.model.sha256 !== pins.modelSha256) {
     throw new Error("Model checksum is missing or does not match the pinned checksum.");
   }
-  if (!Number.isSafeInteger(manifest.model.bytes) || manifest.model.bytes < 1 || manifest.model.bytes > MAX_LOCAL_MODEL_BYTES) {
-    throw new RangeError("Local model bundle size is outside the approved prototype limit.");
+  if (!Array.isArray(manifest.model.files) || manifest.model.files.length < 1 || manifest.model.files.length > 32) {
+    throw new TypeError("A pinned per-file model manifest with 1–32 files is required.");
   }
-  if (typeof manifest.model.license !== "string" || !manifest.model.license.trim() ||
+  const paths = new Set();
+  let totalBytes = 0;
+  for (const file of manifest.model.files) {
+    if (!file || typeof file.path !== "string" || !/^[a-zA-Z0-9._/-]+$/.test(file.path) ||
+        file.path.startsWith("/") || file.path.split("/").includes("..") || paths.has(file.path)) {
+      throw new Error("Model file paths must be unique, relative, and traversal-safe.");
+    }
+    if (!Number.isSafeInteger(file.bytes) || file.bytes < 1 || !isSha256(file.sha256)) {
+      throw new Error("Every model file must have a positive byte size and pinned SHA-256.");
+    }
+    paths.add(file.path);
+    totalBytes += file.bytes;
+  }
+  if (!Number.isSafeInteger(manifest.model.bytes) || manifest.model.bytes !== totalBytes ||
+      totalBytes > MAX_LOCAL_MODEL_BYTES) {
+    throw new RangeError("Local model bundle size must equal the pinned file manifest and remain within 512 MiB.");
+  }
+  if (manifest.model.license !== "CC-BY-4.0" ||
+      manifest.model.attribution !== "Pocket TTS Indonesian oleh anak10thn, CC-BY-4.0" ||
+      manifest.model.licenseUrl !== "https://creativecommons.org/licenses/by/4.0/" ||
       typeof manifest.model.licenseEvidence !== "string" || !manifest.model.licenseEvidence.trim()) {
-    throw new Error("Model license and its evidence reference must be documented.");
+    throw new Error("The model must carry CC-BY-4.0 attribution and documented license evidence.");
+  }
+  if (!/^[a-f0-9]{40}$/.test(manifest.model.sourceRevision || "")) {
+    throw new Error("The model source revision must be pinned to a full commit SHA.");
   }
   if (!manifest.voice || manifest.voice.profile !== "adult-feminine-indonesian" ||
       !isSha256(manifest.voice.referenceSha256) || manifest.voice.referenceSha256 !== pins.voiceReferenceSha256) {
@@ -33,8 +55,10 @@ function validateManifest(manifest, pins) {
   if (manifest.voice.consent.scope !== "SEPHIA local announcement synthesis") {
     throw new Error("Voice-reference consent scope does not match SEPHIA use.");
   }
-  if (typeof manifest.runtimeVersion !== "string" || !manifest.runtimeVersion.trim()) {
-    throw new Error("A pinned local runtime version is required.");
+  if (!manifest.runtime || typeof manifest.runtime.version !== "string" || !manifest.runtime.version.trim() ||
+      !/^[a-f0-9]{40}$/.test(manifest.runtime.sourceRevision || "") ||
+      !isSha256(manifest.runtime.sha256) || manifest.runtime.sha256 !== pins.runtimeSha256) {
+    throw new Error("The local runtime version, source revision, and binary SHA-256 must be pinned.");
   }
 }
 
@@ -55,8 +79,9 @@ export async function createQualifiedLocalNeuralEngine({
   verifyProvisioning,
   createEngine,
 } = {}) {
-  if (!pins || !isSha256(pins.modelSha256) || !isSha256(pins.voiceReferenceSha256)) {
-    throw new TypeError("Pinned model and voice-reference SHA-256 values are required.");
+  if (!pins || !isSha256(pins.modelSha256) || !isSha256(pins.voiceReferenceSha256) ||
+      !isSha256(pins.runtimeSha256)) {
+    throw new TypeError("Pinned model, voice-reference, and runtime SHA-256 values are required.");
   }
   validateManifest(manifest, pins);
   if (typeof verifyProvisioning !== "function") {
@@ -69,13 +94,17 @@ export async function createQualifiedLocalNeuralEngine({
     manifest,
     modelSha256: pins.modelSha256,
     voiceReferenceSha256: pins.voiceReferenceSha256,
+    runtimeSha256: pins.runtimeSha256,
   }));
   if (verified !== true) throw new Error("Actual local model/voice bytes did not pass checksum verification.");
 
   const engine = createEngine(Object.freeze({
     modelSha256: pins.modelSha256,
     voiceReferenceSha256: pins.voiceReferenceSha256,
-    runtimeVersion: manifest.runtimeVersion,
+    runtimeVersion: manifest.runtime.version,
+    runtimeSha256: pins.runtimeSha256,
+    runtimeSourceRevision: manifest.runtime.sourceRevision,
+    modelFiles: manifest.model.files,
   }));
   if (!engine || engine.localOnly !== true || engine.available !== true ||
       typeof engine.synthesize !== "function") {
