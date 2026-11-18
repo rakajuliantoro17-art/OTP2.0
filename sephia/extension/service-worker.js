@@ -50,14 +50,15 @@ function openNativePort() {
 
   port.onMessage.addListener((response) => {
     if (!hostReady) {
-      if (response?.version === 1 && response?.ok === true && response?.status === "ready") {
+      if (response?.version === 1 && response?.ok === true && response?.status === "ready" &&
+          Object.keys(response).sort().join(",") === "ok,status,version") {
         hostReady = true;
         settled = true;
         clearTimeout(handshakeTimer);
         resolveReady(true);
         return;
       }
-      if (response?.version === 1 && response?.ok === false && response?.code) {
+      if (response?.version === 1 && response?.ok === false && validateNativeResponse(response)) {
         settled = true;
         clearTimeout(handshakeTimer);
         resolveReady(false);
