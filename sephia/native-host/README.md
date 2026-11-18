@@ -21,7 +21,7 @@ Requires Rust toolchain 1.92 or newer:
 
        .\sephia\native-host\install-windows.ps1 -ExtensionId <32-character-id> -HostExePath <absolute-path-to-exe>
 
-4. Restart Chrome so it inherits `SEPHIA_EXTENSION_ORIGIN`.
+4. Restart Chrome so it reloads the Native Messaging registry registration.
 5. The installer copies the host into `%LOCALAPPDATA%\\SMANSASOO\\SEPHIA`, writes a strict `sephia-host-config.json` beside it, and registers only the supplied extension ID in `allowed_origins`.
 
 Uninstall:
@@ -34,7 +34,7 @@ Uninstall:
 - Input frame maximum: 4 KiB.
 - Output frame maximum: Chrome's 1 MiB host-to-extension limit.
 - Only request: `{ "version": 1, "action": "synthesize-approved-announcement" }`.
-- Caller origin must exactly match `SEPHIA_EXTENSION_ORIGIN`.
+- Caller origin must exactly match `extension_origin` in the adjacent `sephia-host-config.json` file.
 - Current response: `{ "version": 1, "ok": false, "code": "ENGINE_UNAVAILABLE" }`.
 
 The host must never accept free-form speech text, student identity, OTP, event IDs, file paths, URLs, or shell commands.
