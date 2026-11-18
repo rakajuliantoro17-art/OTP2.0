@@ -49,6 +49,7 @@ test("Native Messaging protocol schema is strict and has no arbitrary text or id
   const schema = JSON.parse(await read("native-messaging/protocol.schema.json"));
   const request = schema.oneOf.find((entry) => entry.properties?.action);
   const response = schema.oneOf.find((entry) => entry.properties?.audioBase64);
+  const ready = schema.oneOf.find((entry) => entry.properties?.status);
   assert.equal(request.additionalProperties, false);
   assert.deepEqual(request.required, ["version", "action"]);
   assert.equal(request.properties.action.const, "synthesize-approved-announcement");
@@ -56,6 +57,8 @@ test("Native Messaging protocol schema is strict and has no arbitrary text or id
   assert.equal(response.properties.sampleRate.const, 24000);
   assert.equal(response.properties.channels.const, 1);
   assert.equal(response.properties.audioBase64.maxLength, 955736);
+  assert.equal(ready.additionalProperties, false);
+  assert.equal(ready.properties.status.const, "ready");
   assert.equal("text" in request.properties, false);
   assert.equal("studentName" in request.properties, false);
   assert.equal("className" in request.properties, false);
