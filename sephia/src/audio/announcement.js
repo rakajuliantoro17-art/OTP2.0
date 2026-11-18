@@ -28,32 +28,40 @@ export function createNotificationSpeechController({
     setSpeaking(false);
   };
 
+  const speakApprovedPhrase = async () => {
+    if (disposed || adapter.available === false) return false;
+    const token = ++activeToken;
+    try { adapter.cancel(); } catch (error) {
+      try { onError(error); } catch {}
+      return false;
+    }
+
+    setSpeaking(true);
+    try {
+      await adapter.speak(DEFAULT_ANNOUNCEMENT);
+      if (disposed || token !== activeToken) return false;
+      setSpeaking(false);
+      return true;
+    } catch (error) {
+      if (!disposed && token === activeToken) {
+        setSpeaking(false);
+        try { onError(error); } catch {}
+      }
+      return false;
+    }
+  };
+
   return Object.freeze({
     async announce(event) {
-      if (disposed || adapter.available === false || !event?.eventId ||
+      if (disposed || !event?.eventId ||
           event.eventType !== "violation" || !Number.isSafeInteger(event.violationCount) ||
           event.violationCount < 27 || event.violationCount > 30) return false;
-
-      const token = ++activeToken;
-      try { adapter.cancel(); } catch (error) {
-        try { onError(error); } catch {}
-        return false;
-      }
-
-      setSpeaking(true);
-      try {
-        await adapter.speak(DEFAULT_ANNOUNCEMENT);
-        if (disposed || token !== activeToken) return false;
-        setSpeaking(false);
-        return true;
-      } catch (error) {
-        if (!disposed && token === activeToken) {
-          setSpeaking(false);
-          try { onError(error); } catch {}
-        }
-        return false;
-      }
+      return speakApprovedPhrase();
     },
+
+    // Explicit, user-initiated audio check. It speaks the same approved
+    // generic sentence and never reads notification metadata or identity.
+    test: speakApprovedPhrase,
 
     stop,
 
