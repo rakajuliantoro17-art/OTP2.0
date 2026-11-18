@@ -35,3 +35,20 @@ test("Stage 29 explicitly blocks production until in-memory inference and workst
   assert.match(report, /Windows packaging is reproducible/);
   assert.match(report, /actual Panitia PC/);
 });
+
+test("Native Messaging protocol schema is strict and has no arbitrary text or identity fields", async () => {
+  const schema = JSON.parse(await read("native-messaging/protocol.schema.json"));
+  const request = schema.oneOf.find((entry) => entry.properties?.action);
+  const response = schema.oneOf.find((entry) => entry.properties?.audioBase64);
+  assert.equal(request.additionalProperties, false);
+  assert.deepEqual(request.required, ["version", "action"]);
+  assert.equal(request.properties.action.const, "synthesize-approved-announcement");
+  assert.equal(response.additionalProperties, false);
+  assert.equal(response.properties.sampleRate.const, 24000);
+  assert.equal(response.properties.channels.const, 1);
+  assert.equal(response.properties.audioBase64.maxLength, 955734);
+  assert.equal("text" in request.properties, false);
+  assert.equal("studentName" in request.properties, false);
+  assert.equal("className" in request.properties, false);
+  assert.equal("eventId" in request.properties, false);
+});
