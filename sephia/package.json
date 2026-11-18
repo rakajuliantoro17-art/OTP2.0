@@ -1,6 +1,6 @@
 {
   "name": "otp2-sephia",
-  "version": "0.38.0-stage.38",
+  "version": "0.39.0-stage.39",
   "private": true,
   "type": "module",
   "scripts": {
@@ -28,6 +28,7 @@
     "verify:stage34": "node --test ./tests/stage34-native-benchmark.test.mjs",
     "verify:stage35": "node --test ./tests/stage35-native-host-smoke.test.mjs",
     "verify:stage37": "node --test ./tests/stage37-audio-unlock.test.mjs ./tests/chrome-native-messaging-tts.test.mjs",
-    "verify:stage38": "node --test ./tests/stage38-audio-diagnostics.test.mjs ./tests/chrome-native-messaging-tts.test.mjs ./tests/neural-tts-controller.test.mjs ./tests/panitia-wake-word-wiring.test.mjs"
+    "verify:stage38": "node --test ./tests/stage38-audio-diagnostics.test.mjs ./tests/chrome-native-messaging-tts.test.mjs ./tests/neural-tts-controller.test.mjs ./tests/panitia-wake-word-wiring.test.mjs",
+    "verify:stage39": "node --check ./extension/service-worker.js && node --check ./extension/content-script.js && node --test ./tests/local-neural-tts.test.mjs ./tests/neural-tts-controller.test.mjs ./tests/chrome-native-messaging-tts.test.mjs ./tests/stage30-extension.test.mjs ./tests/stage38-audio-diagnostics.test.mjs"
   }
 }
