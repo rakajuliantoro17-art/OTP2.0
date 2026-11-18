@@ -18,6 +18,7 @@ function disconnectNative() {
   nativePort = null;
   hostReady = false;
   hostReadyPromise = null;
+  pending = null;
   intentionallyClosedPorts.add(port);
   try { port.disconnect(); } catch {}
 }
