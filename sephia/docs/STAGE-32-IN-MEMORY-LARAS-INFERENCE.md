@@ -12,7 +12,7 @@
 
   > Perhatian, Panitia. Ada notifikasi pelanggaran OTP baru. Silakan periksa notifikasinya di dashboard, ya.
 
-- Generated `Vec<f32>` samples are converted directly to 24 kHz mono PCM16 little-endian bytes in memory.
+- The local WAV voice reference is bounded to 1 KiB–10 MiB and 1–20 seconds after resampling. Generated `Vec<f32>` samples are converted directly to 24 kHz mono PCM16 little-endian bytes in memory.
 - The response is rejected if silent/invalid, shorter than 250 ms, longer than 15 seconds, or larger than 700 KiB.
 - No generated WAV, temporary audio file, transcript, or audio cache is written.
 - Inherited Laras dump/trace environment variables are removed during single-threaded startup before ONNX Runtime workers are created.
