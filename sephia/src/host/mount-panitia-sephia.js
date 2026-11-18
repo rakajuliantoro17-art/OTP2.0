@@ -34,6 +34,8 @@ export function mountPanitiaSephia({
     }),
   createWakeWordRecognizer = (win, callbacks) => createLocalWakeWordRecognizer({
     windowImpl: win,
+    requireLocal: false,
+    wakeWords: ["sephia", "sefia", "sofia", "sepia", "sefiya", "sepiya", "sephie", "sephya"],
     ...callbacks,
   }),
 } = {}) {
@@ -68,7 +70,15 @@ export function mountPanitiaSephia({
     visualState = createState();
     wakeRecognizer = createWakeWordRecognizer(windowImpl, {
       onWakeWord() {
-        if (visualState.snapshot.active) visualState.setState("listening");
+        if (!visualState.snapshot.active) return;
+        visualState.setState("listening");
+        // Audible acknowledgement; pause recognition so Sephia does not hear herself.
+        try {
+          wakeRecognizer.pause();
+          Promise.resolve(speechAdapter.speak("Ya, saya mendengarkan."))
+            .catch(report)
+            .finally(() => { try { wakeRecognizer.resume(); } catch {} });
+        } catch (error) { report(error); }
       },
       onStateChange(snapshot) {
         if (!visualState.snapshot.active) return;

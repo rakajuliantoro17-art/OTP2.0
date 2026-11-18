@@ -19,8 +19,9 @@ test("recognizer requires local Indonesian processing and never uses cloud fallb
   assert.match(source, /processLocally: true/);
   assert.match(source, /instance\.processLocally = true/);
   assert.match(source, /langs: \["id-ID"\]/);
-  assert.match(source, /transcript !== WAKE_WORD/);
-  assert.doesNotMatch(source, /webkitSpeechRecognition|fetch\s*\(|XMLHttpRequest|WebSocket|EventSource|localStorage|sessionStorage|indexedDB/);
+  assert.match(source, /requireLocal = true/);
+  assert.match(source, /accepted\.has\(transcript\)/);
+  assert.doesNotMatch(source, /fetch\s*\(|XMLHttpRequest|WebSocket|EventSource|localStorage|sessionStorage|indexedDB/);
 });
 
 test("Panitia manual controls arm and stop the local recognizer", async () => {

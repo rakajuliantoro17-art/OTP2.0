@@ -34,14 +34,19 @@ export function createLocalWakeWordRecognizer({
   onError = () => {},
   confidenceThreshold = 0.88,
   restartDelayMs = 350,
+  requireLocal = true,
+  wakeWords = [WAKE_WORD],
 } = {}) {
+  const accepted = new Set(wakeWords.map(normalizeTranscript));
   if (windowImpl?.isSecureContext !== true) {
     return unavailableController("Wake word memerlukan HTTPS atau localhost (secure context).");
   }
-  const Recognition = windowImpl?.SpeechRecognition;
+  const Recognition = requireLocal
+    ? windowImpl?.SpeechRecognition
+    : (windowImpl?.SpeechRecognition || windowImpl?.webkitSpeechRecognition);
   if (typeof Recognition !== "function" ||
-      typeof Recognition.available !== "function" ||
-      typeof Recognition.install !== "function") {
+      (requireLocal && (typeof Recognition.available !== "function" ||
+        typeof Recognition.install !== "function"))) {
     return unavailableController("Pengenalan suara lokal id-ID tidak didukung browser ini.");
   }
 
@@ -82,12 +87,16 @@ export function createLocalWakeWordRecognizer({
     if (!active || paused || disposed) return;
     for (let i = event.resultIndex || 0; i < event.results.length; i += 1) {
       const result = event.results[i];
-      if (!result?.isFinal) continue;
+      if (requireLocal && !result?.isFinal) continue;
       const alternative = result[0];
-      if (!alternative || !Number.isFinite(alternative.confidence) ||
-          alternative.confidence < confidenceThreshold) continue;
+      if (!alternative) continue;
+      if (requireLocal && (!Number.isFinite(alternative.confidence) ||
+          alternative.confidence < confidenceThreshold)) continue;
       const transcript = normalizeTranscript(alternative.transcript);
-      if (transcript !== WAKE_WORD || Date.now() < wakeCooldownUntil) continue;
+      const matched = requireLocal
+        ? accepted.has(transcript)
+        : transcript.split(" ").some((word) => accepted.has(word));
+      if (!matched || Date.now() < wakeCooldownUntil) continue;
 
       wakeCooldownUntil = Date.now() + 10000;
       publish("wake-word-detected");
@@ -106,9 +115,9 @@ export function createLocalWakeWordRecognizer({
     recognition = instance;
     instance.lang = "id-ID";
     instance.continuous = true;
-    instance.interimResults = false;
+    instance.interimResults = !requireLocal;
     instance.maxAlternatives = 1;
-    instance.processLocally = true;
+    if (requireLocal) instance.processLocally = true;
     instance.onresult = handleResult;
     instance.onerror = (event) => {
       if (!active || paused || disposed) return;
@@ -147,6 +156,7 @@ export function createLocalWakeWordRecognizer({
     publish("checking-local-language");
 
     try {
+      if (!requireLocal) return startRecognition();
       let availability = await Recognition.available({
         langs: ["id-ID"],
         processLocally: true,
