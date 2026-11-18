@@ -11,6 +11,9 @@ use crate::HostConfig;
 const APPROVED_PHRASE: &str = "Perhatian, Panitia. Ada notifikasi pelanggaran OTP baru. Silakan periksa notifikasinya di dashboard, ya.";
 const SAMPLE_RATE: usize = 24_000;
 const MAX_AUDIO_BYTES: usize = 700 * 1024;
+const MAX_VOICE_REFERENCE_BYTES: u64 = 10 * 1024 * 1024;
+const MIN_VOICE_REFERENCE_DURATION_MS: u64 = 1_000;
+const MAX_VOICE_REFERENCE_DURATION_MS: u64 = 20_000;
 const MIN_DURATION_MS: u64 = 250;
 const MAX_DURATION_MS: u64 = 15_000;
 
@@ -178,6 +181,11 @@ impl LocalNeuralEngine {
             "model license evidence file is missing"
         );
         anyhow::ensure!(voice_path.is_file(), "voice reference WAV is missing");
+        let voice_metadata = fs::metadata(&voice_path)?;
+        anyhow::ensure!(
+            (1_024..=MAX_VOICE_REFERENCE_BYTES).contains(&voice_metadata.len()),
+            "voice reference WAV must be between 1 KiB and 10 MiB"
+        );
         verify_model_bundle(&model_dir)?;
 
         let expected_voice_hash = config
@@ -235,7 +243,13 @@ impl LocalNeuralEngine {
         );
         let mut engine = LarasEngine::new(&model_dir, threads)?;
         let reference = wav::read_mono(&voice_path)?;
-        anyhow::ensure!(!reference.is_empty(), "voice reference WAV is empty");
+        let reference_duration_ms =
+            (reference.len() as u64 * 1000) / SAMPLE_RATE as u64;
+        anyhow::ensure!(
+            (MIN_VOICE_REFERENCE_DURATION_MS..=MAX_VOICE_REFERENCE_DURATION_MS)
+                .contains(&reference_duration_ms),
+            "voice reference duration must be between 1 and 20 seconds"
+        );
         engine.set_voice(&reference)?;
 
         Ok(Self { engine })
