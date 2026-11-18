@@ -5,7 +5,6 @@ import { mountSephiaControls } from "../visual/mount-sephia-controls.js";
 import { mountSephiaAvatar } from "../visual/mount-sephia-avatar.js";
 import { createNotificationSpeechController } from "../audio/announcement.js";
 import { createUnavailableLocalNeuralTtsAdapter } from "../audio/local-neural-tts.js";
-import { createLocalAudioAnnouncementAdapter } from "../audio/local-audio-announcement.js";
 import { createLocalWakeWordRecognizer } from "../audio/local-wake-word.js";
 
 /**
@@ -19,15 +18,12 @@ export function mountPanitiaSephia({
   onError = () => {},
   onNotification = () => {},
   avatarAssetUrl = null,
-  announcementAssetUrl = null,
   createRuntime = createSephiaRuntime,
   createState = createVisualState,
   mountControls = mountSephiaControls,
   mountAvatar = mountSephiaAvatar,
   bindLifecycle = bindPageLifecycle,
-  createSpeechAdapter = (win, assetUrl) => assetUrl
-    ? createLocalAudioAnnouncementAdapter({ AudioImpl: win?.Audio, assetUrl })
-    : createUnavailableLocalNeuralTtsAdapter(),
+  createSpeechAdapter = () => createUnavailableLocalNeuralTtsAdapter(),
   createWakeWordRecognizer = (win, callbacks) => createLocalWakeWordRecognizer({
     windowImpl: win,
     ...callbacks,
