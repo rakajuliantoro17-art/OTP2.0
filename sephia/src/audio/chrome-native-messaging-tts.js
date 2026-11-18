@@ -22,6 +22,7 @@ export function createChromeNativeMessagingTtsAdapter({
   unlockTimeoutMs = DEFAULT_AUDIO_UNLOCK_TIMEOUT_MS,
   setTimeoutImpl = globalThis.setTimeout,
   clearTimeoutImpl = globalThis.clearTimeout,
+  onStatusChange = () => {},
 } = {}) {
   if (!windowImpl?.addEventListener || typeof windowImpl.dispatchEvent !== "function") {
     throw new TypeError("A browser window event target is required.");
@@ -42,6 +43,16 @@ export function createChromeNativeMessagingTtsAdapter({
   let active = null;
   let pendingUnlock = null;
 
+  const publishStatus = (reason) => {
+    try {
+      onStatusChange(Object.freeze({
+        reason,
+        connected,
+        audioUnlocked,
+        available: !disposed && connected && audioUnlocked,
+      }));
+    } catch {}
+  };
   const emit = (name, detail) => {
     try { windowImpl.dispatchEvent(new CustomEventImpl(name, { detail })); } catch {}
   };
@@ -49,6 +60,7 @@ export function createChromeNativeMessagingTtsAdapter({
     const state = event?.detail?.state;
     if (state === "connected") {
       connected = true;
+      publishStatus("connected");
       return;
     }
     if (state === "disconnected") {
@@ -60,6 +72,7 @@ export function createChromeNativeMessagingTtsAdapter({
         pendingUnlock.resolve(false);
         pendingUnlock = null;
       }
+      publishStatus("disconnected");
     }
   };
   const onResult = (event) => {
@@ -75,9 +88,11 @@ export function createChromeNativeMessagingTtsAdapter({
     pendingUnlock = null;
     clearTimeoutImpl(operation.timeoutId);
     audioUnlocked = detail.ok === true;
+    publishStatus(audioUnlocked ? "audio-unlocked" : "audio-unlock-failed");
     operation.resolve(audioUnlocked);
   };
 
+  publishStatus("bridge-waiting");
   windowImpl.addEventListener(NATIVE_TTS_STATE_EVENT, onState);
   windowImpl.addEventListener(NATIVE_TTS_RESULT_EVENT, onResult);
   windowImpl.addEventListener(NATIVE_TTS_UNLOCK_RESULT_EVENT, onUnlockResult);
@@ -93,6 +108,7 @@ export function createChromeNativeMessagingTtsAdapter({
     const timeoutId = setTimeoutImpl(() => {
       if (pendingUnlock?.requestId !== requestId) return;
       pendingUnlock = null;
+      publishStatus("audio-unlock-timeout");
       resolveOperation(false);
     }, unlockTimeoutMs);
     pendingUnlock = {
@@ -104,6 +120,7 @@ export function createChromeNativeMessagingTtsAdapter({
 
     // This dispatch is synchronous. The content script creates/resumes its
     // AudioContext while the Panitia activation click still carries user gesture.
+    publishStatus("audio-unlock-pending");
     emit(NATIVE_TTS_UNLOCK_EVENT, { version: 1, requestId });
     return promise;
   };
@@ -145,6 +162,7 @@ export function createChromeNativeMessagingTtsAdapter({
     }, timeoutMs);
 
     try {
+      publishStatus("synthesizing");
       emit(NATIVE_TTS_REQUEST_EVENT, {
         version: 1,
         action: "synthesize-approved-announcement",
@@ -154,6 +172,7 @@ export function createChromeNativeMessagingTtsAdapter({
     } finally {
       clearTimeoutImpl(timeoutId);
       if (active === operation) active = null;
+      publishStatus("ready");
     }
   };
 
@@ -175,6 +194,7 @@ export function createChromeNativeMessagingTtsAdapter({
       disposed = true;
       connected = false;
       audioUnlocked = false;
+      publishStatus("disposed");
       windowImpl.removeEventListener(NATIVE_TTS_STATE_EVENT, onState);
       windowImpl.removeEventListener(NATIVE_TTS_RESULT_EVENT, onResult);
       windowImpl.removeEventListener(NATIVE_TTS_UNLOCK_RESULT_EVENT, onUnlockResult);
