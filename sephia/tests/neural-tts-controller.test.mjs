@@ -110,3 +110,23 @@ test("controller stays silent without an unlocked local audio bridge", async () 
   assert.equal(spoken, 0);
   controller.dispose();
 });
+
+test("manual speaker test speaks only the fixed approved phrase", async () => {
+  const { adapter, calls } = makeAdapter();
+  const controller = createNotificationSpeechController({ adapter });
+  assert.equal(await controller.test(), true);
+  assert.deepEqual(calls.synthesized.map((entry) => entry.text), [DEFAULT_ANNOUNCEMENT]);
+  assert.equal(calls.played.length, 1);
+  controller.dispose();
+  adapter.dispose();
+});
+
+test("manual speaker test remains silent when the native bridge is unavailable", async () => {
+  let spoken = 0;
+  const controller = createNotificationSpeechController({
+    adapter: { available: false, async speak() { spoken += 1; }, cancel() {} },
+  });
+  assert.equal(await controller.test(), false);
+  assert.equal(spoken, 0);
+  controller.dispose();
+});
