@@ -130,6 +130,7 @@ jobs:
             sephia/docs/STAGE-35-NATIVE-HOST-PROTOCOL-SMOKE-TEST.md
             sephia/docs/STAGE-36-PRODUCTION-CANDIDATE-RUNBOOK.md
             sephia/docs/STAGE-37-CHROME-AUDIO-ACTIVATION.md
+            sephia/docs/STAGE-37-CHROME-AUDIO-ACTIVATION.md
             sephia/docs/STAGE-35-NATIVE-HOST-PROTOCOL-SMOKE-TEST.md
             sephia/docs/STAGE-34-TARGET-PC-BENCHMARK.md
           if-no-files-found: error
