@@ -86,6 +86,26 @@
           ]
         }
       }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "ok",
+        "status"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "ok": {
+          "const": true
+        },
+        "status": {
+          "const": "ready"
+        }
+      }
     }
   ]
 }
