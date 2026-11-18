@@ -1,7 +1,7 @@
 # SEPHIA Stage 24 — Local Neural TTS Runtime Topology Gate
 
 **Branch:** feature/sephia-module  
-**Status:** design gate completed; runtime integration intentionally blocked pending target-workstation verification.  
+**Status:** design gate completed; Stage 29 selects Chrome Native Messaging as the preferred local bridge. Runtime integration remains blocked pending implementation and target-workstation verification.  
 **Decision carried forward:** Stage 23 local neural TTS remains the only approved final voice architecture.
 
 ## Findings
@@ -47,9 +47,10 @@ Browser support, model loading, memory footprint, CPU latency, and model packagi
 5. Do not change OTP, Firebase, Moodle, notification eligibility, deduplication, or page activation behavior.
 6. Keep all changes on feature/sephia-module; no merge or deployment.
 
-## Stage 25–28 follow-through
+## Stage 25–29 follow-through
 
 - Stages 25–26 implemented the adapter contract and deterministic controller tests.
 - Stage 27 adds a manifest qualification wrapper for the offline Laras/Pocket candidate. It requires pinned model and voice-reference hashes, license evidence, explicit consent evidence, local-only runtime declaration, and bounded in-memory audio output. It does not provision model weights or start a service.
 - Stage 28 adds a deterministic acceptance harness for cold/warm synthesis, playback start, CPU/RAM, and audio-buffer limits. Acoustic, network, license, and target-workstation reviews remain mandatory manual gates.
-- No endpoint, engine, model package, voice reference, or Panitia workstation benchmark has been approved. Host remains visual-only until evidence passes.
+- Stage 29 rejects a localhost/LAN HTTP TTS endpoint and selects a narrowly scoped Chrome extension + Native Messaging host. The existing Laras `Native::synth_to` API writes WAV to a path, so an audited in-memory API is a hard prerequisite before host integration.
+- The production Panitia host no longer imports or selects the legacy WAV adapter. No endpoint, engine, model package, voice reference, or Panitia workstation benchmark has been approved. Host remains visual-only until evidence passes.
