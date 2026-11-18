@@ -33,6 +33,8 @@ test("runtime pins model files, voice reference, native binary, and consent evid
     "voice_consent_evidence_path",
     "model_license_evidence_path",
     "runtime_sha256",
+    "runtime_dlls",
+    "native runtime dependency SHA-256 mismatch",
     "LARAS_DUMP_PCM",
     "LARAS_DUMP_VOICE",
     "LARAS_DUMP_LATENTS",
