@@ -54,9 +54,9 @@ Native Messaging is not itself a security boundary against other software runnin
 
 ## Critical dependency: in-memory Laras API
 
-The current Laras Rust `Native::synth_to(..., out: &Path)` writes generated WAV to a file. The desktop wrapper also writes temporary WAV files into its application cache. That does not satisfy SEPHIA's no-audio-persistence requirement.
+Stage 32 resolves the file-writing concern by calling the pinned public `laras::onnx::Engine::synthesize` API directly. It receives `Vec<f32>` samples and converts them to bounded PCM16 bytes in memory. It does not call `Native::synth_to(..., out: &Path)`, the Laras HTTP server, or the desktop wrapper's temporary WAV writer.
 
-Before integrating Laras, the local runtime must expose an audited in-memory API (for example, PCM samples or a WAV writer backed by an in-memory cursor). Do not call the existing file-writing API and then claim that audio was never persisted. Any upstream fork/patch must be pinned to a commit and carry Laras MIT/Apache attribution plus Pocket TTS Indonesian CC-BY-4.0 attribution.
+This path is pinned to Laras commit `e4ab05ca53a8cbf749405de5b1ac902b76880768`. The model files are verified individually against the committed provenance manifest; the voice reference and native binary are SHA-256 pinned at installation. The inference feature removes inherited Laras dump/trace environment variables before engine initialization. Actual runtime behavior still requires file/process inspection on the Panitia PC. Attribution is documented in `native-host/THIRD-PARTY-NOTICES.md`.
 
 ## Manual acceptance gates
 
