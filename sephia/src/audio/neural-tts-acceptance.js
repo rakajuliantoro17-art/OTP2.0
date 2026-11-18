@@ -3,6 +3,7 @@ import { APPROVED_NEURAL_TTS_TEXT } from "./local-neural-tts.js";
 const DEFAULT_LIMITS = Object.freeze({
   iterations: 3,
   timeoutMs: 20000,
+  maxColdSynthesisMs: 15000,
   maxWarmSynthesisMs: 8000,
   maxPlaybackStartMs: 1200,
   maxAudioBytes: 8 * 1024 * 1024,
@@ -20,13 +21,16 @@ function validMetric(value) {
   return Number.isFinite(value) && value >= 0;
 }
 
-async function withTimeout(promise, timeoutMs, label) {
+async function withTimeout(promise, timeoutMs, label, onTimeout = () => {}) {
   let timer;
   try {
     return await Promise.race([
       promise,
       new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new Error(label + " timed out.")), timeoutMs);
+        timer = setTimeout(() => {
+          try { onTimeout(); } catch {}
+          reject(new Error(label + " timed out."));
+        }, timeoutMs);
       }),
     ]);
   } finally {
@@ -78,10 +82,20 @@ export async function runNeuralTtsAcceptance({
     const controller = new AbortController();
     try {
       const before = now();
+      const synthesis = Promise.resolve().then(() =>
+        engine.synthesize(APPROVED_NEURAL_TTS_TEXT, { signal: controller.signal }));
+      // A runtime may ignore AbortSignal and resolve after timeout. Release its
+      // late buffer as soon as it arrives instead of leaking it in memory.
+      synthesis.then((lateResult) => {
+        if (controller.signal.aborted && lateResult?.audio != null) {
+          try { player.release(lateResult.audio); } catch {}
+        }
+      }).catch(() => {});
       const result = await withTimeout(
-        Promise.resolve().then(() => engine.synthesize(APPROVED_NEURAL_TTS_TEXT, { signal: controller.signal })),
+        synthesis,
         config.timeoutMs,
         "Local neural synthesis",
+        () => { controller.abort(); try { engine.cancel?.(); } catch {} },
       );
       const synthesizedAt = now();
       const elapsed = Math.max(0, synthesizedAt - before);
@@ -99,9 +113,19 @@ export async function runNeuralTtsAcceptance({
         throw new TypeError("Player must return started, finished, and cancel().");
       }
       const playbackRequestedAt = now();
-      await withTimeout(Promise.resolve(playback.started), config.timeoutMs, "Playback start");
+      await withTimeout(
+        Promise.resolve(playback.started),
+        config.timeoutMs,
+        "Playback start",
+        () => { controller.abort(); try { playback.cancel(); } catch {} },
+      );
       playbackStartMs.push(Math.max(0, now() - playbackRequestedAt));
-      await withTimeout(Promise.resolve(playback.finished), config.timeoutMs, "Playback completion");
+      await withTimeout(
+        Promise.resolve(playback.finished),
+        config.timeoutMs,
+        "Playback completion",
+        () => { controller.abort(); try { playback.cancel(); } catch {} },
+      );
 
       const metrics = await getMetrics();
       if (metrics && validMetric(metrics.cpuPercent)) cpuSamples.push(metrics.cpuPercent);
@@ -126,6 +150,7 @@ export async function runNeuralTtsAcceptance({
   const technicalChecks = {
     allIterationsCompleted: errors.length === 0 && synthesisMs.length === config.iterations - 1 &&
       playbackStartMs.length === config.iterations,
+    coldSynthesisLatency: firstSynthesisMs !== null && firstSynthesisMs <= config.maxColdSynthesisMs,
     warmSynthesisLatency: p95SynthesisMs !== null && p95SynthesisMs <= config.maxWarmSynthesisMs,
     playbackStartLatency: p95PlaybackStartMs !== null && p95PlaybackStartMs <= config.maxPlaybackStartMs,
     audioBufferLimit: audioBytes.length === config.iterations && Math.max(...audioBytes) <= config.maxAudioBytes,
