@@ -1,6 +1,11 @@
-import { DEFAULT_ANNOUNCEMENT } from "./announcement.js";
+import { DEFAULT_ANNOUNCEMENT, WAKE_WORD_ACKNOWLEDGEMENT } from "./announcement.js";
 
 export const APPROVED_NEURAL_TTS_TEXT = DEFAULT_ANNOUNCEMENT;
+export const APPROVED_WAKE_ACK_TEXT = WAKE_WORD_ACKNOWLEDGEMENT;
+export const APPROVED_NEURAL_TTS_TEXTS = Object.freeze([
+  APPROVED_NEURAL_TTS_TEXT,
+  APPROVED_WAKE_ACK_TEXT,
+]);
 export const DEFAULT_NEURAL_TTS_TIMEOUT_MS = 12000;
 
 /**
@@ -52,8 +57,8 @@ export function createLocalNeuralTtsAdapter({
   const speak = async (text) => {
     if (disposed) throw new Error("Neural TTS adapter has been disposed.");
     if (engine.available !== true) throw new Error("Local neural TTS engine is not ready.");
-    if (text !== APPROVED_NEURAL_TTS_TEXT) {
-      throw new Error("Teks di luar pengumuman SEPHIA yang disetujui tidak diizinkan.");
+    if (!APPROVED_NEURAL_TTS_TEXTS.includes(text)) {
+      throw new Error("Teks di luar frasa tetap SEPHIA yang disetujui tidak diizinkan.");
     }
     if (active) throw new Error("Local neural TTS is busy.");
 
@@ -75,7 +80,7 @@ export function createLocalNeuralTtsAdapter({
 
     try {
       const synthesis = Promise.resolve().then(() =>
-        engine.synthesize(APPROVED_NEURAL_TTS_TEXT, { signal: controller.signal }));
+        engine.synthesize(text, { signal: controller.signal }));
       // If a runtime ignores AbortSignal and resolves late, release its output
       // rather than leaving an unreachable audio buffer in memory.
       synthesis.then((lateAudio) => {
