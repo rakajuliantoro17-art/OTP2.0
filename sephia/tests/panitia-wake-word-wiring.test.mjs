@@ -65,6 +65,7 @@ test("wake-word callback changes only the SEPHIA visual state", () => {
   });
   bridge.visualState.activate();
   wakeCallbacks.onWakeWord();
-  assert.equal(bridge.visualState.snapshot.state, "listening");
+  // Wake word shows "listening", then the spoken acknowledgement moves it to "speaking".
+  assert.ok(["listening", "speaking"].includes(bridge.visualState.snapshot.state));
   bridge.dispose();
 });

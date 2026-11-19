@@ -6,6 +6,8 @@ import { mountSephiaAvatar } from "../visual/mount-sephia-avatar.js";
 import { createNotificationSpeechController } from "../audio/announcement.js";
 import { createBrowserLocalIndonesianTts } from "../audio/browser-local-tts.js";
 import { createLocalAudioAnnouncementAdapter } from "../audio/local-audio-announcement.js";
+import { createChromeNativeMessagingTtsAdapter } from "../audio/chrome-native-messaging-tts.js";
+import { createHybridSpeechAdapter } from "../audio/hybrid-speech-adapter.js";
 import { createLocalWakeWordRecognizer } from "../audio/local-wake-word.js";
 
 /**
@@ -26,12 +28,26 @@ export function mountPanitiaSephia({
   mountControls = mountSephiaControls,
   mountAvatar = mountSephiaAvatar,
   bindLifecycle = bindPageLifecycle,
-  createSpeechAdapter = (win, assetUrl) => assetUrl
-    ? createLocalAudioAnnouncementAdapter({ AudioImpl: win?.Audio, assetUrl })
-    : createBrowserLocalIndonesianTts({
-      speechSynthesisImpl: win?.speechSynthesis,
-      UtteranceImpl: win?.SpeechSynthesisUtterance,
-    }),
+  createSpeechAdapter = (win, assetUrl, callbacks = {}) => {
+    const browser = assetUrl
+      ? createLocalAudioAnnouncementAdapter({ AudioImpl: win?.Audio, assetUrl })
+      : createBrowserLocalIndonesianTts({
+        speechSynthesisImpl: win?.speechSynthesis,
+        UtteranceImpl: win?.SpeechSynthesisUtterance,
+      });
+    const EventImpl = win?.CustomEvent || globalThis.CustomEvent;
+    let neural = null;
+    try {
+      if (typeof win?.dispatchEvent === "function" && typeof EventImpl === "function") {
+        neural = createChromeNativeMessagingTtsAdapter({
+          windowImpl: win,
+          CustomEventImpl: EventImpl,
+          onStatusChange: callbacks.onNeuralStatus,
+        });
+      }
+    } catch {}
+    return createHybridSpeechAdapter({ neural, browser, onEngineChange: callbacks.onEngineChange });
+  },
   createWakeWordRecognizer = (win, callbacks) => createLocalWakeWordRecognizer({
     windowImpl: win,
     requireLocal: false,
@@ -88,10 +104,11 @@ export function mountPanitiaSephia({
       onWakeWord() {
         if (!visualState.snapshot.active) return;
         visualState.setState("listening");
-        // Audible acknowledgement; pause recognition so Sephia does not hear herself.
+        // Audible acknowledgement (fixed approved phrase); pause recognition so
+        // Sephia does not hear herself, then resume.
         try {
           wakeRecognizer.pause();
-          Promise.resolve(speechAdapter.speak("Ya, saya mendengarkan."))
+          Promise.resolve(speechController?.acknowledgeWakeWord?.())
             .catch(report)
             .finally(() => { try { wakeRecognizer.resume(); } catch {} });
         } catch (error) { report(error); }
@@ -109,7 +126,9 @@ export function mountPanitiaSephia({
       },
       onError: report,
     });
-    speechAdapter = createSpeechAdapter(windowImpl, announcementAssetUrl);
+    speechAdapter = createSpeechAdapter(windowImpl, announcementAssetUrl, {
+      onEngineChange(engine) { showDiag("suara: " + (engine === "neural" ? "neural lokal" : "browser (Chrome)")); },
+    });
     speechController = createNotificationSpeechController({
       adapter: speechAdapter,
       onStateChange(state) {
@@ -157,6 +176,8 @@ export function mountPanitiaSephia({
       documentImpl,
       onError: report,
       onActivated() {
+        // Unlock the neural audio bridge synchronously while the user gesture (if any) is live.
+        try { speechAdapter?.prepare?.(); } catch (error) { report(error); }
         return wakeRecognizer.start().then((started) => {
           if (!started && visualState.snapshot.active) visualState.setState("limited");
           return started;
