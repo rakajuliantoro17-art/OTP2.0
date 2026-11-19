@@ -1,6 +1,9 @@
 export const DEFAULT_ANNOUNCEMENT =
   "Perhatian, Panitia. Ada notifikasi pelanggaran OTP baru. Silakan periksa notifikasinya di dashboard, ya.";
 
+export const WAKE_WORD_ACKNOWLEDGEMENT =
+  "Ya, Panitia. SEPHIA siap membantu.";
+
 export function createNotificationSpeechController({
   adapter,
   onStateChange = () => {},
@@ -28,31 +31,42 @@ export function createNotificationSpeechController({
     setSpeaking(false);
   };
 
+  const speakApprovedPhrase = async (phrase) => {
+    if (disposed || adapter.available === false) return false;
+    const token = ++activeToken;
+    try { adapter.cancel(); } catch (error) {
+      try { onError(error); } catch {}
+      return false;
+    }
+
+    setSpeaking(true);
+    try {
+      await adapter.speak(phrase);
+      if (disposed || token !== activeToken) return false;
+      setSpeaking(false);
+      return true;
+    } catch (error) {
+      if (!disposed && token === activeToken) {
+        setSpeaking(false);
+        try { onError(error); } catch {}
+      }
+      return false;
+    }
+  };
+
   return Object.freeze({
     async announce(event) {
-      if (disposed || !event?.eventId || event.eventType !== "violation" || !Number.isSafeInteger(event.violationCount) ||
+      if (disposed || !event?.eventId ||
+          event.eventType !== "violation" || !Number.isSafeInteger(event.violationCount) ||
           event.violationCount < 27 || event.violationCount > 30) return false;
-
-      const token = ++activeToken;
-      try { adapter.cancel(); } catch (error) {
-        try { onError(error); } catch {}
-        return false;
-      }
-
-      setSpeaking(true);
-      try {
-        await adapter.speak(DEFAULT_ANNOUNCEMENT);
-        if (disposed || token !== activeToken) return false;
-        setSpeaking(false);
-        return true;
-      } catch (error) {
-        if (!disposed && token === activeToken) {
-          setSpeaking(false);
-          try { onError(error); } catch {}
-        }
-        return false;
-      }
+      return speakApprovedPhrase(DEFAULT_ANNOUNCEMENT);
     },
+
+    // Explicit, user-initiated audio check speaks the generic notification phrase.
+    test: () => speakApprovedPhrase(DEFAULT_ANNOUNCEMENT),
+
+    // Wake-word response is a separate fixed phrase; no event metadata is accepted.
+    acknowledgeWakeWord: () => speakApprovedPhrase(WAKE_WORD_ACKNOWLEDGEMENT),
 
     stop,
 

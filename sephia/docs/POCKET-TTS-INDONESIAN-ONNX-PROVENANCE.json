@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Pinned upstream file provenance reference; not a provisioned SEPHIA runtime manifest.",
+  "modelRepository": "anak10thn/pocket-tts-indonesian",
+  "modelRevision": "17257664e384561c957b02ac92edd1a24807f0e5",
+  "runtimeRepository": "Urdemonlord/laras-tts",
+  "runtimeRevision": "e4ab05ca53a8cbf749405de5b1ac902b76880768",
+  "runtimeVersion": "0.2.1",
+  "modelLicense": "CC-BY-4.0",
+  "attribution": "Pocket TTS Indonesian oleh anak10thn, CC-BY-4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "modelBundleBytes": 164385066,
+  "modelBundleSha256": "44e1aa12c9e5381b3ee7c016bc67071997cd1459cf19097bb6cc6f7ceb9092ce",
+  "bundleDigestAlgorithm": "SHA-256 of UTF-8 lines sorted lexicographically by path: path|bytes|sha256, joined with LF and no trailing LF.",
+  "files": [
+    {
+      "path": "VALIDATION.txt",
+      "bytes": 2494,
+      "sha256": "adaee7c240d0a5a7cdb9642e8da7be766705fb3ef7cac534fd58899ca39357ca"
+    },
+    {
+      "path": "bos_before_voice.npy",
+      "bytes": 4224,
+      "sha256": "2c52fe74873052f8daa1d0e6ff079c474b184ec2165c20cc4e5bca41ff9bbf0c"
+    },
+    {
+      "path": "bundle.json",
+      "bytes": 497,
+      "sha256": "a777975cbbd61eaab340fcfeb71b2f77f2f8f236ce296657587db1769faeb710"
+    },
+    {
+      "path": "flow_lm_flow_int8.onnx",
+      "bytes": 9935594,
+      "sha256": "5160e2a82d0ce3839c048b3da413ab8c2fa330202a7dd00b55fe81934b8e0791"
+    },
+    {
+      "path": "flow_lm_main_int8.onnx",
+      "bytes": 75865936,
+      "sha256": "dba97a71fdb9f099165298f930936d170a42d14967d1fb0ab6853a84a7fef026"
+    },
+    {
+      "path": "mimi_decoder_int8.onnx",
+      "bytes": 22616918,
+      "sha256": "a05a81992037d3322e8945c3c7884e7a1f31b31932bdb550e5ee2861f2a6f79d"
+    },
+    {
+      "path": "mimi_encoder.onnx",
+      "bytes": 39259746,
+      "sha256": "ec1ec959af10d161776a4385043448409e371312ceed5d7ff2ee7e47c24b766a"
+    },
+    {
+      "path": "text_conditioner.onnx",
+      "bytes": 16388310,
+      "sha256": "f3927e4c01994d1aaad306820aead1033cabc30bb3ac43469ff9919a3d2006e7"
+    },
+    {
+      "path": "tokenizer.model",
+      "bytes": 311347,
+      "sha256": "3ae0af2658bf8f54c6720603b4d965cad97d67cb0f245636d0eb23ff4f865fd8"
+    }
+  ],
+  "voiceReference": {
+    "required": true,
+    "included": false,
+    "note": "Do not use the upstream Common Voice example voice for production. Provision a separate adult feminine Indonesian recording with explicit written consent and pin its actual SHA-256."
+  },
+  "limitations": [
+    "This provenance record is derived from Laras scripts/unduh-model.sh at the pinned runtime revision.",
+    "It does not include a local runtime binary hash.",
+    "It does not include a production voice reference hash or consent record.",
+    "The native runtime must provide in-memory audio output; the current Laras Native::synth_to API writes a file."
+  ]
+}
