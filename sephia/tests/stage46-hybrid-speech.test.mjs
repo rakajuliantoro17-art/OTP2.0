@@ -43,3 +43,27 @@ test("host wires hybrid adapter with browser TTS fallback and controller wake ac
   assert.match(host, /createChromeNativeMessagingTtsAdapter/);
   assert.match(host, /acknowledgeWakeWord/);
 });
+
+import { mountPanitiaSephia } from "../src/host/mount-panitia-sephia.js";
+test("wake-word diagnostics callbacks are supplied from the host body (showDiag in scope)", () => {
+  let cb;
+  const win = { addEventListener() {}, removeEventListener() {} };
+  const els = [];
+  const doc = {
+    getElementById: (id) => ({ id, appendChild(n) { els.push(n); } }),
+    createElement: () => ({ style: {}, setAttribute() {}, set textContent(v) { this._t = v; }, get textContent() { return this._t; } }),
+  };
+  const b = mountPanitiaSephia({
+    documentImpl: doc, windowImpl: win, autoActivate: false,
+    createWakeWordRecognizer: (_w, callbacks) => { cb = callbacks; return { start: async () => true, stop() {}, pause() {}, resume: async () => true, dispose() {} }; },
+    createSpeechAdapter: () => ({ speak: async () => {}, cancel() {}, dispose() {} }),
+    createRuntime: () => ({ isActive: false, activate() {}, deactivate() {}, dispose() {} }),
+    mountControls: () => ({ dispose() {} }), bindLifecycle: () => ({ dispose() {} }),
+  });
+  assert.equal(typeof cb.onTrace, "function");
+  assert.equal(typeof cb.onHeard, "function");
+  cb.onTrace("soundstart");
+  cb.onHeard("sofia");
+  assert.match(els[0].textContent, /terdengar: .sofia./);
+  b.dispose();
+});
