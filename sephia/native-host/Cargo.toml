@@ -1,0 +1,18 @@
+[package]
+name = "sephia-native-host"
+version = "0.2.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = { version = "0.22", optional = true }
+sha2 = { version = "0.10", optional = true }
+hex = { version = "0.4", optional = true }
+anyhow = { version = "1", optional = true }
+laras = { git = "https://github.com/Urdemonlord/laras-tts", rev = "e4ab05ca53a8cbf749405de5b1ac902b76880768", default-features = false, features = ["onnx"], optional = true }
+
+[features]
+default = []
+inference = ["dep:laras", "dep:base64", "dep:sha2", "dep:hex", "dep:anyhow"]

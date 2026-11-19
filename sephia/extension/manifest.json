@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "SEPHIA Local Speech Bridge",
+  "version": "0.1.0",
+  "description": "Manual, tab-scoped bridge from the OTP 2.0 Panitia dashboard to the local SEPHIA neural speech host.",
+  "permissions": ["activeTab", "scripting", "nativeMessaging"],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Hubungkan SEPHIA",
+    "default_popup": "popup.html"
+  }
+}
