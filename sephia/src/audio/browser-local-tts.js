@@ -124,12 +124,27 @@ export function createBrowserLocalIndonesianTts({
 
       publish("speaking");
       return new Promise((resolve, reject) => {
+        // Watchdogs: some browsers (notably iOS Safari without user activation or with the
+        // silent switch on) accept speak() but never start or finish, leaving SEPHIA "speaking" forever.
+        let started = false;
+        const fail = (code) => {
+          clearTimeout(startTimer); clearTimeout(endTimer);
+          if (currentUtterance === utterance) currentUtterance = null;
+          try { speechSynthesisImpl.cancel(); } catch {}
+          publish("error", { error: code });
+          reject(new Error("TTS Bahasa Indonesia gagal: " + code));
+        };
+        const startTimer = setTimeout(() => { if (!started) fail("tidak-mulai"); }, 3500);
+        const endTimer = setTimeout(() => fail("timeout"), 5000 + text.length * 150);
+        utterance.onstart = () => { started = true; clearTimeout(startTimer); };
         utterance.onend = () => {
+          clearTimeout(startTimer); clearTimeout(endTimer);
           if (currentUtterance === utterance) currentUtterance = null;
           publish("ready");
           resolve();
         };
         utterance.onerror = (event) => {
+          clearTimeout(startTimer); clearTimeout(endTimer);
           if (currentUtterance === utterance) currentUtterance = null;
           publish("error", { error: event?.error || "speech-error" });
           reject(new Error("TTS Bahasa Indonesia gagal: " + (event?.error || "speech-error")));

@@ -15,6 +15,9 @@ import { createLocalWakeWordRecognizer } from "../audio/local-wake-word.js";
  * Resolves only explicit mount points; never scans the document.
  * Avatar rendering is optional and isolated from the notification runtime.
  */
+// iOS Safari only counts touchend/click as speech-unlocking user activation.
+const PRIME_EVENTS = ["pointerdown", "pointerup", "touchstart", "touchend", "click", "keydown"];
+
 export function mountPanitiaSephia({
   documentImpl = globalThis.document,
   windowImpl = globalThis.window,
@@ -152,7 +155,13 @@ export function mountPanitiaSephia({
       },
       onVoiceStatus(st) {
         const name = st?.voice ? st.voice : "default Chrome (tidak ada suara id-ID)";
-        if (st?.status === "error") { try { controls?.setStatus?.("Suara gagal: " + (st.error || "speech-error"), "error"); } catch {} return; }
+        if (st?.status === "error") {
+          const hint = (st.error === "tidak-mulai" || st.error === "timeout")
+            ? "Suara tidak keluar. Ketuk layar sekali, naikkan volume media, dan matikan mode senyap (iPhone)."
+            : "Suara gagal: " + (st.error || "speech-error");
+          try { controls?.setStatus?.(hint, "error"); } catch {}
+          return;
+        }
         try { controls?.setStatus?.("Suara: " + name + (st?.voices !== undefined ? " · " + st.voices + " suara tersedia" : ""), st?.voice ? "ready" : "info"); } catch {}
       },
       onEngineChange(engine) { showDiag("suara: " + (engine === "neural" ? "neural lokal" : "browser (Chrome)")); },
@@ -231,14 +240,14 @@ export function mountPanitiaSephia({
     // clicking the SEPHIA button.
     if (autoActivate) {
       const prime = () => {
-        for (const ev of ["pointerdown", "keydown", "touchstart"]) windowImpl.removeEventListener?.(ev, prime, true);
+        for (const ev of PRIME_EVENTS) windowImpl.removeEventListener?.(ev, prime, true);
         try {
           const synth = windowImpl.speechSynthesis;
           const Utt = windowImpl.SpeechSynthesisUtterance;
-          if (synth && Utt) { const u = new Utt(" "); u.volume = 0; synth.speak(u); }
+          if (synth && Utt) { const u = new Utt("."); u.volume = 0.01; u.lang = "id-ID"; synth.speak(u); }
         } catch (error) { report(error); }
       };
-      for (const ev of ["pointerdown", "keydown", "touchstart"]) windowImpl.addEventListener(ev, prime, true);
+      for (const ev of PRIME_EVENTS) windowImpl.addEventListener(ev, prime, true);
       try { controls.activate?.(); } catch (error) { report(error); }
     }
   } catch (error) {

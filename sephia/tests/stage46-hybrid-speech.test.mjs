@@ -90,3 +90,10 @@ test("loose wake word accepts Chrome mis-hearings of Sephia but not unrelated sp
   for (const t of ["save ya", "sephia", "sofia", "sefiya", "sepiya", "safia", "sepia"]) assert.equal(isLooseWakeWord(t, acc), true, t);
   for (const t of ["halo semuanya", "tolong cek ruang dua", "siswa terkunci", "selamat pagi bapak ibu"]) assert.equal(isLooseWakeWord(t, acc), false, t);
 });
+
+test("TTS watchdog rejects when the browser never starts speaking", async () => {
+  const synth = { getVoices: () => [], speak() {}, cancel() {}, addEventListener() {}, removeEventListener() {} };
+  class U { constructor(t) { this.text = t; } }
+  const a = createBrowserLocalIndonesianTts({ speechSynthesisImpl: synth, UtteranceImpl: U, relaxed: true });
+  await assert.rejects(() => a.speak("halo"), /tidak-mulai/);
+});
