@@ -35,6 +35,7 @@ export function createLocalWakeWordRecognizer({
   confidenceThreshold = 0.88,
   restartDelayMs = 350,
   onHeard = () => {},
+  onTrace = () => {},
   requireLocal = true,
   wakeWords = [WAKE_WORD],
 } = {}) {
@@ -77,6 +78,8 @@ export function createLocalWakeWordRecognizer({
     recognition = null;
     if (!current) return;
     current.onresult = null;
+    current.onstart = current.onaudiostart = current.onsoundstart = null;
+    current.onspeechstart = current.onspeechend = current.onnomatch = null;
     current.onerror = null;
     current.onend = null;
     try { current.abort?.(); } catch {
@@ -121,6 +124,13 @@ export function createLocalWakeWordRecognizer({
     instance.maxAlternatives = 1;
     if (requireLocal) instance.processLocally = true;
     instance.onresult = handleResult;
+    const trace = (name) => () => { try { onTrace(name); } catch {} };
+    instance.onstart = trace("start");
+    instance.onaudiostart = trace("audiostart");
+    instance.onsoundstart = trace("soundstart");
+    instance.onspeechstart = trace("speechstart");
+    instance.onspeechend = trace("speechend");
+    instance.onnomatch = trace("nomatch");
     instance.onerror = (event) => {
       if (!active || paused || disposed) return;
       if (event?.error === "no-speech") return;

@@ -51,6 +51,11 @@ export function mountPanitiaSephia({
   createWakeWordRecognizer = (win, callbacks) => createLocalWakeWordRecognizer({
     windowImpl: win,
     requireLocal: false,
+    onTrace(name) {
+      const T = { start: "pengenal mulai", audiostart: "mic terbuka (menunggu suara)", soundstart: "ada suara masuk",
+        speechstart: "ucapan terdeteksi", speechend: "ucapan selesai, memproses…", nomatch: "tidak dikenali" };
+      showDiag(T[name] || name);
+    },
     onHeard(text) { showDiag("terdengar: \u201c" + text + "\u201d"); },
     wakeWords: ["sephia", "sefia", "sofia", "sepia", "sefiya", "sepiya", "sephie", "sephya"],
     ...callbacks,
