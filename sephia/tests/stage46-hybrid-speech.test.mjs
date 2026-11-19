@@ -67,3 +67,19 @@ test("wake-word diagnostics callbacks are supplied from the host body (showDiag 
   assert.match(els[0].textContent, /terdengar: .sofia./);
   b.dispose();
 });
+
+import { selectIndonesianVoice, createBrowserLocalIndonesianTts } from "../src/audio/browser-local-tts.js";
+test("relaxed voice selection accepts non-female, non-local Indonesian voices", () => {
+  const v = [{ name: "Google US English", lang: "en-US", localService: false }, { name: "Google Bahasa Indonesia", lang: "id-ID", localService: false }];
+  assert.equal(selectIndonesianVoice(v).name, "Google Bahasa Indonesia");
+  assert.equal(selectIndonesianVoice([{ name: "X", lang: "en-US" }]), null);
+});
+test("relaxed adapter is available and speaks even without an Indonesian voice", async () => {
+  const spoken = [];
+  const synth = { getVoices: () => [], speak(u) { spoken.push(u); setTimeout(() => u.onend(), 0); }, cancel() {}, addEventListener() {}, removeEventListener() {} };
+  class U { constructor(t) { this.text = t; } }
+  const a = createBrowserLocalIndonesianTts({ speechSynthesisImpl: synth, UtteranceImpl: U, relaxed: true });
+  assert.equal(a.available, true);
+  await a.speak("halo");
+  assert.equal(spoken[0].lang, "id-ID");
+});

@@ -34,6 +34,8 @@ export function mountPanitiaSephia({
       : createBrowserLocalIndonesianTts({
         speechSynthesisImpl: win?.speechSynthesis,
         UtteranceImpl: win?.SpeechSynthesisUtterance,
+        relaxed: true,
+        onStatus: callbacks.onVoiceStatus,
       });
     const EventImpl = win?.CustomEvent || globalThis.CustomEvent;
     let neural = null;
@@ -147,6 +149,11 @@ export function mountPanitiaSephia({
         };
         const m = messages[status?.reason];
         if (m) { try { controls?.setStatus?.(m[0], m[1]); } catch {} }
+      },
+      onVoiceStatus(st) {
+        const name = st?.voice ? st.voice : "default Chrome (tidak ada suara id-ID)";
+        if (st?.status === "error") { try { controls?.setStatus?.("Suara gagal: " + (st.error || "speech-error"), "error"); } catch {} return; }
+        try { controls?.setStatus?.("Suara: " + name + (st?.voices !== undefined ? " · " + st.voices + " suara tersedia" : ""), st?.voice ? "ready" : "info"); } catch {}
       },
       onEngineChange(engine) { showDiag("suara: " + (engine === "neural" ? "neural lokal" : "browser (Chrome)")); },
     });

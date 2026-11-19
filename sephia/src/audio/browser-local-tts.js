@@ -12,6 +12,21 @@ export function selectIndonesianLocalVoice(voices = []) {
   return candidates.find((voice) => FEMALE_HINTS.test(voice.name || "")) || null;
 }
 
+const isIndonesian = (voice) => typeof voice?.lang === "string" && /^id(?:[-_]|$)/i.test(voice.lang);
+
+/**
+ * Relaxed selection (owner decision D-17-1/D-18-4): prefer local female Indonesian,
+ * then any local Indonesian, then any Indonesian voice (including Chrome's network
+ * "Google Bahasa Indonesia"), otherwise null (caller may fall back to the default voice).
+ */
+export function selectIndonesianVoice(voices = []) {
+  const id = voices.filter(isIndonesian);
+  return id.find((v) => v.localService === true && FEMALE_HINTS.test(v.name || "")) ||
+    id.find((v) => v.localService === true) ||
+    id.find((v) => FEMALE_HINTS.test(v.name || "")) ||
+    id[0] || null;
+}
+
 /**
  * Browser/OS TTS adapter. It accepts only voices marked localService and
  * tagged Indonesian. No remote speech service or voice download is used.
@@ -22,7 +37,9 @@ export function createBrowserLocalIndonesianTts({
   speechSynthesisImpl = globalThis.speechSynthesis,
   UtteranceImpl = globalThis.SpeechSynthesisUtterance,
   onStatus = () => {},
+  relaxed = false,
 } = {}) {
+  const pick = relaxed ? selectIndonesianVoice : selectIndonesianLocalVoice;
   if (!speechSynthesisImpl || typeof speechSynthesisImpl.speak !== "function" ||
       typeof speechSynthesisImpl.getVoices !== "function" ||
       typeof UtteranceImpl !== "function") {
@@ -38,7 +55,7 @@ export function createBrowserLocalIndonesianTts({
   let disposed = false;
   let generation = 0;
   let currentUtterance = null;
-  let selectedVoice = selectIndonesianLocalVoice(speechSynthesisImpl.getVoices());
+  let selectedVoice = pick(speechSynthesisImpl.getVoices());
 
   const publish = (status, detail = {}) => {
     try { onStatus(Object.freeze({ status, voice: selectedVoice?.name || null, ...detail })); } catch {}
@@ -46,8 +63,8 @@ export function createBrowserLocalIndonesianTts({
 
   const refreshVoice = () => {
     if (disposed) return;
-    selectedVoice = selectIndonesianLocalVoice(speechSynthesisImpl.getVoices());
-    publish(selectedVoice ? "ready" : "unavailable");
+    selectedVoice = pick(speechSynthesisImpl.getVoices());
+    publish(selectedVoice ? "ready" : "unavailable", { voices: speechSynthesisImpl.getVoices().length });
   };
 
   speechSynthesisImpl.addEventListener?.("voiceschanged", refreshVoice);
@@ -56,6 +73,7 @@ export function createBrowserLocalIndonesianTts({
     if (selectedVoice) return selectedVoice;
     refreshVoice();
     if (selectedVoice) return selectedVoice;
+    if (relaxed) return null; // use the browser default voice with lang id-ID
     if (typeof speechSynthesisImpl.addEventListener !== "function") {
       throw new Error("Tidak ditemukan suara TTS lokal Bahasa Indonesia (id-ID).");
     }
@@ -78,7 +96,7 @@ export function createBrowserLocalIndonesianTts({
   };
 
   return Object.freeze({
-    get available() { return Boolean(selectedVoice) && !disposed; },
+    get available() { return (relaxed || Boolean(selectedVoice)) && !disposed; },
     get voice() {
       return selectedVoice ? Object.freeze({
         name: selectedVoice.name,
@@ -98,7 +116,7 @@ export function createBrowserLocalIndonesianTts({
       speechSynthesisImpl.cancel();
       const utterance = new UtteranceImpl(text);
       currentUtterance = utterance;
-      utterance.voice = voice;
+      if (voice) utterance.voice = voice;
       utterance.lang = "id-ID";
       utterance.rate = 0.9;
       utterance.pitch = 1.04;
