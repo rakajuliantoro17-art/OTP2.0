@@ -83,3 +83,10 @@ test("relaxed adapter is available and speaks even without an Indonesian voice",
   await a.speak("halo");
   assert.equal(spoken[0].lang, "id-ID");
 });
+
+import { isLooseWakeWord } from "../src/audio/local-wake-word.js";
+test("loose wake word accepts Chrome mis-hearings of Sephia but not unrelated speech", () => {
+  const acc = new Set(["sephia", "sefia", "sofia", "sepia"]);
+  for (const t of ["save ya", "sephia", "sofia", "sefiya", "sepiya", "safia", "sepia"]) assert.equal(isLooseWakeWord(t, acc), true, t);
+  for (const t of ["halo semuanya", "tolong cek ruang dua", "siswa terkunci", "selamat pagi bapak ibu"]) assert.equal(isLooseWakeWord(t, acc), false, t);
+});

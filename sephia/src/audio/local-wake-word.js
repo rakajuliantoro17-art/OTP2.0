@@ -27,6 +27,22 @@ function unavailableController(reason) {
  * and a locally available/downloadable id-ID language pack. It never falls
  * back to a server recognizer and never exposes or persists recognized text.
  */
+/**
+ * Phonetic skeleton: ph/v/p -> f, drop vowels, y and spaces. "sephia", "sefia", "sofia",
+ * "sepia" and Chrome's id-ID mis-hearing "save ya" all reduce to "sf".
+ */
+export function phoneticSkeleton(text) {
+  return String(text || "").toLowerCase().replace(/ph/g, "f").replace(/[vp]/g, "f").replace(/[^a-z]/g, "").replace(/[aeiouy]/g, "");
+}
+
+export function isLooseWakeWord(transcript, accepted) {
+  const words = String(transcript || "").split(" ").filter(Boolean);
+  if (words.some((word) => accepted.has(word))) return true;
+  const letters = words.join("");
+  // Short utterances only (a bare call), to keep ambient speech from triggering.
+  return words.length > 0 && words.length <= 2 && letters.length <= 9 && phoneticSkeleton(letters) === "sf";
+}
+
 export function createLocalWakeWordRecognizer({
   windowImpl = globalThis.window,
   onWakeWord = () => {},
@@ -100,7 +116,7 @@ export function createLocalWakeWordRecognizer({
       try { onHeard(transcript); } catch {}
       const matched = requireLocal
         ? accepted.has(transcript)
-        : transcript.split(" ").some((word) => accepted.has(word));
+        : isLooseWakeWord(transcript, accepted);
       if (!matched || Date.now() < wakeCooldownUntil) continue;
 
       wakeCooldownUntil = Date.now() + 10000;
