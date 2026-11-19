@@ -42,6 +42,42 @@ jobs:
       - name: Verify local Indonesian TTS adapter
         working-directory: sephia
         run: npm run verify:tts
+      - name: Verify neural TTS modules
+        working-directory: sephia
+        run: npm run verify:neural-tts
+      - name: Verify Stage 27 neural runtime qualification
+        working-directory: sephia
+        run: npm run verify:runtime-prototype
+      - name: Verify Stage 28 acceptance
+        working-directory: sephia
+        run: npm run verify:acceptance
+      - name: Verify Stage 29 bridge security
+        working-directory: sephia
+        run: npm run verify:stage29
+      - name: Verify Stage 30 Chrome extension
+        working-directory: sephia
+        run: npm run verify:stage30
+      - name: Verify Stage 31 native host contract
+        working-directory: sephia
+        run: npm run verify:stage31
+      - name: Verify Stage 32 inference integration
+        working-directory: sephia
+        run: npm run verify:stage32
+      - name: Verify Stage 33 provisioning
+        working-directory: sephia
+        run: npm run verify:stage33
+      - name: Verify Stage 34 benchmark
+        working-directory: sephia
+        run: npm run verify:stage34
+      - name: Verify Stage 35 host smoke
+        working-directory: sephia
+        run: npm run verify:stage35
+      - name: Verify Stage 37 audio activation
+        working-directory: sephia
+        run: npm run verify:stage37
+      - name: Verify Stage 38 diagnostics
+        working-directory: sephia
+        run: npm run verify:stage38
       - name: Verify on-device Indonesian wake-word recognition
         working-directory: sephia
         run: npm run verify:wakeword

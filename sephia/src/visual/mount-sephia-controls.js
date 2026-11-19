@@ -11,6 +11,10 @@ const CSS = `
 .sephia-controls[data-state="error"] .sephia-orb{background:#ff626f;box-shadow:0 0 12px #ff626f}
 .sephia-controls[data-state="limited"] .sephia-orb{background:#ffd166;box-shadow:0 0 12px #ffd166}
 .sephia-label{font-size:.82rem;font-weight:600;letter-spacing:.02em}
+.sephia-status{max-width:14rem;font-size:.68rem;line-height:1.3;color:#a9c8dc}
+.sephia-status[data-level="error"]{color:#ff9aa5}
+.sephia-status[data-level="ready"]{color:#8ce7bd}
+.sephia-settings-panel button:disabled{opacity:.45;cursor:not-allowed}
 .sephia-settings{position:relative}
 .sephia-settings summary{list-style:none;cursor:pointer;border-radius:50%;width:2rem;height:2rem;display:grid;place-items:center;border:1px solid rgba(150,190,220,.22);background:rgba(12,25,44,.7)}
 .sephia-settings summary::-webkit-details-marker{display:none}
@@ -43,6 +47,8 @@ export function mountSephiaControls({
   onError = () => {},
   onActivated = () => {},
   onDeactivated = () => {},
+  onTestSpeech = () => Promise.resolve(false),
+  isSpeechReady = () => false,
 }) {
   if (!container || typeof container.appendChild !== "function") throw new TypeError("A mount container is required.");
   if (!runtime || typeof runtime.activate !== "function" || typeof runtime.deactivate !== "function" ||
@@ -73,6 +79,10 @@ export function mountSephiaControls({
   const label = element(documentImpl, "span", "sephia-label", "SEPHIA");
   trigger.append(orb, label);
 
+  const status = element(documentImpl, "div", "sephia-status", "Menyiapkan SEPHIA…");
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+
   const visualizer = element(documentImpl, "div", "sephia-visualizer");
   visualizer.setAttribute("role", "img");
   visualizer.setAttribute("aria-label", "Indikator aktivitas suara SEPHIA");
@@ -89,12 +99,25 @@ export function mountSephiaControls({
   const explanation = element(documentImpl, "p", "", "Matikan efek visual tanpa menghentikan pembacaan notifikasi atau status SEPHIA.");
   const toggleVisualizer = element(documentImpl, "button", "", "Nonaktifkan visualizer");
   toggleVisualizer.type = "button";
-  panel.append(explanation, toggleVisualizer);
+  const testSpeech = element(documentImpl, "button", "", "Uji suara SEPHIA");
+  testSpeech.type = "button";
+  testSpeech.disabled = true;
+  panel.append(explanation, toggleVisualizer, testSpeech);
   settings.append(summary, panel);
-  root.append(trigger, visualizer, settings);
+  root.append(trigger, visualizer, settings, status);
   container.appendChild(root);
 
   let visualizerEnabled = visualState.snapshot.visualizerEnabled;
+  let statusMessage = "Menyiapkan SEPHIA…";
+  let statusLevel = "info";
+
+  const setStatus = (message, level = "info") => {
+    statusMessage = String(message || "");
+    statusLevel = level;
+    status.textContent = statusMessage;
+    status.dataset.level = statusLevel;
+    testSpeech.disabled = !Boolean(isSpeechReady());
+  };
 
   const render = (snapshot) => {
     if (disposed) return;
@@ -107,6 +130,15 @@ export function mountSephiaControls({
     visualizer.hidden = !snapshot.visualizerEnabled;
     toggleVisualizer.textContent = snapshot.visualizerEnabled ? "Nonaktifkan visualizer" : "Aktifkan visualizer";
     toggleVisualizer.setAttribute("aria-pressed", String(snapshot.visualizerEnabled));
+    testSpeech.disabled = !Boolean(isSpeechReady());
+    status.textContent = statusMessage || (
+      snapshot.state === "inactive" ? "Nonaktif — aktifkan secara manual." :
+      snapshot.state === "limited" ? "Mode terbatas — periksa ekstensi, mikrofon, dan audio." :
+      snapshot.state === "error" ? "Terjadi masalah — periksa diagnostik SEPHIA." :
+      snapshot.state === "listening" ? "Panggilan SEPHIA terdeteksi." :
+      "Aktif — menunggu panggilan SEPHIA."
+    );
+    status.dataset.level = statusLevel;
   };
 
   const unsubscribe = visualState.subscribe?.(render);
@@ -137,6 +169,24 @@ export function mountSephiaControls({
       try { onError(error); } catch {}
     }
   };
+  const handleTestSpeech = async () => {
+    if (!isSpeechReady()) {
+      setStatus("Suara belum siap: hubungkan ekstensi dan aktifkan audio terlebih dahulu.", "error");
+      return;
+    }
+    testSpeech.disabled = true;
+    setStatus("Menjalankan uji suara lokal…");
+    try {
+      const ok = await onTestSpeech();
+      setStatus(ok ? "Uji suara selesai. Jika tidak terdengar, periksa speaker dan volume Windows." :
+        "Uji suara gagal. Periksa model, voice reference, dan Native Host.", ok ? "ready" : "error");
+    } catch (error) {
+      setStatus("Uji suara gagal: " + String(error?.message || error), "error");
+      try { onError(error); } catch {}
+    } finally {
+      testSpeech.disabled = !Boolean(isSpeechReady());
+    }
+  };
   const onToggleVisualizer = () => {
     visualizerEnabled = !visualizerEnabled;
     visualState.setVisualizerEnabled(visualizerEnabled);
@@ -144,16 +194,19 @@ export function mountSephiaControls({
   };
   trigger.addEventListener("click", onTrigger);
   toggleVisualizer.addEventListener("click", onToggleVisualizer);
+  testSpeech.addEventListener("click", handleTestSpeech);
 
   return Object.freeze({
     element: root,
     activate() { if (!disposed && !runtime.isActive) onTrigger(); return runtime.isActive; },
     refresh: () => render(visualState.snapshot),
+    setStatus,
     dispose() {
       if (disposed) return;
       disposed = true;
       trigger.removeEventListener("click", onTrigger);
       toggleVisualizer.removeEventListener("click", onToggleVisualizer);
+      testSpeech.removeEventListener("click", handleTestSpeech);
       try { unsubscribe?.(); } catch {}
       root.remove();
     },

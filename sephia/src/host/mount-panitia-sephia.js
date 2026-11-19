@@ -109,6 +109,7 @@ export function mountPanitiaSephia({
       onWakeWord() {
         if (!visualState.snapshot.active) return;
         visualState.setState("listening");
+        try { controls?.setStatus?.("Panggilan terdeteksi. SEPHIA sedang merespons…", "ready"); } catch {}
         // Audible acknowledgement (fixed approved phrase); pause recognition so
         // Sephia does not hear herself, then resume.
         try {
@@ -132,6 +133,21 @@ export function mountPanitiaSephia({
       onError: report,
     });
     speechAdapter = createSpeechAdapter(windowImpl, announcementAssetUrl, {
+      onNeuralStatus(status) {
+        const messages = {
+          "bridge-waiting": ["Neural belum terhubung (opsional); memakai suara Chrome.", "info"],
+          connected: ["Ekstensi dan Native Host tersambung.", "ready"],
+          disconnected: ["Jembatan neural terputus; memakai suara Chrome.", "info"],
+          "audio-unlock-pending": ["Membuka audio neural…", "info"],
+          "audio-unlocked": ["Audio neural siap.", "ready"],
+          "audio-unlock-failed": ["Chrome menolak aktivasi audio neural; memakai suara Chrome.", "info"],
+          "audio-unlock-timeout": ["Ekstensi tidak merespons; memakai suara Chrome.", "info"],
+          synthesizing: ["Mesin neural sedang membuat suara…", "info"],
+          ready: ["Jembatan TTS neural siap.", "ready"],
+        };
+        const m = messages[status?.reason];
+        if (m) { try { controls?.setStatus?.(m[0], m[1]); } catch {} }
+      },
       onEngineChange(engine) { showDiag("suara: " + (engine === "neural" ? "neural lokal" : "browser (Chrome)")); },
     });
     speechController = createNotificationSpeechController({
@@ -180,11 +196,16 @@ export function mountPanitiaSephia({
       visualState,
       documentImpl,
       onError: report,
+      isSpeechReady: () => speechAdapter?.available === true,
+      onTestSpeech: () => speechController.test(),
       onActivated() {
         // Unlock the neural audio bridge synchronously while the user gesture (if any) is live.
-        try { speechAdapter?.prepare?.(); } catch (error) { report(error); }
+        try { if (typeof speechAdapter?.prepare === "function") speechAdapter.prepare(); } catch (error) { report(error); }
         return wakeRecognizer.start().then((started) => {
-          if (!started && visualState.snapshot.active) visualState.setState("limited");
+          if (!started && visualState.snapshot.active) {
+            visualState.setState("limited");
+            try { controls?.setStatus?.("Suara siap; wake word belum aktif. Periksa izin mikrofon dan pengenalan suara.", "error"); } catch {}
+          }
           return started;
         }).catch((error) => {
           if (visualState.snapshot.active) visualState.setState("limited");
