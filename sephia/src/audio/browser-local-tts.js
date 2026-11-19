@@ -136,7 +136,7 @@ export function createBrowserLocalIndonesianTts({
         };
         const startTimer = setTimeout(() => { if (!started) fail("tidak-mulai"); }, 3500);
         const endTimer = setTimeout(() => fail("timeout"), 5000 + text.length * 150);
-        utterance.onstart = () => { started = true; clearTimeout(startTimer); };
+        utterance.onstart = () => { started = true; clearTimeout(startTimer); publish("started"); };
         utterance.onend = () => {
           clearTimeout(startTimer); clearTimeout(endTimer);
           if (currentUtterance === utterance) currentUtterance = null;

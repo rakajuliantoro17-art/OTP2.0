@@ -154,6 +154,12 @@ export function mountPanitiaSephia({
         if (m) { try { controls?.setStatus?.(m[0], m[1]); } catch {} }
       },
       onVoiceStatus(st) {
+        const who = st?.voice || "default (tanpa suara id-ID)";
+        const T = { started: "TTS mulai bicara — " + who, speaking: "TTS dikirim ke browser — " + who,
+          ready: "TTS siap/selesai — " + who + (st?.voices !== undefined ? " · " + st.voices + " suara" : ""),
+          unavailable: "TTS: tidak ada suara id-ID (" + (st?.voices ?? "?") + " suara), pakai default",
+          error: "TTS error: " + (st?.error || "?") };
+        if (T[st?.status]) showDiag(T[st.status]);
         const name = st?.voice ? st.voice : "default Chrome (tidak ada suara id-ID)";
         if (st?.status === "error") {
           const hint = (st.error === "tidak-mulai" || st.error === "timeout")
