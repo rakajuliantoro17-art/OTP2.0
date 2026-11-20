@@ -7,6 +7,7 @@
   (lokal wanita → lokal → id-ID apa pun → default Chrome `lang=id-ID`).
 - Wake word (D-18-2): pengenal suara Chrome, varian ejaan sephia/sefia/sofia/sepia…; balasan baku
   "Ya, Panitia. SEPHIA siap membantu."
+- Perintah suara Tahap A (D-18-6): setelah "Sephia", ucapkan status / terkunci / kritis / peringatan / ulangi / diam / bantuan (jawaban angka agregat, tanpa nama siswa, hanya membaca data).
 - Diagnostik di sidebar: baris status (mesin suara, ekstensi, wake word), baris "Mic: …" (tahap audio + teks terdengar),
   tombol "Uji suara SEPHIA" di menu ⋯.
 

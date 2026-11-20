@@ -68,6 +68,13 @@ export function createNotificationSpeechController({
     // Wake-word response is a separate fixed phrase; no event metadata is accepted.
     acknowledgeWakeWord: () => speakApprovedPhrase(WAKE_WORD_ACKNOWLEDGEMENT),
 
+    // Tier A voice-command replies: aggregate counts only, built by core/voice-commands.js.
+    speakStatus: (text) => (
+      typeof text === "string" && text.length > 0 && text.length <= 240 &&
+      /^[\p{L}\p{N}\s.,:;!?-]+$/u.test(text)
+        ? speakApprovedPhrase(text) : Promise.resolve(false)
+    ),
+
     stop,
 
     dispose() {

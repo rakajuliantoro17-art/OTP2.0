@@ -14,6 +14,9 @@ function unavailableController(reason) {
     supported: false,
     get isActive() { return false; },
     start: async () => { throw new Error(reason); },
+    openCommandWindow() {},
+    closeCommandWindow() {},
+    get commandWindowOpen() { return false; },
     pause() {},
     resume: async () => false,
     stop() {},
@@ -52,6 +55,7 @@ export function createLocalWakeWordRecognizer({
   restartDelayMs = 350,
   onHeard = () => {},
   onTrace = () => {},
+  onCommand = () => {},
   requireLocal = true,
   wakeWords = [WAKE_WORD],
 } = {}) {
@@ -76,6 +80,7 @@ export function createLocalWakeWordRecognizer({
   let generation = 0;
   let wakeCooldownUntil = 0;
   let listeningUntilTimer = null;
+  let commandUntil = 0;
 
   const publish = (state, detail = {}) => {
     try { onStateChange(Object.freeze({ state, ...detail })); } catch {}
@@ -117,6 +122,10 @@ export function createLocalWakeWordRecognizer({
       const matched = requireLocal
         ? accepted.has(transcript)
         : isLooseWakeWord(transcript, accepted);
+      if (!matched && commandUntil > Date.now() && (result?.isFinal || requireLocal)) {
+        try { onCommand(transcript); } catch (error) { report(error); }
+        continue;
+      }
       if (!matched || Date.now() < wakeCooldownUntil) continue;
 
       wakeCooldownUntil = Date.now() + 10000;
@@ -227,6 +236,10 @@ export function createLocalWakeWordRecognizer({
     get isActive() { return active && !paused && !disposed; },
 
     start,
+
+    openCommandWindow(ms = 8000) { commandUntil = Date.now() + Math.max(0, Number(ms) || 0); },
+    closeCommandWindow() { commandUntil = 0; },
+    get commandWindowOpen() { return commandUntil > Date.now(); },
 
     pause() {
       if (!active || paused || disposed) return;

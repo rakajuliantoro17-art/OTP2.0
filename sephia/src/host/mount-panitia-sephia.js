@@ -8,6 +8,7 @@ import { createBrowserLocalIndonesianTts } from "../audio/browser-local-tts.js";
 import { createLocalAudioAnnouncementAdapter } from "../audio/local-audio-announcement.js";
 import { createChromeNativeMessagingTtsAdapter } from "../audio/chrome-native-messaging-tts.js";
 import { createHybridSpeechAdapter } from "../audio/hybrid-speech-adapter.js";
+import { parseVoiceCommand, buildCommandReply, summarizeStudents, UNKNOWN_REPLY } from "../core/voice-commands.js";
 import { createLocalWakeWordRecognizer } from "../audio/local-wake-word.js";
 
 /**
@@ -25,6 +26,8 @@ export function mountPanitiaSephia({
   onNotification = () => {},
   avatarAssetUrl = null,
   autoActivate = true,
+  statsProvider = null,
+  commandWindowMs = 8000,
   announcementAssetUrl = null,
   createRuntime = createSephiaRuntime,
   createState = createVisualState,
@@ -102,9 +105,43 @@ export function mountPanitiaSephia({
     "limited": "tidak tersedia", "error": "error", "stopped": "mati",
   };
 
+  let lastReply = "";
+  const speakReply = (text) => {
+    lastReply = text;
+    try { wakeRecognizer.pause(); } catch {}
+    return Promise.resolve(speechController?.speakStatus?.(text))
+      .catch(report)
+      .finally(() => {
+        Promise.resolve(wakeRecognizer.resume()).catch(() => {}).finally(() => {
+          try { wakeRecognizer.openCommandWindow(commandWindowMs); } catch {}
+        });
+      });
+  };
+  const readSnapshot = () => {
+    try {
+      const raw = typeof statsProvider === "function" ? statsProvider() : null;
+      if (!raw) return null;
+      return Array.isArray(raw) ? summarizeStudents(raw) : raw;
+    } catch (error) { report(error); return null; }
+  };
+  const handleCommand = (transcript) => {
+    const command = parseVoiceCommand(transcript);
+    showDiag("perintah: \u201c" + transcript + "\u201d" + (command ? " \u2192 " + command : " (tidak dikenali)"));
+    if (command === "quiet") {
+      try { speechController?.stop?.(); } catch {}
+      try { wakeRecognizer.closeCommandWindow(); } catch {}
+      try { controls?.setStatus?.("Perintah selesai. Panggil “Sephia” lagi bila perlu.", "info"); } catch {}
+      return;
+    }
+    if (command === "repeat") return speakReply(lastReply || UNKNOWN_REPLY);
+    if (!command) return speakReply(UNKNOWN_REPLY);
+    return speakReply(buildCommandReply(command, readSnapshot()));
+  };
+
   try {
     visualState = createState();
     wakeRecognizer = createWakeWordRecognizer(windowImpl, {
+      onCommand: handleCommand,
       onTrace(name) {
         const T = { start: "pengenal mulai", audiostart: "mic terbuka (menunggu suara)", soundstart: "ada suara masuk",
           speechstart: "ucapan terdeteksi", speechend: "ucapan selesai, memproses…", nomatch: "tidak dikenali" };
@@ -121,7 +158,12 @@ export function mountPanitiaSephia({
           wakeRecognizer.pause();
           Promise.resolve(speechController?.acknowledgeWakeWord?.())
             .catch(report)
-            .finally(() => { try { wakeRecognizer.resume(); } catch {} });
+            .finally(() => {
+              Promise.resolve(wakeRecognizer.resume()).catch(() => {}).finally(() => {
+                try { wakeRecognizer.openCommandWindow(commandWindowMs); } catch {}
+                try { controls?.setStatus?.("Mendengarkan perintah: status, terkunci, kritis, peringatan, ulangi, diam.", "ready"); } catch {}
+              });
+            });
         } catch (error) { report(error); }
       },
       onStateChange(snapshot) {
