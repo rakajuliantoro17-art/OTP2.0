@@ -29,10 +29,12 @@
 .cbtFoot{margin-top:14px;font-size:10px;opacity:.45;letter-spacing:.5px}
 #cbtToast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(16px);padding:10px 22px;border-radius:999px;backdrop-filter:blur(12px);color:white;font-size:13px;font-weight:600;z-index:9999999;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(0.16,1,.3,1);white-space:nowrap}
 #cbtToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#cbtCam{position:fixed;right:16px;bottom:16px;z-index:999998;width:112px;background:rgba(8,8,8,.88);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:7px;display:grid;gap:5px;cursor:move;user-select:none}
-#cbtVideo{width:100%;height:132px;object-fit:cover;background:#000;border-radius:10px;border:2px solid rgba(57,255,20,.5)}
-#cbtCamSt{text-align:center;font-size:10px;font-weight:700;color:white;padding:2px 0}
-.cbtCamBtns{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+/* Kamera: tampil sebagai titik kecil 25x25 px (stream tetap aktif; hanya ukuran tampilan yang berubah).
+   Warna bingkai = status: hijau aktif, kuning meminta izin, merah terputus. Kursor di atasnya menampilkan keterangan. */
+#cbtCam{position:fixed;right:10px;bottom:10px;z-index:999998;width:25px;height:25px;box-sizing:border-box;padding:0;border-radius:50%;overflow:hidden;background:#000;border:2px solid rgba(255,255,255,.4);display:block;cursor:move;user-select:none}
+#cbtVideo{width:100%;height:100%;display:block;object-fit:cover;background:#000;border:0;border-radius:0}
+#cbtCamSt{display:none}
+.cbtCamBtns{display:none}
 .cbtCamBtns button{height:28px;border:none;border-radius:7px;background:#1e1e1e;color:white;cursor:pointer;font-size:15px;transition:.15s}
 .cbtCamBtns button:active{transform:scale(.92)}
 
@@ -389,7 +391,11 @@ let camStream = null, useFront = true;
 const vid   = document.getElementById("cbtVideo");
 const camSt = document.getElementById("cbtCamSt");
 
-function setCamSt(t, c="#fff") { camSt.innerHTML = t; camSt.style.color = c; }
+function setCamSt(t, c="#fff") {
+    camSt.innerHTML = t; camSt.style.color = c;
+    const box = document.getElementById("cbtCam");   // indikator pada titik kecil: warna bingkai + tooltip
+    if (box) { box.style.borderColor = c; box.title = "Kamera: " + String(t).replace(/<[^>]*>/g, ""); }
+}
 
 async function startCam() {
     setCamSt("🟡 Meminta izin...");
