@@ -66,6 +66,19 @@ function resolveStatus(violation) {
 /* =========================
    TABLE RENDER
 ========================= */
+/* Koneksi siswa ke jaringan ujian: berdasarkan denyut (heartbeat) inject.html -> PC jembatan.
+   Denyut tiap 15 dtk; cermin ke Firebase tiap 10 dtk, jadi ambang 60 dtk. */
+const CONNECTION_OFFLINE_MS = 60000;
+function connectionCell(student) {
+    const seen = Number(student.lastSeen);
+    if (!Number.isFinite(seen) || seen <= 0) return `<td style="opacity:.5">—</td>`;
+    const gap = Date.now() - seen;
+    if (gap < CONNECTION_OFFLINE_MS) return `<td style="color:#39d98a;font-weight:700">● Terhubung</td>`;
+    const m = Math.floor(gap / 60000);
+    const txt = m >= 1 ? `${m} mnt` : `${Math.max(1, Math.round(gap / 1000))} dtk`;
+    return `<td style="color:#ff5c5c;font-weight:700">○ Putus ${txt}</td>`;
+}
+
 function renderStudentsTable(data) {
     const tbody = $("studentsTableBody");
     if (!tbody) return;
@@ -73,7 +86,7 @@ function renderStudentsTable(data) {
     tbody.innerHTML = "";
 
     if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;opacity:.5">Tidak ada data siswa</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;opacity:.5">Tidak ada data siswa</td></tr>`;
         return;
     }
 
@@ -96,6 +109,7 @@ function renderStudentsTable(data) {
                 ${isMaster ? "MASTER" : "NORMAL"}
             </td>
             <td style="color:${color};font-weight:700;text-transform:uppercase;">${status}</td>
+            ${connectionCell(student)}
         `;
 
         tbody.appendChild(tr);
