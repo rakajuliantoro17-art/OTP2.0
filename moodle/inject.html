@@ -6,6 +6,8 @@
        - Overlay bisa di-scroll & punya layout landscape (kolom OTP tidak lagi terpotong)
        - Rotasi layar (potret <-> landscape) tidak dihitung pelanggaran, baseline ukuran di-reset
        - Watchdog: overlay dipulihkan jika disembunyikan/dihapus saat status terkunci
+     Perubahan 2.5:
+       - OTP/Master OTP dari jendela 60 dtk sebelumnya masih diterima (kode tidak kedaluwarsa saat diketik).
      Perubahan 2.4:
        - Fullscreen tidak lagi dipaksa saat klik pertama (Esc sebelumnya mengunci siswa & menahan Next/Finish).
      Perbaikan 2.3:
@@ -269,16 +271,20 @@ function totpHash(s) {
     for (let i = 0; i < s.length; i++) { h = (h << 5) - h + s.charCodeAt(i); h |= 0; }
     return Math.abs(h);
 }
-function getOTP() {
-    const t = Math.floor(Date.now() / 1000 / INTERVAL);
+function getOTP(back = 0) {
+    const t = Math.floor(Date.now() / 1000 / INTERVAL) - back;
     return (totpHash(t + SECRET) % 1000000).toString().padStart(6, "0");
 }
 
 // Master OTP — identik dengan panitia/js/otp.js (generateMasterOTP)
-function getMasterOTP() {
-    const t = Math.floor(Date.now() / 1000 / INTERVAL);
+function getMasterOTP(back = 0) {
+    const t = Math.floor(Date.now() / 1000 / INTERVAL) - back;
     return (totpHash(t + SECRET + "_MASTER") % 1000000).toString().padStart(6, "0");
 }
+// (2.5) Toleransi: kode dari jendela 60 dtk sebelumnya masih diterima, agar kode yang baru dibacakan
+// panitia tidak kedaluwarsa di tengah pengetikan (satu salah = +1 pelanggaran, 30 = terkunci permanen).
+const isOTP       = c => c === getOTP(0)       || c === getOTP(1);
+const isMasterOTP = c => c === getMasterOTP(0) || c === getMasterOTP(1);
 
 /* ================================================
    TOAST
@@ -358,13 +364,13 @@ btn.onclick = function () {
     // Pelanggaran >= 26: hanya Master OTP (dari panitia) yang diterima.
     // OTP biasa ditolak tanpa menambah pelanggaran.
     const needMaster = vio >= 26;
-    if (needMaster && input === getOTP()) {
+    if (needMaster && isOTP(input)) {
         toast("🔒 Pelanggaran ≥ 26 — minta MASTER OTP ke panitia");
         inp.value = "";
         return;
     }
 
-    if (input === (needMaster ? getMasterOTP() : getOTP())) {
+    if (needMaster ? isMasterOTP(input) : isOTP(input)) {
         overlay.style.display = "none";
         sessionStorage.removeItem("cbt_lk");
         locked = false; inp.value = ""; ulocks++;
