@@ -109,8 +109,26 @@ const MONITOR  = "http://10.10.10.241:3000/api/report";
    IDENTITAS SISWA
 ================================================ */
 const uid   = String(window.M?.cfg?.userid   || document.body.dataset.userid   || "guest");
-const nama  = (document.querySelector(".usermenu .usertext, .userbutton .usertext, #user-menu-toggle .usertext")?.textContent
-              || document.body.dataset.fullname || "Siswa").trim();
+// Moodle 4.x: menu pengguna sering hanya berupa avatar (tanpa .usertext), jadi nama dicari dari beberapa tempat.
+function readName() {
+    const q = s => document.querySelector(s);
+    const clean = t => String(t || "").replace(/\s+/g, " ").replace(/^(Picture of|Foto|Gambar)\s+/i, "").trim();
+    const pic = () => q(".usermenu img, #user-menu-toggle img, .userbutton img");
+    const tries = [
+        () => q(".usermenu .usertext, .userbutton .usertext, #user-menu-toggle .usertext")?.textContent,
+        () => q(".logininfo a[href*='/user/']")?.textContent,          // footer "Anda login sebagai <Nama>"
+        () => pic()?.getAttribute("title"),
+        () => pic()?.getAttribute("alt"),
+        () => q("[data-region='usermenu'] .username, .usermenu .dropdown-menu .username")?.textContent,
+        () => document.body.dataset.fullname
+    ];
+    for (const f of tries) {
+        let v = ""; try { v = clean(f()); } catch (_) {}
+        if (v && v.length < 80) return v;
+    }
+    return "Siswa";
+}
+let nama = readName();
 const uname = document.body.dataset.username  || uid;
 const kelas = String(window.M?.cfg?.courseId  || document.body.dataset.courseid || "0");
 const examTitle = document.querySelector(".page-header-headings h1")?.innerText
@@ -175,6 +193,10 @@ document.addEventListener("touchstart", e => {
    Server menjaga hitungan pelanggaran tidak pernah turun.
 ================================================ */
 function report(event) {
+    if (nama === "Siswa") {   // coba lagi bila elemen nama baru muncul setelah script dimuat
+        const n = readName();
+        if (n !== "Siswa") { nama = n; const c = document.getElementById("cN"); if (c) c.innerText = n; }
+    }
     try {
         fetch(MONITOR, {
             method: "POST", keepalive: true,
@@ -239,8 +261,34 @@ function toast(msg, color = "#ff3b30") {
 /* ================================================
    LOCK
 ================================================ */
+/* Ganti soal = pindah halaman (reload). Saat itu browser bisa memicu fullscreen_exit / blur / tab_switch
+   yang BUKAN pelanggaran. Dua penanda jendela singkat (hanya 3 jenis alasan ini):
+   - halaman lama: ditandai saat benar-benar ditutup (pagehide), atau beforeunload yang tidak jadi pindah dibatalkan 1,5 dtk;
+   - halaman baru: 2,5 dtk pertama setelah dimuat bila penanda halaman lama masih baru.
+   Pelanggaran lain (shortcut, split screen, copy, klik kanan, wrong_otp) tidak terpengaruh. */
+const NAV_REASONS = ["fullscreen_exit", "tab_switch", "window_blur"];
+const NAV_GRACE_MS = 3000;
+let navUntil = 0;
+try {
+    const m = Number(sessionStorage.getItem("cbt_nav") || 0);
+    if (m && Date.now() - m < 10000) navUntil = Date.now() + 2500;
+} catch (_) {}
+function markNav() { try { sessionStorage.setItem("cbt_nav", String(Date.now())); } catch (_) {} }
+window.addEventListener("beforeunload", () => {
+    markNav();
+    setTimeout(() => { try { sessionStorage.removeItem("cbt_nav"); } catch (_) {} }, 1500);
+});
+window.addEventListener("pagehide", markNav);
+function inNavGrace(reason) {
+    if (!NAV_REASONS.includes(reason)) return false;
+    if (Date.now() < navUntil) return true;
+    let m = 0; try { m = Number(sessionStorage.getItem("cbt_nav") || 0); } catch (_) {}
+    return m > 0 && Date.now() - m < NAV_GRACE_MS;
+}
+
 function lock(reason) {
     const now = Date.now();
+    if (inNavGrace(reason)) return;
     if (now - lastEvt < SPAM_MS) return;
     if (locked) return;
     lastEvt = now;
