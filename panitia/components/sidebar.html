@@ -55,7 +55,7 @@
         <button onclick="triggerGlobalOTP()">🔑 Global OTP</button>
         <button onclick="generateSystemOTP()">♻ Refresh OTP</button>
         <button onclick="generatePengawasPIN()">🔐 PIN Pengawas</button>
-        <button onclick="filterTable('danger')">🚨 Critical</button>
+        <button onclick="showCritical()">🚨 Critical</button>
     </div>
 
 </aside>
@@ -66,11 +66,21 @@
     tick(); setInterval(tick, 1000);
 })();
 
-function navigate(element, page) {
-    document.querySelectorAll('.menu').forEach(m => m.classList.remove('active'));
-    element.classList.add('active');
-    console.log('[NAV]', page);
+const VIEWS = ["dashboard", "monitor", "otp", "alert", "log"];
+function setView(page) {
+    if (!VIEWS.includes(page)) page = "dashboard";
+    document.body.dataset.view = page;
+    const idx = VIEWS.indexOf(page);
+    document.querySelectorAll('.sidebar .menu').forEach((m, i) => m.classList.toggle('active', i === idx));
+    try { history.replaceState(null, "", page === "dashboard" ? location.pathname + location.search : "#" + page); } catch (_) {}
+    document.dispatchEvent(new CustomEvent("cbt:view", { detail: page }));
 }
+function navigate(element, page) { setView(page); }
+function applyViewFromHash() { setView((location.hash || "").replace("#", "") || "dashboard"); }
+function showCritical() { setView("monitor"); if (typeof filterTable === "function") filterTable("danger"); }
+window.setView = setView;
+window.applyViewFromHash = applyViewFromHash;
+window.showCritical = showCritical;
 
 function syncSidebarStats(data) {
     const warn   = data.filter(s => s.status === 'warn').length;

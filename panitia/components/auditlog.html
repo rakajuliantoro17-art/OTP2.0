@@ -1,0 +1,64 @@
+<div class="alert-panel glass" id="auditPanel">
+    <div class="alert-header">
+        <div>
+            <h3>📜 Audit Log</h3>
+            <small>Riwayat kejadian keamanan tersimpan (pelanggaran ≥ 26 dan peristiwa sistem), terbaru di atas.</small>
+        </div>
+        <div id="auditCount" class="alert-count">0</div>
+    </div>
+    <div style="display:flex;gap:10px;padding:12px 18px;flex-wrap:wrap">
+        <input id="auditSearch" type="text" placeholder="Cari nama / jenis / pesan..." style="flex:1;min-width:200px">
+        <button id="auditRefresh" type="button">Muat ulang</button>
+    </div>
+    <div class="tableBox" style="max-height:60vh;overflow:auto">
+        <table>
+            <thead><tr><th>Waktu</th><th>Jenis</th><th>Pesan</th></tr></thead>
+            <tbody id="auditBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+(function () {
+    "use strict";
+    let rows = [];
+    const $a = id => document.getElementById(id);
+
+    function toRows(obj) {
+        return Object.keys(obj || {}).map(k => {
+            const a = obj[k] || {};
+            return { t: Number(a.time) || 0, type: String(a.type || "info"), msg: String(a.msg || a.message || ""), key: k };
+        });
+    }
+    function render() {
+        const body = $a("auditBody"); if (!body) return;
+        const q = ($a("auditSearch")?.value || "").toLowerCase().trim();
+        const list = rows.filter(r => !q || (r.msg + " " + r.type).toLowerCase().includes(q)).sort((a, b) => b.t - a.t || (a.key < b.key ? 1 : -1));
+        $a("auditCount").textContent = list.length;
+        body.replaceChildren();
+        if (!list.length) {
+            const tr = document.createElement("tr"), td = document.createElement("td");
+            td.colSpan = 3; td.style.cssText = "text-align:center;padding:24px;opacity:.5"; td.textContent = "Belum ada catatan";
+            tr.appendChild(td); body.appendChild(tr); return;
+        }
+        list.slice(0, 500).forEach(r => {
+            const tr = document.createElement("tr");
+            [r.t ? new Date(r.t).toLocaleString("id-ID") : "-", r.type, r.msg].forEach(v => {
+                const td = document.createElement("td"); td.textContent = v; tr.appendChild(td);
+            });
+            body.appendChild(tr);
+        });
+    }
+    function load() {
+        const db = window.db && typeof window.db.ref === "function" ? window.db : null;
+        if (!db) { rows = toRows(Object.assign({}, ...(((window.CBT_STATE && CBT_STATE.alerts) || []).map((a, i) => ({ ["l" + i]: a }))))); render(); return; }
+        db.ref("alerts").orderByKey().limitToLast(500).once("value")
+            .then(s => { rows = toRows(s.val()); render(); })
+            .catch(() => { rows = []; render(); });
+    }
+    document.addEventListener("click", e => { if (e.target.closest("#auditRefresh")) load(); });
+    document.addEventListener("input", e => { if (e.target.id === "auditSearch") render(); });
+    document.addEventListener("cbt:view", e => { if (e.detail === "log") load(); });
+    render();
+})();
+</script>

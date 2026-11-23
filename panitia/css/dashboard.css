@@ -93,8 +93,22 @@ body::before {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;     /* panel yang bertambah (Daftar Pelanggar dll.) bisa di-scroll, tidak terpotong */
 }
+.main > * { flex-shrink: 0; }
+#tableMount { min-height: 260px; display: flex; flex-direction: column; }
+#tableMount > .table-panel { flex: 1; }
+
+/* ===== TAMPILAN (menu sidebar) =====
+   dashboard: semua | monitor: statistik+tabel+pelanggar | otp: OTP Center | alert: pelanggar+kejadian | log: Audit Log */
+#otpCenterMount, #auditLogMount { display: none; }
+body[data-view="monitor"] #alertMount { display: none; }
+body[data-view="otp"] :is(#tableMount, #violatorsMount, #alertMount) { display: none; }
+body[data-view="otp"] #otpCenterMount { display: block; }
+body[data-view="alert"] :is(#statsMount, #tableMount) { display: none; }
+body[data-view="log"] :is(#statsMount, #tableMount, #violatorsMount, #alertMount) { display: none; }
+body[data-view="log"] #auditLogMount { display: block; }
 
 /* =====================================================
    SIDEBAR

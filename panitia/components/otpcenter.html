@@ -1,0 +1,105 @@
+<div class="alert-panel glass" id="otpCenterPanel">
+    <div class="alert-header">
+        <div>
+            <h3>🔑 OTP Center</h3>
+            <small>Global OTP, Master OTP, PIN Pengawas, dan siswa yang membutuhkan Master OTP.</small>
+        </div>
+    </div>
+    <div class="alert-list" style="padding:16px;gap:14px">
+
+        <div class="alert-item info" style="flex-direction:column;align-items:stretch;gap:8px">
+            <b>Global OTP</b>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                <span id="ocCode" style="font-size:34px;font-weight:800;letter-spacing:8px;font-variant-numeric:tabular-nums">••••••</span>
+                <span id="ocTimer" style="opacity:.7;font-size:13px"></span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button id="ocToggle" type="button">👁 Tampilkan</button>
+                <button type="button" onclick="generateSystemOTP && generateSystemOTP()">♻ Refresh OTP</button>
+                <button type="button" onclick="triggerGlobalOTP && triggerGlobalOTP()">🔑 Tampilkan di jendela</button>
+            </div>
+            <small style="opacity:.7">Dipakai siswa dengan pelanggaran di bawah 26. Kode berganti tiap 60 detik.</small>
+        </div>
+
+        <div class="alert-item warn" style="flex-direction:column;align-items:stretch;gap:8px">
+            <b>Master OTP</b>
+            <div id="ocMaster" style="font-size:13px">Belum dibuat.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button type="button" onclick="revokeMasterOTP && revokeMasterOTP()">⛔ Cabut Master OTP</button>
+            </div>
+            <small style="opacity:.7">Untuk siswa dengan pelanggaran 26 ke atas. Buat dari detail siswa (klik baris siswa → Generate Master OTP). Pelanggaran 30 terkunci permanen.</small>
+        </div>
+
+        <div class="alert-item success" style="flex-direction:column;align-items:stretch;gap:8px">
+            <b>PIN Pengawas</b>
+            <div><button type="button" onclick="generatePengawasPIN && generatePengawasPIN()">🔐 Buat PIN Pengawas baru</button></div>
+            <small style="opacity:.7">PIN lama otomatis batal saat PIN baru dibuat.</small>
+        </div>
+
+        <div class="alert-item info" style="flex-direction:column;align-items:stretch;gap:6px">
+            <b>Unlock tercatat di sesi ini</b>
+            <div id="ocStats" style="font-size:13px">Normal: 0 · Master: 0</div>
+        </div>
+
+        <div class="alert-item danger" style="flex-direction:column;align-items:stretch;gap:6px">
+            <b>Siswa yang membutuhkan Master OTP (≥ 26)</b>
+            <div id="ocNeed" style="display:flex;flex-direction:column;gap:6px;font-size:13px"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    "use strict";
+    let shown = false, students = [];
+    const $o = id => document.getElementById(id);
+
+    function renderCode() {
+        const code = $o("ocCode"); if (!code) return;
+        const st = window.OTP_STATE || {};
+        code.textContent = shown ? (st.systemOTP || "000000") : "••••••";
+        const left = Number(st.expires);
+        const t = $o("ocTimer"); if (t) t.textContent = Number.isFinite(left) ? "berganti dalam " + left + " dtk" : "";
+        const b = $o("ocToggle"); if (b) b.textContent = shown ? "🙈 Sembunyikan" : "👁 Tampilkan";
+    }
+    function renderMaster() {
+        const m = window.CBT_STATE && CBT_STATE.masterOtp;
+        const el = $o("ocMaster"); if (!el) return;
+        if (!m) { el.textContent = "Belum dibuat."; return; }
+        const when = m.created ? new Date(m.created).toLocaleTimeString("id-ID") : "-";
+        el.textContent = "Status: " + (m.status === "revoked" ? "DICABUT" : (m.status || "aktif").toUpperCase()) + " · dibuat " + when;
+    }
+    function renderStats() {
+        const s = window.OTP_STATS || {};
+        const el = $o("ocStats"); if (el) el.textContent = "Normal: " + (s.normal || 0) + " · Master: " + (s.master || 0);
+    }
+    function renderNeed() {
+        const box = $o("ocNeed"); if (!box) return;
+        const rows = students.filter(s => (Number(s.violation) || 0) >= 26).sort((a, b) => b.violation - a.violation);
+        box.replaceChildren();
+        if (!rows.length) { box.textContent = "Tidak ada."; return; }
+        rows.forEach(s => {
+            const r = document.createElement("div");
+            r.style.cursor = "pointer";
+            r.title = "Klik untuk membuka detail & membuat Master OTP";
+            r.textContent = (s.name || "-") + " · " + (s.kelas || s.class || "-") + " · " + s.violation + " pelanggaran" + (s.violation >= 30 ? " (terkunci permanen)" : "");
+            r.onclick = () => { if (typeof window.openDrawer === "function") window.openDrawer(s); };
+            box.appendChild(r);
+        });
+    }
+    function renderAll() { renderCode(); renderMaster(); renderStats(); renderNeed(); }
+
+    document.addEventListener("click", e => { if (e.target.closest("#ocToggle")) { shown = !shown; renderCode(); } });
+    try {
+        const st = window.CBT_STATE && CBT_STATE.students;
+        if (st && typeof normalizeStudent === "function") students = Object.keys(st).map(k => normalizeStudent(k, st[k]));
+    } catch (_) {}
+    if (window.EventBus) {
+        EventBus.on("students:update", d => { students = Array.isArray(d) ? d : []; renderNeed(); });
+        EventBus.on("masterOtp:update", renderMaster);
+    }
+    setInterval(() => { if (document.body.dataset.view === "otp") renderAll(); }, 1000);
+    document.addEventListener("cbt:view", e => { if (e.detail === "otp") renderAll(); });
+    renderAll();
+})();
+</script>

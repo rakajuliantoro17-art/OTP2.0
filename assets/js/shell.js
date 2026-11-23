@@ -54,7 +54,7 @@
                         <button data-v="light">☀ Terang</button><button data-v="dark">🌙 Gelap</button><button data-v="auto">Otomatis</button>
                     </div>
                 </div>
-                ${hasSidebar ? `<div class="settings-row">
+                ${hasSidebar && !window.SHELL_HIDE_SB_SETTING ? `<div class="settings-row">
                     <div class="settings-title">Panel samping</div>
                     <div class="settings-desc">Perkecil menjadi ikon saja agar tabel lebih lebar (Ctrl+B).</div>
                     <button class="settings-act" id="settingsSb">Perkecil / perbesar panel</button>

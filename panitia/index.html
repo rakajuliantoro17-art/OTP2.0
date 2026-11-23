@@ -10,10 +10,8 @@
     <script src="/assets/js/shell.js"></script>
     <script>
         window.SHELL_HAS_SIDEBAR = true;
-        window.SHELL_SETTINGS_EXTRA = [
-            { title: "PIN Pengawas", desc: "Buat PIN harian baru untuk pengawas. PIN lama otomatis batal.", label: "🔐 Buat PIN Pengawas", run: () => window.generatePengawasPIN && generatePengawasPIN() },
-            { title: "Global OTP", desc: "Tampilkan OTP sistem saat ini.", label: "🔑 Tampilkan Global OTP", run: () => window.triggerGlobalOTP && triggerGlobalOTP() }
-        ];
+        // PIN Pengawas, Global OTP & perkecil panel hanya ada di sidebar (tidak diduplikasi di panel pengaturan).
+        window.SHELL_HIDE_SB_SETTING = true;
     </script>
 
     <!-- Firebase SDK -->
@@ -39,6 +37,8 @@
         <div id="tableMount"></div>
         <div id="violatorsMount"></div>
         <div id="alertMount"></div>
+        <div id="otpCenterMount"></div>
+        <div id="auditLogMount"></div>
         <div id="shellFooter"></div>
     </main>
 </div>
@@ -97,6 +97,9 @@ async function initializeDashboard() {
     await loadComponent("drawerMount",  "./components/drawer.html");
     await loadComponent("violatorsMount", "./components/violators.html");
     await loadComponent("alertMount",  "./components/alert.html");
+    await loadComponent("otpCenterMount", "./components/otpcenter.html");
+    await loadComponent("auditLogMount",  "./components/auditlog.html");
+    if (typeof window.applyViewFromHash === "function") applyViewFromHash();
     console.log("[DASHBOARD] Semua component berhasil dimuat");
 
     // SEPHIA opsional: kegagalannya tidak boleh memblokir dashboard panitia.
