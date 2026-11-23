@@ -1,12 +1,21 @@
 <!-- =====================================================
-     SMANSASOO CBT LOCK 2.0 — MOODLE INJECTION
+     SMANSASOO CBT LOCK 2.2 — MOODLE INJECTION
      Pasang di: Site Admin → Appearance → Additional HTML
      Tab: Before closing </body> tag
+     Perubahan 2.2:
+       - Overlay bisa di-scroll & punya layout landscape (kolom OTP tidak lagi terpotong)
+       - Rotasi layar (potret <-> landscape) tidak dihitung pelanggaran, baseline ukuran di-reset
+       - Watchdog: overlay dipulihkan jika disembunyikan/dihapus saat status terkunci
+     Perbaikan 2.3:
+       - Rotasi TIDAK lagi membuka jeda untuk blur/tab_switch (celah: putar layar lalu langsung pindah
+         aplikasi / split screen tidak terkunci). Jeda rotasi hanya untuk fullscreen_exit (0,8 dtk).
+       - Resize yang dilewati hanya bila benar-benar rotasi (orientasi berubah & luas layar ~sama).
 ===================================================== -->
 
 <style>
-#cbtOverlay{position:fixed;inset:0;z-index:999999;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at top left,rgba(255,0,200,.25),transparent 40%),radial-gradient(circle at bottom right,rgba(0,200,255,.25),transparent 40%),linear-gradient(135deg,rgba(10,10,20,.65),rgba(0,0,0,.8));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.cbtCard{width:92%;max-width:420px;padding:28px 24px;border-radius:28px;background:rgba(255,255,255,.10);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.18);box-shadow:0 25px 80px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.2);color:white;text-align:center;animation:cbtPop .25s ease-out}
+#cbtOverlay{position:fixed;inset:0;z-index:999999;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;box-sizing:border-box;background:radial-gradient(circle at top left,rgba(255,0,200,.25),transparent 40%),radial-gradient(circle at bottom right,rgba(0,200,255,.25),transparent 40%),linear-gradient(135deg,rgba(10,10,20,.65),rgba(0,0,0,.8));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+/* margin:auto di dalam flex = tengah bila muat, bisa di-scroll bila lebih tinggi dari layar (tidak terpotong) */
+.cbtCard{margin:auto;width:92%;max-width:420px;padding:28px 24px;border-radius:28px;background:rgba(255,255,255,.10);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.18);box-shadow:0 25px 80px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.2);color:white;text-align:center;animation:cbtPop .25s ease-out}
 @keyframes cbtPop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
 .cbtHead{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:14px}
 .cbtHead img{height:48px;border-radius:12px;background:rgba(255,255,255,.9);padding:5px}
@@ -27,6 +36,23 @@
 #cbtBtn:hover:not(:disabled){transform:scale(1.02);background:#fff}
 #cbtBtn:disabled{opacity:.45;cursor:not-allowed}
 .cbtFoot{margin-top:14px;font-size:10px;opacity:.45;letter-spacing:.5px}
+
+/* LANDSCAPE (layar pendek): kartu jadi 2 kolom supaya kolom OTP & tombol selalu terlihat */
+@media (orientation:landscape) and (max-height:560px){
+  #cbtOverlay{padding:8px}
+  .cbtCard{max-width:760px;width:96%;padding:14px 18px;border-radius:20px;display:flex;align-items:center;gap:18px}
+  .cbtCol{flex:1;min-width:0}
+  .cbtHead{margin-bottom:8px}
+  .cbtHead img{height:36px}
+  .cbtInfo{margin:6px 0 0;padding:8px 12px}
+  .cbtRow{padding:2px 0;font-size:11px}
+  #cbtTitle{font-size:16px;margin-bottom:4px}
+  #cbtHint{margin-bottom:8px}
+  #cbtInput{padding:9px;font-size:18px}
+  #cbtBtn{margin-top:8px;padding:10px 0}
+  .cbtFoot{margin-top:8px}
+}
+
 #cbtToast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(16px);padding:10px 22px;border-radius:999px;backdrop-filter:blur(12px);color:white;font-size:13px;font-weight:600;z-index:9999999;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(0.16,1,.3,1);white-space:nowrap}
 #cbtToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 /* Kamera: tampil sebagai titik kecil 25x25 px (stream tetap aktif; hanya ukuran tampilan yang berubah).
@@ -47,29 +73,33 @@
 
 <div id="cbtOverlay">
   <div class="cbtCard">
-    <div class="cbtHead">
-      <img src="http://10.10.10.246/pluginfile.php/1/core_admin/logocompact/300x300/logo.png"
-           onerror="this.style.display='none'">
-      <div class="cbtHeadT">
-        <div class="t1">CBT Security System</div>
-        <div class="t2">SMAN 1 Sooko &nbsp;•&nbsp; Tim IT</div>
+    <div class="cbtCol">
+      <div class="cbtHead">
+        <img src="http://10.10.10.246/pluginfile.php/1/core_admin/logocompact/300x300/logo.png"
+             onerror="this.style.display='none'">
+        <div class="cbtHeadT">
+          <div class="t1">CBT Security System</div>
+          <div class="t2">SMAN 1 Sooko &nbsp;•&nbsp; Tim IT</div>
+        </div>
+      </div>
+      <div class="cbtInfo">
+        <div class="cbtRow"><span>Peserta</span>    <b id="cN">—</b></div>
+        <div class="cbtRow"><span>Username</span>   <b id="cU">—</b></div>
+        <div class="cbtRow"><span>Ujian</span>      <b id="cEx">—</b></div>
+        <div class="cbtRow"><span>Pelanggaran</span><b id="cV">0</b></div>
+        <div class="cbtRow"><span>Unlock</span>     <b id="cUl">0</b></div>
+        <div class="cbtRow"><span>Status</span>     <b id="cSt"><span class="cbadge bs">AMAN</span></b></div>
       </div>
     </div>
-    <div class="cbtInfo">
-      <div class="cbtRow"><span>Peserta</span>    <b id="cN">—</b></div>
-      <div class="cbtRow"><span>Username</span>   <b id="cU">—</b></div>
-      <div class="cbtRow"><span>Ujian</span>      <b id="cEx">—</b></div>
-      <div class="cbtRow"><span>Pelanggaran</span><b id="cV">0</b></div>
-      <div class="cbtRow"><span>Unlock</span>     <b id="cUl">0</b></div>
-      <div class="cbtRow"><span>Status</span>     <b id="cSt"><span class="cbadge bs">AMAN</span></b></div>
+    <div class="cbtCol">
+      <div id="cbtTitle">🔒 Akses Terkunci</div>
+      <div id="cbtHint">Masukkan kode OTP dari pengawas untuk melanjutkan ujian</div>
+      <input id="cbtInput" type="number" inputmode="numeric"
+             placeholder="Kode OTP 6 digit" maxlength="6">
+      <br>
+      <button id="cbtBtn">✅ Verifikasi &amp; Lanjut</button>
+      <div class="cbtFoot">SMANSASOO CBT LOCK 2.2 &nbsp;•&nbsp; Secure Exam Mode</div>
     </div>
-    <div id="cbtTitle">🔒 Akses Terkunci</div>
-    <div id="cbtHint">Masukkan kode OTP dari pengawas untuk melanjutkan ujian</div>
-    <input id="cbtInput" type="number" inputmode="numeric"
-           placeholder="Kode OTP 6 digit" maxlength="6">
-    <br>
-    <button id="cbtBtn">✅ Verifikasi &amp; Lanjut</button>
-    <div class="cbtFoot">SMANSASOO CBT LOCK 2.0 &nbsp;•&nbsp; Secure Exam Mode</div>
   </div>
 </div>
 
@@ -147,6 +177,7 @@ let locked  = sessionStorage.getItem("cbt_lk") === "1";
 let lastEvt = 0;
 let lastW   = window.innerWidth;
 let lastH   = window.innerHeight;
+let lastLand = window.innerWidth > window.innerHeight;
 
 const overlay = document.getElementById("cbtOverlay");
 const inp     = document.getElementById("cbtInput");
@@ -265,10 +296,12 @@ function toast(msg, color = "#ff3b30") {
    yang BUKAN pelanggaran. Dua penanda jendela singkat (hanya 3 jenis alasan ini):
    - halaman lama: ditandai saat benar-benar ditutup (pagehide), atau beforeunload yang tidak jadi pindah dibatalkan 1,5 dtk;
    - halaman baru: 2,5 dtk pertama setelah dimuat bila penanda halaman lama masih baru.
+   Rotasi layar membuka jendela singkat (rotUntil) HANYA untuk fullscreen_exit.
    Pelanggaran lain (shortcut, split screen, copy, klik kanan, wrong_otp) tidak terpengaruh. */
 const NAV_REASONS = ["fullscreen_exit", "tab_switch", "window_blur"];
 const NAV_GRACE_MS = 3000;
 let navUntil = 0;
+let rotUntil = 0;
 try {
     const m = Number(sessionStorage.getItem("cbt_nav") || 0);
     if (m && Date.now() - m < 10000) navUntil = Date.now() + 2500;
@@ -281,6 +314,7 @@ window.addEventListener("beforeunload", () => {
 window.addEventListener("pagehide", markNav);
 function inNavGrace(reason) {
     if (!NAV_REASONS.includes(reason)) return false;
+    if (reason === "fullscreen_exit" && Date.now() < rotUntil) return true;
     if (Date.now() < navUntil) return true;
     let m = 0; try { m = Number(sessionStorage.getItem("cbt_nav") || 0); } catch (_) {}
     return m > 0 && Date.now() - m < NAV_GRACE_MS;
@@ -333,6 +367,8 @@ btn.onclick = function () {
         sessionStorage.removeItem("cbt_lk");
         locked = false; inp.value = ""; ulocks++;
         sessionStorage.setItem("cbt_ul", ulocks);
+        // baseline ukuran layar disamakan dengan kondisi saat ini (mis. setelah rotasi)
+        lastW = window.innerWidth; lastH = window.innerHeight; lastLand = lastW > lastH;
         ui(); report("unlock"); toast("✅ Akses dibuka kembali", "#34c759");
     } else {
         // Kode salah: dihitung langsung (lock() tidak bisa dipakai karena sudah terkunci)
@@ -363,6 +399,24 @@ ui();
 if (locked) setTimeout(() => overlay.style.display = "flex", 350);
 
 /* ================================================
+   WATCHDOG OVERLAY
+   Selama status terkunci, overlay harus tetap ada & tampil
+   (dipulihkan bila disembunyikan / dihapus / diubah gayanya).
+================================================ */
+function guardOverlay() {
+    if (!locked) return;
+    if (!document.body.contains(overlay)) document.body.appendChild(overlay);
+    if (overlay.style.display !== "flex") overlay.style.display = "flex";
+    if (overlay.style.visibility || overlay.style.opacity || overlay.style.pointerEvents) {
+        overlay.style.visibility = ""; overlay.style.opacity = ""; overlay.style.pointerEvents = "";
+    }
+}
+setInterval(guardOverlay, 500);
+try {
+    new MutationObserver(guardOverlay).observe(overlay, { attributes: true, attributeFilter: ["style", "class", "hidden"] });
+} catch (_) {}
+
+/* ================================================
    DETEKSI PELANGGARAN — DESKTOP
 ================================================ */
 document.addEventListener("keydown", e => {
@@ -389,11 +443,30 @@ window.addEventListener("blur", () => {
     setTimeout(() => { if (!document.hidden) lock("window_blur"); }, 500);
 });
 
+// Rotasi layar (potret <-> landscape): bukan pelanggaran. Reset baseline ukuran.
+function onRotate() {
+    rotUntil = Date.now() + 800;
+    setTimeout(() => { lastW = window.innerWidth; lastH = window.innerHeight; lastLand = lastW > lastH; }, 600);
+}
+window.addEventListener("orientationchange", onRotate);
+try { if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener("change", onRotate); } catch (_) {}
+
 // Split screen & dual window — deteksi via resize
-// Saat split screen: lebar window mengecil drastis (< 60% lebar awal)
+// Saat split screen: lebar window mengecil drastis (> 25%) atau tinggi (> 40%)
 window.addEventListener("resize", () => {
     const newW = window.innerWidth;
     const newH = window.innerHeight;
+    const land = newW > newH;
+
+    // Rotasi asli = orientasi berubah DAN ukuran bertukar (lebar baru ≈ tinggi lama, tinggi baru ≈ lebar lama).
+    // Pengecekan "bertukar" mencegah split screen yang kebetulan mengubah rasio dianggap rotasi.
+    const swapped = Math.abs(newW - lastH) < lastH * 0.3 && Math.abs(newH - lastW) < lastW * 0.3;
+    const areaClose = Math.abs(newW * newH - lastW * lastH) < lastW * lastH * 0.3;   // rotasi tidak mengubah luas; split screen mengubah
+    const rotLike = land !== lastLand && (swapped || (Date.now() < rotUntil && areaClose));
+    if (rotLike) {
+        lastW = newW; lastH = newH; lastLand = land;
+        return;
+    }
 
     const shrinkW = newW < lastW * 0.75; // lebar berkurang > 25%
     const shrinkH = newH < lastH * 0.60; // tinggi berkurang > 40% (notif bar besar)
@@ -405,14 +478,13 @@ window.addEventListener("resize", () => {
     }
 
     // Update referensi ukuran saat tidak locked
-    if (!locked) { lastW = newW; lastH = newH; }
+    if (!locked) { lastW = newW; lastH = newH; lastLand = land; }
 });
 
 // Screenshot — visibilitychange singkat di beberapa Android
 // Tidak 100% reliable tapi tetap dicatat
 document.addEventListener("visibilitychange", () => {
     if (document.hidden) return; // sudah dihandle di atas
-    // Jika kembali visible sangat cepat (< 300ms) = kemungkinan screenshot
     // Tidak dikunci karena false positive tinggi, hanya log
     console.warn("[CBT] Possible screenshot detected");
 });
