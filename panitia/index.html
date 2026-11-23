@@ -37,6 +37,7 @@
         <div id="topbarMount"></div>
         <div id="statsMount"></div>
         <div id="tableMount"></div>
+        <div id="violatorsMount"></div>
         <div id="alertMount"></div>
         <div id="shellFooter"></div>
     </main>
@@ -94,7 +95,8 @@ async function initializeDashboard() {
     await loadComponent("statsMount",   "./components/stats.html");
     await loadComponent("tableMount",   "./components/table.html");
     await loadComponent("drawerMount",  "./components/drawer.html");
-    await loadComponent("alertMount",   "./components/alert.html");
+    await loadComponent("violatorsMount", "./components/violators.html");
+    await loadComponent("alertMount",  "./components/alert.html");
     console.log("[DASHBOARD] Semua component berhasil dimuat");
 
     // SEPHIA opsional: kegagalannya tidak boleh memblokir dashboard panitia.

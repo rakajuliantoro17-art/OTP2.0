@@ -1,0 +1,93 @@
+<div class="alert-panel glass" id="violatorsPanel">
+    <div class="alert-header">
+        <div>
+            <h3>⚠️ Daftar Pelanggar</h3>
+            <small>Satu baris per siswa, pelanggaran terbanyak di atas. Klik untuk detail.</small>
+        </div>
+        <div id="violatorsCount" class="alert-count">0</div>
+    </div>
+    <div id="violatorsList" class="alert-list" style="max-height:340px"></div>
+</div>
+
+<script>
+(function () {
+    "use strict";
+    const OFFLINE_MS = 60000;   // sama dengan kolom Koneksi di tabel
+    let current = [];
+
+    function statusOf(v) { return v >= 26 ? "danger" : v >= 11 ? "warn" : "info"; }
+    function noteOf(v) {
+        if (v >= 30) return "Terkunci permanen — hubungi pengawas";
+        if (v >= 26) return "Perlu Master OTP";
+        if (v >= 11) return "Waspada";
+        return "Pelanggaran ringan";
+    }
+    function connOf(s) {
+        const seen = Number(s.lastSeen);
+        if (!Number.isFinite(seen) || seen <= 0) return "";
+        const gap = Date.now() - seen;
+        if (gap < OFFLINE_MS) return "● Terhubung";
+        const m = Math.floor(gap / 60000);
+        return "○ Putus " + (m >= 1 ? m + " mnt" : Math.max(1, Math.round(gap / 1000)) + " dtk");
+    }
+    function el(tag, cls, text) {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+    }
+
+    function render() {
+        const list = document.getElementById("violatorsList");
+        const counter = document.getElementById("violatorsCount");
+        if (!list) return;
+
+        const rows = current
+            .filter(s => (Number(s.violation) || 0) >= 1)
+            .sort((a, b) => (b.violation - a.violation) || String(a.name).localeCompare(String(b.name)));
+
+        if (counter) counter.textContent = rows.length;
+        list.replaceChildren();
+
+        if (!rows.length) {
+            list.appendChild(el("div", "alert-item info", "Belum ada siswa yang melanggar"));
+            return;
+        }
+
+        rows.forEach(s => {
+            const v = Number(s.violation) || 0;
+            const item = el("div", "alert-item " + statusOf(v));
+            item.style.cursor = "pointer";
+            item.title = "Klik untuk melihat detail";
+            item.onclick = () => { if (typeof window.openDrawer === "function") window.openDrawer(s); };
+
+            const body = el("span", "alert-msg");
+            const name = el("b", null, s.name || "-");
+            const sub = el("small", null,
+                " · " + (s.kelas || s.class || "-") + " · " + noteOf(v) + (connOf(s) ? " · " + connOf(s) : ""));
+            sub.style.opacity = ".7";
+            body.append(name, sub);
+
+            const count = el("span", "alert-time", v + " pelanggaran");
+            count.style.fontWeight = "700";
+            count.style.opacity = "1";
+
+            item.append(body, count);
+            list.appendChild(item);
+        });
+    }
+
+    function boot() {
+        try {
+            const st = window.CBT_STATE && CBT_STATE.students;
+            if (st && typeof normalizeStudent === "function") {
+                current = Object.keys(st).map(k => normalizeStudent(k, st[k]));
+            }
+        } catch (_) {}
+        render();
+        if (window.EventBus) EventBus.on("students:update", d => { current = Array.isArray(d) ? d : []; render(); });
+        setInterval(render, 10000);   // segarkan label koneksi
+    }
+    boot();
+})();
+</script>

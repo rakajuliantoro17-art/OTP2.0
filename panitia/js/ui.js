@@ -79,6 +79,8 @@ function connectionCell(student) {
     return `<td style="color:#ff5c5c;font-weight:700">○ Putus ${txt}</td>`;
 }
 
+function escHtml(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+
 function renderStudentsTable(data) {
     const tbody = $("studentsTableBody");
     if (!tbody) return;
@@ -100,8 +102,8 @@ function renderStudentsTable(data) {
         tr.onclick = () => openDrawer(student);
 
         tr.innerHTML = `
-            <td>${student.name  || "-"}</td>
-            <td>${student.kelas || student.class || "-"}</td>
+            <td>${escHtml(student.name  || "-")}</td>
+            <td>${escHtml(student.kelas || student.class || "-")}</td>
             <td>${student.progress || "0/40"}</td>
             <td><b style="color:${color}">${violation}</b></td>
             <td class="${isMaster ? "unlock-master" : "unlock-normal"}"
