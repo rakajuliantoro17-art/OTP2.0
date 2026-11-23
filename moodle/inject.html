@@ -6,6 +6,8 @@
        - Overlay bisa di-scroll & punya layout landscape (kolom OTP tidak lagi terpotong)
        - Rotasi layar (potret <-> landscape) tidak dihitung pelanggaran, baseline ukuran di-reset
        - Watchdog: overlay dipulihkan jika disembunyikan/dihapus saat status terkunci
+     Perubahan 2.4:
+       - Fullscreen tidak lagi dipaksa saat klik pertama (Esc sebelumnya mengunci siswa & menahan Next/Finish).
      Perbaikan 2.3:
        - Rotasi TIDAK lagi membuka jeda untuk blur/tab_switch (celah: putar layar lalu langsung pindah
          aplikasi / split screen tidak terkunci). Jeda rotasi hanya untuk fullscreen_exit (0,8 dtk).
@@ -494,15 +496,8 @@ document.addEventListener("fullscreenchange", () => {
     if (!document.fullscreenElement) lock("fullscreen_exit");
 });
 
-// Paksa fullscreen saat pertama load (memerlukan interaksi user di mobile)
-document.addEventListener("click", function tryFS() {
-    const el = document.documentElement;
-    if (!document.fullscreenElement) {
-        (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen
-            || (() => {})).call(el);
-    }
-    document.removeEventListener("click", tryFS);
-}, { once: true });
+// (2.4) Fullscreen TIDAK lagi dipaksa: Esc membuat siswa terkunci/stuck. Pindah tab, blur & split screen tetap terdeteksi.
+// Bila siswa masuk fullscreen sendiri lalu keluar, handler fullscreenchange di atas tetap berlaku.
 
 /* ================================================
    KAMERA FLOATING
