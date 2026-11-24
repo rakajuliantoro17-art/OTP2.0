@@ -6,6 +6,9 @@
        - Overlay bisa di-scroll & punya layout landscape (kolom OTP tidak lagi terpotong)
        - Rotasi layar (potret <-> landscape) tidak dihitung pelanggaran, baseline ukuran di-reset
        - Watchdog: overlay dipulihkan jika disembunyikan/dihapus saat status terkunci
+     Perubahan 2.7:
+       - ID siswa tidak lagi "guest" untuk semua orang (menyebabkan daftar pelanggar hanya berisi 1 nama yang bergantian
+         dan hitungan pelanggaran tercampur). ID dibaca dari Moodle, cadangan dari nama.
      Perubahan 2.6:
        - Tab BARU menyinkronkan hitungan pelanggaran & status terkunci dari jembatan (/api/me), sehingga membuka tab baru
          tidak lagi mengulang dari 0 / lolos dari kunci. Butuh server.js terbaru di komputer jembatan (restart start.bat).
@@ -145,7 +148,26 @@ const MONITOR  = "http://10.10.10.241:3000/api/report";
 /* ================================================
    IDENTITAS SISWA
 ================================================ */
-const uid   = String(window.M?.cfg?.userid   || document.body.dataset.userid   || "guest");
+// ID siswa. Di Moodle `M.cfg.userid` (huruf kecil) umumnya TIDAK ada, sehingga semua siswa menjadi "guest" dan
+// tercatat sebagai SATU orang di dashboard. Dicari dari beberapa sumber; terakhir dari nama; "guest" hanya jika semuanya gagal.
+function readUid(name) {
+    const q = s => document.querySelector(s);
+    const idOf = h => { const m = /[?&]id=(\d+)/.exec(h || ""); return m ? m[1] : ""; };
+    const tries = [
+        () => window.M?.cfg?.userId,
+        () => window.M?.cfg?.userid,
+        () => document.body.dataset.userid,
+        () => idOf(q(".logininfo a[href*='/user/']")?.getAttribute("href")),
+        () => idOf(q(".usermenu a[href*='/user/profile.php'], .usermenu a[href*='/user/view.php']")?.getAttribute("href")),
+        () => idOf(q("a[href*='/user/profile.php?id='][data-title='profile,moodle'], a[href*='/user/profile.php?id='][href*='course=']")?.getAttribute("href"))
+    ];
+    for (const f of tries) {
+        let v = ""; try { v = String(f() || "").trim(); } catch (_) {}
+        if (/^\d+$/.test(v) && v !== "0" && v !== "1") return v;   // 0 = tamu, 1 = guest bawaan Moodle
+    }
+    if (name && name !== "Siswa") return "n_" + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 48);
+    return "guest";
+}
 // Moodle 4.x: menu pengguna sering hanya berupa avatar (tanpa .usertext), jadi nama dicari dari beberapa tempat.
 function readName() {
     const q = s => document.querySelector(s);
@@ -166,6 +188,7 @@ function readName() {
     return "Siswa";
 }
 let nama = readName();
+const uid  = readUid(nama);
 const uname = document.body.dataset.username  || uid;
 const kelas = String(window.M?.cfg?.courseId  || document.body.dataset.courseid || "0");
 const examTitle = document.querySelector(".page-header-headings h1")?.innerText
