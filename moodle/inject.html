@@ -6,6 +6,8 @@
        - Overlay bisa di-scroll & punya layout landscape (kolom OTP tidak lagi terpotong)
        - Rotasi layar (potret <-> landscape) tidak dihitung pelanggaran, baseline ukuran di-reset
        - Watchdog: overlay dipulihkan jika disembunyikan/dihapus saat status terkunci
+     Perubahan 2.8:
+       - Progres soal (terjawab/total) dikirim ke dashboard; hitungan pelanggaran mengikuti angka server bila lebih tinggi.
      Perubahan 2.7:
        - ID siswa tidak lagi "guest" untuk semua orang (menyebabkan daftar pelanggar hanya berisi 1 nama yang bergantian
          dan hitungan pelanggaran tercampur). ID dibaca dari Moodle, cadangan dari nama.
@@ -253,6 +255,18 @@ document.addEventListener("touchstart", e => {
    text/plain agar tidak memicu preflight CORS.
    Server menjaga hitungan pelanggaran tidak pernah turun.
 ================================================ */
+// Progres pengerjaan: soal terjawab / total, dibaca dari blok navigasi kuis Moodle (hanya di halaman attempt).
+function readProgress() {
+    try {
+        if (!window.location.pathname.includes("/mod/quiz/attempt.php")) return "";
+        const all = document.querySelectorAll("#mod_quiz_navblock .qnbutton, .qn_buttons .qnbutton");
+        if (!all.length) return "";
+        let done = 0;
+        all.forEach(b => { if (!b.classList.contains("notyetanswered") && !b.classList.contains("invalidanswer")) done++; });
+        return done + "/" + all.length;
+    } catch (_) { return ""; }
+}
+
 function report(event) {
     if (nama === "Siswa") {   // coba lagi bila elemen nama baru muncul setelah script dimuat
         const n = readName();
@@ -263,7 +277,12 @@ function report(event) {
             method: "POST", keepalive: true,
             headers: { "Content-Type": "text/plain" },
             body: JSON.stringify({ uid, nama, username: uname, kelas, exam: examTitle.substring(0, 40),
-                                   violation: vio, unlocks: ulocks, event })
+                                   violation: vio, unlocks: ulocks, event, progress: readProgress() })
+        }).then(r => r.json()).then(d => {
+            // (2.8) Hitungan server lebih tinggi (mis. dari tab/perangkat lain milik siswa yang sama) diikuti di sini.
+            if (d && d.ok && uid !== "guest" && Number(d.violation) > vio) {
+                vio = Number(d.violation); sessionStorage.setItem("cbt_v", vio); ui();
+            }
         }).catch(() => {});
     } catch (_) {}
 }

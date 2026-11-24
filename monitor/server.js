@@ -38,6 +38,7 @@ function upsert(b) {
   if (!b || !b.uid) return null;
   const s = students[b.uid] || { uid: b.uid, violationCount: 0, unlockCount: 0, log: [] };
   Object.assign(s, { nama: b.nama || s.nama || "-", username: b.username || s.username, kelas: b.kelas || s.kelas, exam: b.exam || s.exam, lastSeen: Date.now() });
+  if (/^\d{1,3}\/\d{1,3}$/.test(String(b.progress || ""))) s.progress = String(b.progress);   // soal terjawab/total
   const prevCount = s.violationCount;
   s.violationCount = Math.max(s.violationCount, Number(b.violation) || 0);   // monotonic
   // Alert susulan (hitungan melompat, mis. laporan sebelumnya tidak sampai): hanya hitungan terakhir memakai label kejadian sebenarnya.
@@ -73,7 +74,7 @@ const shortName = n => { const w = String(n || "-").trim().split(/\s+/); return 
 setInterval(async () => {
   const out = {};
   for (const s of view()) out[s.uid] = { uid: s.uid, nama: MIRROR_NAMA === "full" ? s.nama : shortName(s.nama), username: s.username, kelas: s.kelas,
-    violationCount: s.violationCount, unlockCount: s.unlockCount, status: s.status, online: s.online, lastSeen: s.lastSeen, source: "local" };
+    violationCount: s.violationCount, unlockCount: s.unlockCount, status: s.status, progress: s.progress, online: s.online, lastSeen: s.lastSeen, source: "local" };
   const sig = JSON.stringify(out);
   if (sig !== lastMirror || !mirrorOk) { mirrorOk = await fb("PUT", "/students", out); if (mirrorOk) lastMirror = sig; }
   for (const id of Object.keys(pendingAlerts)) {                       // kirim alert tertunda (PUT idempoten)
@@ -104,7 +105,7 @@ http.createServer((req, res) => {
 
   /* laporan dari PC siswa */
   if (req.method === "POST" && url === "/api/report")
-    return readBody(req, b => { const s = upsert(b); json(res, s ? 200 : 400, { ok: !!s }); if (s) push(); });
+    return readBody(req, b => { const s = upsert(b); json(res, s ? 200 : 400, { ok: !!s, violation: s ? s.violationCount : 0, locked: !!(s && s.locked) }); if (s) push(); });
 
   /* status satu siswa (dibaca inject.html saat tab baru dibuka): hanya angka, tanpa nama */
   if (req.method === "GET" && url === "/api/me") {
