@@ -40,9 +40,13 @@ function upsert(b) {
   Object.assign(s, { nama: b.nama || s.nama || "-", username: b.username || s.username, kelas: b.kelas || s.kelas, exam: b.exam || s.exam, lastSeen: Date.now() });
   const prevCount = s.violationCount;
   s.violationCount = Math.max(s.violationCount, Number(b.violation) || 0);   // monotonic
-  for (let n = Math.max(prevCount + 1, ALERT_FROM); n <= Math.min(s.violationCount, 30); n++) queueAlert(s, n, b.event);
+  // Alert susulan (hitungan melompat, mis. laporan sebelumnya tidak sampai): hanya hitungan terakhir memakai label kejadian sebenarnya.
+  for (let n = Math.max(prevCount + 1, ALERT_FROM); n <= Math.min(s.violationCount, 30); n++) queueAlert(s, n, n === s.violationCount ? b.event : "pelanggaran (data terlambat)");
   s.unlockCount = Math.max(s.unlockCount, Number(b.unlocks) || 0);
   s.status = statusOf(s.violationCount);
+  // Status terkunci menurut server (dipakai tab BARU siswa agar tidak lolos dari kunci). heartbeat tidak mengubah.
+  if (b.event && b.event !== "heartbeat") s.locked = b.event !== "unlock";
+  if (s.violationCount >= 30) s.locked = true;
   if (b.event && b.event !== "heartbeat") { s.log.push({ t: Date.now(), e: b.event }); if (s.log.length > 50) s.log.shift(); }
   students[b.uid] = s; dirty = true; return s;
 }
@@ -101,6 +105,12 @@ http.createServer((req, res) => {
   /* laporan dari PC siswa */
   if (req.method === "POST" && url === "/api/report")
     return readBody(req, b => { const s = upsert(b); json(res, s ? 200 : 400, { ok: !!s }); if (s) push(); });
+
+  /* status satu siswa (dibaca inject.html saat tab baru dibuka): hanya angka, tanpa nama */
+  if (req.method === "GET" && url === "/api/me") {
+    const k = q.get("uid") || "", s = Object.prototype.hasOwnProperty.call(students, k) ? students[k] : null;
+    return json(res, 200, { ok: true, violation: s ? s.violationCount : 0, unlocks: s ? s.unlockCount : 0, locked: !!(s && s.locked) });
+  }
 
   /* PIN */
   if (url === "/api/pin" && req.method === "POST") {

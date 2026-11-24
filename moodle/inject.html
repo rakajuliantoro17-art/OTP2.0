@@ -6,6 +6,9 @@
        - Overlay bisa di-scroll & punya layout landscape (kolom OTP tidak lagi terpotong)
        - Rotasi layar (potret <-> landscape) tidak dihitung pelanggaran, baseline ukuran di-reset
        - Watchdog: overlay dipulihkan jika disembunyikan/dihapus saat status terkunci
+     Perubahan 2.6:
+       - Tab BARU menyinkronkan hitungan pelanggaran & status terkunci dari jembatan (/api/me), sehingga membuka tab baru
+         tidak lagi mengulang dari 0 / lolos dari kunci. Butuh server.js terbaru di komputer jembatan (restart start.bat).
      Perubahan 2.5:
        - OTP/Master OTP dari jendela 60 dtk sebelumnya masih diterima (kode tidak kedaluwarsa saat diketik).
      Perubahan 2.4:
@@ -405,6 +408,35 @@ inp.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
 ================================================ */
 ui();
 if (locked) setTimeout(() => overlay.style.display = "flex", 350);
+
+/* ================================================
+   SINKRON DARI SERVER (2.6) — hanya untuk TAB BARU
+   sessionStorage hilang pada tab baru, sehingga hitungan & kunci bisa lolos. Tab baru bertanya ke jembatan:
+   hitungan dinaikkan ke angka server, dan bila server mencatat siswa sedang terkunci, langsung terkunci.
+   Tab yang sudah berjalan (ganti soal) TIDAK ditimpa, jadi laporan unlock yang hilang tidak mengunci ulang.
+   Jembatan tidak terjangkau = dilewati (gagal terbuka).
+================================================ */
+async function syncFromServer() {
+    let fresh = false;
+    try { fresh = sessionStorage.getItem("cbt_init") === null; sessionStorage.setItem("cbt_init", "1"); } catch (_) { return; }
+    if (!fresh || uid === "guest") return;
+    try {
+        const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 3000);
+        const r = await fetch(MONITOR.replace("/api/report", "/api/me") + "?uid=" + encodeURIComponent(uid), { cache: "no-store", signal: ctl.signal });
+        clearTimeout(to);
+        const d = await r.json();
+        if (!d || !d.ok) return;
+        const sv = Number(d.violation) || 0, su = Number(d.unlocks) || 0;
+        if (sv > vio)    { vio = sv;    sessionStorage.setItem("cbt_v",  vio); }
+        if (su > ulocks) { ulocks = su; sessionStorage.setItem("cbt_ul", ulocks); }
+        if (d.locked && !locked) {
+            locked = true; sessionStorage.setItem("cbt_lk", "1");
+            overlay.style.display = "flex";
+        }
+        ui();
+    } catch (_) {}
+}
+syncFromServer();
 
 /* ================================================
    WATCHDOG OVERLAY
