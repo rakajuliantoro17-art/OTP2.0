@@ -15,11 +15,30 @@ const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods
 let students = {}; try { students = JSON.parse(fs.readFileSync(FILE, "utf8")); } catch (_) {}
 let dirty = false;
 setInterval(() => { if (dirty) { fs.writeFile(FILE, JSON.stringify(students), () => {}); dirty = false; } }, 3000);
+/* ---------- reset otomatis tiap ganti hari ----------
+   Hitungan pelanggaran, status terkunci & daftar siswa dari hari sebelumnya dibawa terus (hitungan hanya naik) dan
+   dibaca tab baru siswa lewat /api/me. Setiap ganti hari data lama disimpan ke data-<tanggal>.json lalu dikosongkan. */
+const DAY_FILE = path.join(__dirname, "day.txt");
+const dayOf = d => d.toLocaleDateString("sv-SE");
+function rollDay() {
+  const now = dayOf(new Date());
+  let last = ""; try { last = fs.readFileSync(DAY_FILE, "utf8").trim(); } catch (_) {}
+  if (!last) { try { last = dayOf(fs.statSync(FILE).mtime); } catch (_) { last = now; } }   // belum ada catatan hari: pakai tanggal data.json
+  if (last !== now) {
+    if (Object.keys(students).length) {
+      try { fs.writeFileSync(path.join(__dirname, "data-" + last + ".json"), JSON.stringify(students)); } catch (_) {}
+      students = {}; dirty = true; push();
+      console.log("[HARI BARU] " + last + " -> " + now + ": data siswa disimpan ke data-" + last + ".json dan direset.");
+    }
+  }
+  try { fs.writeFileSync(DAY_FILE, now); } catch (_) {}
+}
 const statusOf = c => c >= 30 ? "locked" : c >= 26 ? "critical" : c >= 11 ? "warning" : "safe";
 const view = () => Object.values(students).map(s => ({ ...s, online: Date.now() - (s.lastSeen || 0) < OFFLINE_AFTER }));
 const clients = new Set();
 function push() { const d = "data: " + JSON.stringify(view()) + "\n\n"; for (const c of clients) c.write(d); }
 setInterval(push, 5000);
+rollDay(); setInterval(rollDay, 60000);   // dipanggil setelah `clients`/`view` ada (hindari TDZ)
 
 /* ---------- alert ke Firebase (untuk Sephia/panitia online) ---------- */
 const ALERT_FROM = 26;                       // sama dengan api/violation.js (>=26)
