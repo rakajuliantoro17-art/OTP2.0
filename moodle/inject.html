@@ -2,6 +2,8 @@
      SMANSASOO CBT LOCK 2.2 — MOODLE INJECTION
      Pasang di: Site Admin → Appearance → Additional HTML
      Tab: Before closing </body> tag
+     Perubahan 2.9:
+       - Kolom Kelas di dashboard kini berisi kelas siswa (mis. "XII 01") yang dibaca dari akhiran nama, bukan ID course Moodle (22, 23, 24).
      Perubahan 2.2:
        - Overlay bisa di-scroll & punya layout landscape (kolom OTP tidak lagi terpotong)
        - Rotasi layar (potret <-> landscape) tidak dihitung pelanggaran, baseline ukuran di-reset
@@ -192,7 +194,12 @@ function readName() {
 let nama = readName();
 const uid  = readUid(nama);
 const uname = document.body.dataset.username  || uid;
-const kelas = String(window.M?.cfg?.courseId  || document.body.dataset.courseid || "0");
+// (2.9) Kelas siswa (mis. "XII 01") diambil dari akhiran nama di Moodle ("NAMA XII. 01", "NAMA X.12").
+// Sebelumnya berisi ID course Moodle (21, 22, 23...), yaitu mata pelajaran, bukan kelas siswa.
+function kelasOf(n) {
+    const m = /(?:^|[\s(\[])(XII|XI|X)\s*[.\-\/]?\s*(\d{1,2})[)\]]?\s*$/i.exec(String(n || ""));
+    return m ? m[1].toUpperCase() + " " + m[2].padStart(2, "0") : "-";
+}
 const examTitle = document.querySelector(".page-header-headings h1")?.innerText
                || document.title || "CBT";
 
@@ -276,7 +283,7 @@ function report(event) {
         fetch(MONITOR, {
             method: "POST", keepalive: true,
             headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify({ uid, nama, username: uname, kelas, exam: examTitle.substring(0, 40),
+            body: JSON.stringify({ uid, nama, username: uname, kelas: kelasOf(nama), exam: examTitle.substring(0, 40),
                                    violation: vio, unlocks: ulocks, event, progress: readProgress() })
         }).then(r => r.json()).then(d => {
             // (2.8) Hitungan server lebih tinggi (mis. dari tab/perangkat lain milik siswa yang sama) diikuti di sini.
