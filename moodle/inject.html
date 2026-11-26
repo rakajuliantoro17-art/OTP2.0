@@ -2,6 +2,9 @@
      SMANSASOO CBT LOCK 2.2 — MOODLE INJECTION
      Pasang di: Site Admin → Appearance → Additional HTML
      Tab: Before closing </body> tag
+     Perubahan 3.0:
+       - Membuka aplikasi lain (TikTok dll.) lalu kembali ke ujian kini selalu terdeteksi: waktu keluar dicatat dan diperiksa saat kembali
+         (sebelumnya hanya timer 500 ms yang bisa ditangguhkan browser HP sehingga lolos tanpa OTP).
      Perubahan 2.9:
        - Kolom Kelas di dashboard kini berisi kelas siswa (mis. "XII 01") yang dibaca dari akhiran nama, bukan ID course Moodle (22, 23, 24).
        - Master OTP yang diketik saat pelanggaran < 26 tidak lagi dihitung kode salah (+1); ditolak dengan pesan arahan.
@@ -529,15 +532,29 @@ document.addEventListener("keydown", e => {
 ================================================ */
 
 // Minimize / ganti app / swipe notif bar (turunkan notif = blur + visibility hidden)
+// (3.0) Di HP, saat siswa membuka aplikasi lain (TikTok dll.) timer setTimeout di halaman ini bisa ditangguhkan oleh
+// browser, sehingga pemeriksaan 500 ms tidak pernah jalan dan saat kembali document.hidden sudah false = lolos tanpa OTP.
+// Karena itu waktu keluar dicatat dengan cap waktu dan diperiksa lagi SAAT KEMBALI ke halaman ujian.
+const AWAY_MIN_MS = 1000;
+let hiddenAt = 0, blurAt = 0;
 document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
+        hiddenAt = Date.now();
         setTimeout(() => { if (document.hidden) lock("tab_switch"); }, 500);
+        return;
     }
+    if (hiddenAt && Date.now() - hiddenAt >= AWAY_MIN_MS) lock("tab_switch");
+    hiddenAt = 0;
 });
 
 // ALT+TAB desktop / swipe app switcher mobile
 window.addEventListener("blur", () => {
+    blurAt = Date.now();
     setTimeout(() => { if (!document.hidden) lock("window_blur"); }, 500);
+});
+window.addEventListener("focus", () => {
+    if (blurAt && Date.now() - blurAt >= AWAY_MIN_MS && !document.hidden) lock("window_blur");
+    blurAt = 0;
 });
 
 // Rotasi layar (potret <-> landscape): bukan pelanggaran. Reset baseline ukuran.
