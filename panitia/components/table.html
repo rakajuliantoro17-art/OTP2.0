@@ -15,13 +15,13 @@
         <table>
             <thead>
                 <tr>
-                    <th>Nama</th>
-                    <th>Kelas</th>
-                    <th>Progress</th>
-                    <th>Violation</th>
-                    <th>Unlock</th>
-                    <th>Status</th>
-                    <th>Koneksi</th>
+                    <th data-sort="name"      onclick="sortBy('name')"      style="cursor:pointer;user-select:none" title="Klik untuk mengurutkan">Nama<span class="sortArrow"></span></th>
+                    <th data-sort="kelas"     onclick="sortBy('kelas')"     style="cursor:pointer;user-select:none" title="Klik untuk mengurutkan">Kelas<span class="sortArrow"></span></th>
+                    <th data-sort="progress"  onclick="sortBy('progress')"  style="cursor:pointer;user-select:none" title="Klik untuk mengurutkan">Progress<span class="sortArrow"></span></th>
+                    <th data-sort="violation" onclick="sortBy('violation')" style="cursor:pointer;user-select:none" title="Klik untuk mengurutkan">Violation<span class="sortArrow"></span></th>
+                    <th data-sort="unlock"    onclick="sortBy('unlock')"    style="cursor:pointer;user-select:none" title="Klik untuk mengurutkan">Unlock<span class="sortArrow"></span></th>
+                    <th data-sort="status"    onclick="sortBy('status')"    style="cursor:pointer;user-select:none" title="Klik untuk mengurutkan">Status<span class="sortArrow"></span></th>
+                    <th data-sort="conn"      onclick="sortBy('conn')"      style="cursor:pointer;user-select:none" title="Klik untuk mengurutkan">Koneksi<span class="sortArrow"></span></th>
                 </tr>
             </thead>
             <tbody id="studentsTableBody"></tbody>

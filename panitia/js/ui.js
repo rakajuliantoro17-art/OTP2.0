@@ -98,6 +98,49 @@ function isActiveStudent(s) {
 
 function baseData() { return UI.hasLive ? UI.liveData : UI.dummyData; }
 
+/* Urut kolom. Klik judul kolom: urut naik, klik lagi: turun, klik ketiga: kembali ke urutan asli.
+   Kolom angka (progress, violation, unlock, status, koneksi) mulai dari yang terbesar/terbaru. */
+UI.sort = { key: null, dir: 1 };
+const SORT_DESC_FIRST = ["progress", "violation", "unlock", "status", "conn"];
+const STATUS_RANK = { safe: 0, warn: 1, danger: 2 };
+const sortText = (a, b) => String(a || "").localeCompare(String(b || ""), "id", { numeric: true, sensitivity: "base" });
+function sortValue(s, key) {
+    const v = s.violation || 0;
+    switch (key) {
+        case "name":      return s.name || "";
+        case "kelas":     return s.kelas || s.class || "";
+        case "progress":  return parseInt(String(s.progress || "0").split("/")[0], 10) || 0;
+        case "violation": return v;
+        case "unlock":    return v >= 26 ? 1 : 0;
+        case "status":    return STATUS_RANK[s.status || resolveStatus(v)] ?? 0;
+        case "conn":      return Number(s.lastSeen) || 0;
+    }
+    return 0;
+}
+function sortData(data) {
+    const { key, dir } = UI.sort;
+    if (!key) return data;
+    const textual = key === "name" || key === "kelas";
+    return data.slice().sort((a, b) => {
+        const x = sortValue(a, key), y = sortValue(b, key);
+        const c = textual ? sortText(x, y) : (x - y);
+        return c !== 0 ? c * dir : sortText(a.name, b.name);   // seri: urut nama agar stabil
+    });
+}
+function sortBy(key) {
+    const s = UI.sort;
+    if (s.key !== key)        { s.key = key; s.dir = SORT_DESC_FIRST.includes(key) ? -1 : 1; }
+    else if (s.dir === (SORT_DESC_FIRST.includes(key) ? -1 : 1)) { s.dir = -s.dir; }
+    else                      { s.key = null; s.dir = 1; }
+    rerenderTable();
+}
+function updateSortArrows() {
+    document.querySelectorAll("th[data-sort]").forEach(th => {
+        const el = th.querySelector(".sortArrow");
+        if (el) el.textContent = UI.sort.key === th.dataset.sort ? (UI.sort.dir === 1 ? " ▲" : " ▼") : "";
+    });
+}
+
 function rerenderTable() {
     const search = $("studentSearch");
     const q = search ? search.value.toLowerCase().trim() : "";
@@ -120,6 +163,8 @@ function renderStudentsTable(data) {
 
     const total = data ? data.length : 0;
     if (data && !UI.showAll) data = data.filter(isActiveStudent);
+    if (data) data = sortData(data);
+    updateSortArrows();
 
     const info = $("activeInfo"), btn = $("activeToggle");
     if (info) info.textContent = UI.showAll ? `Semua tercatat: ${total}` : `Aktif: ${data ? data.length : 0} dari ${total} tercatat`;
@@ -321,6 +366,7 @@ window.renderStudentsTable  = renderStudentsTable;
 window.updateDashboardStats = updateDashboardStats;
 window.filterTable          = filterTable;
 window.toggleShowAll        = toggleShowAll;
+window.sortBy               = sortBy;
 window.rerenderTable        = rerenderTable;
 window.refreshStudents      = refreshStudents;
 window.filterTableBySearch  = filterTableBySearch;
