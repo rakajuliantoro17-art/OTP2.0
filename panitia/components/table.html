@@ -5,6 +5,8 @@
         <div class="table-actions">
             <input id="studentSearch" type="text" placeholder="Cari nama / kelas..."
                 oninput="filterTableBySearch(this.value)">
+            <span id="activeInfo" style="font-size:12px;opacity:.75;white-space:nowrap"></span>
+            <button id="activeToggle" onclick="toggleShowAll()">Tampilkan semua</button>
             <button onclick="refreshStudents()">Refresh</button>
         </div>
     </div>

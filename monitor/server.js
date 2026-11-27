@@ -40,6 +40,32 @@ function push() { const d = "data: " + JSON.stringify(view()) + "\n\n"; for (con
 setInterval(push, 5000);
 rollDay(); setInterval(rollDay, 60000);   // dipanggil setelah `clients`/`view` ada (hindari TDZ)
 
+/* ---------- reset otomatis menjelang tiap sesi ujian ----------
+   Jam reset (waktu PC ini), pisahkan dengan koma. Bawaan: 15 menit sebelum sesi 1 (masuk 06.45) dan sesi 2 (masuk 09.45).
+   Ubah dengan variabel lingkungan SESI_RESET, mis.  set SESI_RESET=06:30,09:30  sebelum menjalankan node.
+   Hanya berlaku saat jamnya DILEWATI selagi server hidup (menjalankan ulang server tengah sesi TIDAK mereset). */
+const SESI_RESET = (process.env.SESI_RESET || "06:30,09:30").split(",").map(s => s.trim()).filter(s => /^\d{1,2}:\d{2}$/.test(s));
+const minOfDay = d => d.getHours() * 60 + d.getMinutes();
+let lastTickMin = minOfDay(new Date());
+function sessionReset() {
+  const now = new Date(), cur = minOfDay(now), prev = lastTickMin;
+  lastTickMin = cur;
+  if (cur <= prev || cur - prev > 5) return;               // menit sama, lewat tengah malam (ditangani rollDay), atau PC baru bangun dari tidur
+  for (const t of SESI_RESET) {
+    const [h, m] = t.split(":").map(Number), at = h * 60 + m;
+    if (at > prev && at <= cur) {
+      if (Object.keys(students).length) {
+        const stamp = dayOf(now) + "-" + String(h).padStart(2, "0") + String(m).padStart(2, "0");
+        try { fs.writeFileSync(path.join(__dirname, "data-" + stamp + ".json"), JSON.stringify(students)); } catch (_) {}
+        students = {}; dirty = true; push();
+        console.log("[RESET SESI " + t + "] data siswa disimpan ke data-" + stamp + ".json dan direset.");
+      }
+      break;
+    }
+  }
+}
+setInterval(sessionReset, 15000);
+
 /* ---------- alert ke Firebase (untuk Sephia/panitia online) ---------- */
 const ALERT_FROM = 26;                       // sama dengan api/violation.js (>=26)
 const ALERT_FILE = path.join(__dirname, "alerts-pending.json");

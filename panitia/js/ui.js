@@ -12,6 +12,8 @@ window.UI = {
     connection:      "offline",
     lastSync:        null,
     currentFilter:   "all",
+    showAll:         false,       // false = tabel hanya siswa aktif di sesi berjalan
+    hasLive:         false,       // true setelah data nyata (bukan dummy) diterima
     liveData:        [],          // data aktif dari Firebase / fallback dummy
     dummyData: [
         { id: "S001", name: "Ahmad Maulana", kelas: "XI-1",     progress: "40/40", violation: 0,  status: "safe"   },
@@ -44,6 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Search input listener
     const search = $("studentSearch");
     if (search) search.addEventListener("input", e => filterTableBySearch(e.target.value));
+
+    // Baris yang sudah lama tidak terlihat ikut menghilang dari tampilan aktif tanpa menunggu data baru.
+    setInterval(() => { if (!document.hidden) rerenderTable(); }, 20000);
 
     addAlert("SMANSASOO Security System 2.0 berhasil dimuat", "info");
     console.log("[UI] Control Center Ready");
@@ -81,14 +86,48 @@ function connectionCell(student) {
 
 function escHtml(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
 
+/* Tampilan "aktif": hanya siswa yang terlihat dalam ACTIVE_WINDOW_MS terakhir, ATAU yang perlu perhatian
+   (pelanggaran >= 11) walau sudah putus. Siswa tanpa lastSeen (data contoh) tetap tampil. */
+const ACTIVE_WINDOW_MS = 10 * 60000;
+function isActiveStudent(s) {
+    if ((s.violation || 0) >= 11) return true;
+    const seen = Number(s.lastSeen);
+    if (!Number.isFinite(seen) || seen <= 0) return true;
+    return Date.now() - seen < ACTIVE_WINDOW_MS;
+}
+
+function baseData() { return UI.hasLive ? UI.liveData : UI.dummyData; }
+
+function rerenderTable() {
+    const search = $("studentSearch");
+    const q = search ? search.value.toLowerCase().trim() : "";
+    let base = baseData();
+    if (q) base = base.filter(s => (s.name || "").toLowerCase().includes(q) || (s.kelas || "").toLowerCase().includes(q));
+    else if (UI.currentFilter && UI.currentFilter !== "all") base = base.filter(s => s.status === UI.currentFilter);
+    renderStudentsTable(base);
+}
+
+function toggleShowAll() {
+    UI.showAll = !UI.showAll;
+    rerenderTable();
+}
+
 function renderStudentsTable(data) {
     const tbody = $("studentsTableBody");
     if (!tbody) return;
 
     tbody.innerHTML = "";
 
+    const total = data ? data.length : 0;
+    if (data && !UI.showAll) data = data.filter(isActiveStudent);
+
+    const info = $("activeInfo"), btn = $("activeToggle");
+    if (info) info.textContent = UI.showAll ? `Semua tercatat: ${total}` : `Aktif: ${data ? data.length : 0} dari ${total} tercatat`;
+    if (btn)  btn.textContent  = UI.showAll ? "Hanya aktif" : "Tampilkan semua";
+
     if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;opacity:.5">Tidak ada data siswa</td></tr>`;
+        const msg = total > 0 ? `Tidak ada siswa aktif (${total} tercatat). Tekan "Tampilkan semua" untuk melihatnya.` : "Tidak ada data siswa";
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;opacity:.5">${msg}</td></tr>`;
         return;
     }
 
@@ -123,7 +162,7 @@ function renderStudentsTable(data) {
 ========================= */
 function filterTable(keyword) {
     UI.currentFilter = keyword;
-    const base = UI.liveData.length ? UI.liveData : UI.dummyData;
+    const base = baseData();
 
     const filtered = keyword === "all"
         ? base
@@ -138,7 +177,7 @@ function filterTable(keyword) {
 ========================= */
 function filterTableBySearch(keyword) {
     const q    = keyword.toLowerCase().trim();
-    const base = UI.liveData.length ? UI.liveData : UI.dummyData;
+    const base = baseData();
 
     const filtered = q
         ? base.filter(s =>
@@ -151,7 +190,7 @@ function filterTableBySearch(keyword) {
 }
 
 function refreshStudents() {
-    renderStudentsTable(UI.liveData.length ? UI.liveData : UI.dummyData);
+    rerenderTable();
     addAlert("Tabel di-refresh", "info");
 }
 
@@ -159,14 +198,15 @@ function refreshStudents() {
    STATS ENGINE
 ========================= */
 function updateDashboardStats(data) {
-    if (!data || !data.length) return;
+    if (!Array.isArray(data)) return;   // data kosong (setelah reset sesi) TIDAK diabaikan: angka harus kembali ke 0
 
-    const safe   = data.filter(s => s.status === "safe").length;
     const warn   = data.filter(s => s.status === "warn").length;
     const danger = data.filter(s => s.status === "danger").length;
-    const total  = data.length;
+    // ACTIVE = benar-benar terhubung sekarang (denyut < 60 dtk), bukan jumlah semua yang tercatat.
+    const online = data.filter(s => { const t = Number(s.lastSeen); return Number.isFinite(t) && t > 0 && Date.now() - t < CONNECTION_OFFLINE_MS; }).length;
+    if (data !== UI.dummyData) UI.hasLive = true;
 
-    if ($("statActive"))   $("statActive").innerText   = total;
+    if ($("statActive"))   $("statActive").innerText   = online;
     if ($("statWarning"))  $("statWarning").innerText  = warn;
     if ($("statCritical")) $("statCritical").innerText = danger;
     if ($("statOtp"))      $("statOtp").innerText      = window.OTP_STATS?.normal || 0;
@@ -280,6 +320,9 @@ function setFirebaseStatus(isOnline) {
 window.renderStudentsTable  = renderStudentsTable;
 window.updateDashboardStats = updateDashboardStats;
 window.filterTable          = filterTable;
+window.toggleShowAll        = toggleShowAll;
+window.rerenderTable        = rerenderTable;
+window.refreshStudents      = refreshStudents;
 window.filterTableBySearch  = filterTableBySearch;
 window.refreshStudents      = refreshStudents;
 window.openDrawer           = openDrawer;
