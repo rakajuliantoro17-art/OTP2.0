@@ -56,7 +56,9 @@ function normalizeStudent(id, s) {
         name:      s.name || s.nama || s.username || id,
         violation,
         status:    map[s.status] || s.status || (violation >= 26 ? "danger" : violation >= 11 ? "warn" : "safe"),
-        progress:  s.progress || "0/40"
+        progress:  s.progress || "0/40",
+        // Panel detail: Firebase memberi logs [{type,time}]; mode lokal memberi log [{e,t}].
+        logs:      Array.isArray(s.logs) ? s.logs : (Array.isArray(s.log) ? s.log.map(x => ({ type: x.e, time: x.t })) : [])
     };
 }
 
@@ -147,16 +149,38 @@ function listenAlerts() {
 /* Indikator "data terakhir": jembatan CBT menulis system/bridge tiap 10 dtk */
 let BRIDGE_TS = 0;
 function listenBridge() {
+    const t0 = Date.now();
     if (window.CBT_LOCAL) { BRIDGE_TS = Date.now(); }                 // lokal: data langsung dari server ini
     else if (getDB()) getDB().ref("system/bridge/timestamp").on("value", snap => { BRIDGE_TS = Number(snap.val()) || 0; });
     setInterval(() => {
-        const el = document.getElementById("bridgeAge"); if (!el) return;
-        if (window.CBT_LOCAL) { el.textContent = "LANGSUNG"; el.className = "badge safe"; return; }
-        if (!BRIDGE_TS) { el.textContent = "BELUM ADA"; el.className = "badge danger"; return; }
+        const el = document.getElementById("bridgeAge");
+        if (window.CBT_LOCAL) { if (el) { el.textContent = "LANGSUNG"; el.className = "badge safe"; } setStaleBanner(false); return; }
+        if (!BRIDGE_TS) { if (el) { el.textContent = "BELUM ADA"; el.className = "badge danger"; } setStaleBanner(Date.now() - t0 > 10000, 0); return; }   // beri 10 dtk agar nilai pertama dari Firebase sempat tiba
         const sec = Math.max(0, Math.round((Date.now() - BRIDGE_TS) / 1000));
-        el.textContent = sec < 60 ? sec + " dtk lalu" : Math.round(sec / 60) + " mnt lalu";
-        el.className = "badge " + (sec < 30 ? "safe" : sec < 90 ? "warn" : "danger");
+        if (el) {
+            el.textContent = sec < 60 ? sec + " dtk lalu" : sec < 3600 ? Math.round(sec / 60) + " mnt lalu" : Math.floor(sec / 3600) + " jam lalu";
+            el.className = "badge " + (sec < 30 ? "safe" : sec < 90 ? "warn" : "danger");
+        }
+        setStaleBanner(sec >= 90, sec);
     }, 1000);
+}
+
+/* Spanduk merah di atas dashboard bila jembatan berhenti mengirim data: angka di layar = kondisi LAMA, bukan sekarang. */
+function setStaleBanner(show, sec) {
+    let b = document.getElementById("staleBanner");
+    if (!show) { if (b) b.style.display = "none"; return; }
+    if (!b) {
+        const main = document.querySelector(".main"); if (!main) return;
+        b = document.createElement("div");
+        b.id = "staleBanner";
+        b.setAttribute("role", "alert");
+        b.style.cssText = "margin:0 0 12px;padding:12px 16px;border-radius:12px;background:#ff3b30;color:#fff;font-weight:700;font-size:14px;line-height:1.4";
+        main.insertBefore(b, main.firstChild);
+    }
+    const age = !sec ? "belum pernah" : sec < 3600 ? Math.round(sec / 60) + " menit lalu" : Math.floor(sec / 3600) + " jam lalu";
+    b.textContent = "⚠ DATA BASI — jembatan terakhir mengirim data: " + age + ". Angka dan daftar siswa di layar ini BUKAN kondisi sekarang. " +
+                    "Penyebab: internet PC jembatan putus, jembatan mati, atau internet PC ini sendiri putus. Pantau sementara dari http://localhost:3000/panitia/ di PC jembatan.";
+    b.style.display = "block";
 }
 
 function listenSystemOTP() {

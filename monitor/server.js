@@ -114,18 +114,31 @@ async function fb(method, p, body) {
 }
 
 /* ---------- salin ke Firebase (jika laptop online) ---------- */
-let lastMirror = "", mirrorOk = false, bridgeOk = false;
+let lastMirror = "", mirrorOk = false, bridgeOk = false, mirrorFailSince = 0, lastFailWarn = 0;
 const shortName = n => { const w = String(n || "-").trim().split(/\s+/); return w[0] + (w.length > 1 ? " " + w.slice(1).map(x => x[0].toUpperCase() + ".").join("") : ""); };
 setInterval(async () => {
   const out = {};
   for (const s of view()) out[s.uid] = { uid: s.uid, nama: MIRROR_NAMA === "full" ? s.nama : shortName(s.nama), username: s.username, kelas: s.kelas,
-    violationCount: s.violationCount, unlockCount: s.unlockCount, status: s.status, progress: s.progress, online: s.online, lastSeen: s.lastSeen, source: "local" };
+    violationCount: s.violationCount, unlockCount: s.unlockCount, status: s.status, progress: s.progress, online: s.online, lastSeen: s.lastSeen, source: "local",
+    logs: (s.log || []).slice(-5).map(x => ({ type: x.e, time: x.t })) };   // 5 kejadian terakhir untuk panel detail siswa
   const sig = JSON.stringify(out);
   if (sig !== lastMirror || !mirrorOk) { mirrorOk = await fb("PUT", "/students", out); if (mirrorOk) lastMirror = sig; }
   for (const id of Object.keys(pendingAlerts)) {                       // kirim alert tertunda (PUT idempoten)
     if (await fb("PUT", "/alerts/" + id, pendingAlerts[id])) { delete pendingAlerts[id]; savePending(); } else break;
   }
   bridgeOk = await fb("PUT", "/system/bridge", { timestamp: Date.now(), students: out ? Object.keys(out).length : 0, pending: Object.keys(pendingAlerts).length, source: "bridge" });
+  // Peringatan jelas di jendela server bila tidak bisa menjangkau Firebase (dashboard Vercel akan membeku/basi).
+  if (!bridgeOk) {
+    if (!mirrorFailSince) mirrorFailSince = Date.now();
+    if (Date.now() - lastFailWarn > 60000) {
+      lastFailWarn = Date.now();
+      console.log("[PERINGATAN " + new Date().toLocaleTimeString("id-ID") + "] Tidak bisa menjangkau Firebase sejak " + new Date(mirrorFailSince).toLocaleTimeString("id-ID") +
+        ". Dashboard Vercel menampilkan data BASI. Periksa internet PC ini, atau pantau lewat http://localhost:" + PORT + "/panitia/");
+    }
+  } else if (mirrorFailSince) {
+    console.log("[PULIH " + new Date().toLocaleTimeString("id-ID") + "] Firebase terjangkau lagi (terputus sejak " + new Date(mirrorFailSince).toLocaleTimeString("id-ID") + ").");
+    mirrorFailSince = 0; lastFailWarn = 0;
+  }
 }, MIRROR_EVERY);
 
 /* ---------- static ---------- */
@@ -203,7 +216,7 @@ http.createServer((req, res) => {
     clients.add(res); res.write("data: " + JSON.stringify(view()) + "\n\n"); req.on("close", () => clients.delete(res)); return;
   }
   if (url === "/api/reset" && req.method === "POST") { if (!isLocal(req)) return json(res, 403, {}); students = {}; dirty = true; push(); res.writeHead(200, CORS); return res.end("ok"); }
-  if (url === "/api/status") return json(res, 200, { ok: true, mirror: mirrorOk, bridge: bridgeOk, pendingAlerts: Object.keys(pendingAlerts).length, students: Object.keys(students).length });
+  if (url === "/api/status") return json(res, 200, { ok: true, mirror: mirrorOk, bridge: bridgeOk, firebaseDownSince: mirrorFailSince || null, pendingAlerts: Object.keys(pendingAlerts).length, students: Object.keys(students).length });
 
   /* halaman */
   if (url === "/pengawas") { res.writeHead(200, { "Content-Type": MIME[".html"] }); return res.end(fs.readFileSync(path.join(__dirname, "pengawas.html"))); }
